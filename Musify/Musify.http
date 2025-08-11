@@ -1,0 +1,6 @@
+@Musify_HostAddress = http://localhost:5073
+
+GET {{Musify_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
