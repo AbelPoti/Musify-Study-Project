@@ -1,6 +1,12 @@
+using Microsoft.EntityFrameworkCore;
+using Musify.Data.DatabaseContext;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+
+builder.Services.AddDbContext<MusifyDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("Development")));
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
