@@ -1,9 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
+
 using Musify.Models;
 
 namespace Musify.Data.DatabaseContext
 {
-    public class MusifyDbContext : DbContext
+    public class MusifyDbContext : IdentityDbContext<IdentityUser>
     {
         public MusifyDbContext(DbContextOptions<MusifyDbContext> options) : base(options)
         {
