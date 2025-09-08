@@ -21,10 +21,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Services\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <EditorConfigFiles Remove="C:\Coding\Musify\Musify\.editorconfig" />
   </ItemGroup>
 
