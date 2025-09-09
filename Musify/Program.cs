@@ -53,11 +53,14 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Seed roles on startup
+// Seed roles and admin user on startup
 using (var scope = app.Services.CreateScope())
 {
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
+
     await IdentitySeeder.SeedRolesAsync(roleManager);
+    await IdentitySeeder.SeedAdminUserAsync(roleManager, userManager, builder);
 }
 
 // Configure the HTTP request pipeline.
