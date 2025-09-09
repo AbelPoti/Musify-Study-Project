@@ -23,6 +23,8 @@ namespace Musify.Services
             string email = builder.Configuration["AdminCredentials:Email"]!;
             string password = builder.Configuration["AdminCredentials:Password"]!;
 
+            const string adminRole = "Admin";
+
             // Ensure Admin user exists
             var adminUser = await userManager.FindByNameAsync(username);
             if (adminUser == null)
@@ -39,6 +41,12 @@ namespace Musify.Services
                 {
                     throw new Exception($"Failed to create admin user: {string.Join(", ", result.Errors.Select(e => e.Description))}");
                 }
+            }
+
+            // Ensure Admin user has the Admin role
+            if (!await userManager.IsInRoleAsync(adminUser, adminRole))
+            {
+                await userManager.AddToRoleAsync(adminUser, adminRole);
             }
         }
     }
