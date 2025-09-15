@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -30,6 +31,9 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
 
 // Register custom token service
 builder.Services.AddScoped<ITokenService, JwtTokenService>();
+
+// Register email service
+builder.Services.AddTransient<IEmailSender, EmailSender>();
 
 builder.Services.AddControllers();
 builder.Services.AddAuthentication();
