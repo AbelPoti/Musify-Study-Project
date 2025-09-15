@@ -15,7 +15,16 @@ builder.Services.AddDbContext<MusifyDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("Development")));
 
 // Register Identity services
-builder.Services.AddIdentity<IdentityUser, IdentityRole>()
+builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
+{
+    options.Password.RequireDigit = true;
+    options.Password.RequireLowercase = true;
+    options.Password.RequireUppercase = true;
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequiredLength = 6;
+    options.User.RequireUniqueEmail = true;
+    options.SignIn.RequireConfirmedEmail = true;
+})
     .AddEntityFrameworkStores<MusifyDbContext>()
     .AddDefaultTokenProviders();
 
