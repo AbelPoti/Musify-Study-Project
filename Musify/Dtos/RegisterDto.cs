@@ -5,8 +5,8 @@ namespace Musify.Dtos
     public class RegisterDto
     {
         [Required]
-        [StringLength(50, MinimumLength = 3, ErrorMessage = "Username must be between 3 and 50 characters long")]
-        [RegularExpression("^[a-zA-Z0-9_-]+$", ErrorMessage = "Username can only contain letters, numbers, hyphens and underscores")]
+        [StringLength(50, MinimumLength = 6, ErrorMessage = "Username must be between 6 and 50 characters long")]
+        [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z0-9_-]+$", ErrorMessage = "Username must contain at least one lowercase letter, one uppercase letter and a digit, and can only contain letters, numbers, hyphens and underscores")]
         public required string Username { get; set; }
 
         [Required]
