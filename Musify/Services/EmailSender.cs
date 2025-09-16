@@ -6,36 +6,30 @@ namespace Musify.Services
 {
     public class EmailSender : IEmailSender
     {
-        private WebApplicationBuilder _builder;
+        private readonly IConfiguration _configuration;
 
-        public EmailSender(WebApplicationBuilder builder)
+        public EmailSender(IConfiguration configuration)
         {
-            _builder = builder;
+            _configuration = configuration;
         }
 
         public Task SendEmailAsync(string email, string subject, string htmlMessage)
         {
-            throw new NotImplementedException();
-        }
-
-        public async Task Execute(string apiKey, string subject, string message, string recipient)
-        {
-            var client = new SendGridClient(apiKey);
+            var client = new SendGridClient(_configuration["EmailService:ApiKey"]);
 
             var msg = new SendGridMessage()
             {
                 From = new EmailAddress("auth@musify.com", "Musify team"),
                 Subject = subject,
-                PlainTextContent = message,
-                HtmlContent = message
+                HtmlContent = htmlMessage
             };
 
-            msg.AddTo(new EmailAddress(recipient));
+            msg.AddTo(new EmailAddress(email));
 
             // Disable click tracking.
             msg.SetClickTracking(false, false);
 
-            var response = await client.SendEmailAsync(msg);
+            throw new NotImplementedException();
         }
     }
 }

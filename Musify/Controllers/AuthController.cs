@@ -67,7 +67,7 @@ namespace Musify.Controllers
                 await _emailSender.SendEmailAsync(
                     dto.Email,
                     "Musify email confirmation",
-                    $"<p>Please confirm your account by <a href='{confirmationLink}'>Clicking here</a>.</p>");
+                    $"Please confirm your account by <a href='{confirmationLink}'>Clicking here</a>.");
 
                 return Ok(new { Message = "User registered successfully", jwtToken });
             }
