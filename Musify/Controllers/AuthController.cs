@@ -1,8 +1,11 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
-
+using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Musify.Dtos;
 using Musify.Services;
+using System.Text;
 
 namespace Musify.Controllers
 {
@@ -13,12 +16,18 @@ namespace Musify.Controllers
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly ITokenService _tokenService;
+        private readonly IEmailSender _emailSender;
 
-        public AuthController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager, ITokenService tokenService)
+        public AuthController(
+            UserManager<IdentityUser> userManager,
+            SignInManager<IdentityUser> signInManager,
+            ITokenService tokenService,
+            IEmailSender emailSender)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _tokenService = tokenService;
+            _emailSender = emailSender;
         }
 
         [HttpPost("register")]
@@ -38,12 +47,29 @@ namespace Musify.Controllers
             user = new IdentityUser { UserName = dto.Username, Email = dto.Email };
             var result = await _userManager.CreateAsync(user, dto.Password);
 
+            // Assign role and generate token, as well as send confirmation email
             if (result.Succeeded)
             {
                 // Default role assignment
-                var token = _tokenService.GenerateToken(user, ["User"]);
+                string jwtToken = _tokenService.GenerateToken(user, ["User"]);
 
-                return Ok(new { Message = "User registered successfully", token });
+                // Fetch user again for Id
+                user = await _userManager.FindByNameAsync(dto.Username);
+
+                string emailConfirmToken = await _userManager.GenerateEmailConfirmationTokenAsync(user!);
+                // Since tokens may contain special characters, encode it
+                emailConfirmToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(emailConfirmToken));
+
+                var request = HttpContext.Request;
+                var baseUrl = $"{request.Scheme}://{request.Host}";
+                var confirmationLink = $"{baseUrl}/api/auth/confirmemail?userId={user!.Id}&token={Uri.EscapeDataString(emailConfirmToken)}";
+
+                await _emailSender.SendEmailAsync(
+                    dto.Email,
+                    "Musify email confirmation",
+                    $"<p>Please confirm your account by <a href='{confirmationLink}'>Clicking here</a>.</p>");
+
+                return Ok(new { Message = "User registered successfully", jwtToken });
             }
 
             foreach (var error in result.Errors)
