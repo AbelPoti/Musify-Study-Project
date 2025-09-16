@@ -103,5 +103,31 @@ namespace Musify.Controllers
             var token = _tokenService.GenerateToken(user, roles);
             return Ok(new { Message = "Login successful", token });
         }
+
+        [HttpGet("confirmemail")]
+        public async Task<ActionResult> ConfirmEmail(string userId, string token)
+        {
+            if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(token))
+            {
+                return BadRequest(new { Message = "UserId and Token are required" });
+            }
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return NotFound(new { Message = "User not found" });
+            }
+
+            // Decode the token
+            var decodedTokenBytes = WebEncoders.Base64UrlDecode(token);
+            var decodedToken = Encoding.UTF8.GetString(decodedTokenBytes);
+            var result = await _userManager.ConfirmEmailAsync(user, decodedToken);
+
+            if (result.Succeeded)
+            {
+                return Ok(new { Message = "Email confirmed successfully" });
+            }
+            return BadRequest(new { Message = "Email confirmation failed", Errors = result.Errors.Select(e => e.Description) });
+        }
     }
 }
