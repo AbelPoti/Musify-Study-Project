@@ -17,7 +17,7 @@ namespace Musify.Dtos
         [Required]
         [DataType(DataType.Password)]
         [StringLength(100, MinimumLength = 8, ErrorMessage = "Password must be between 8 and 100 characters long")]
-        [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z0-9_\-*()[\]{}]+$", ErrorMessage = "Password must contain at least one lowercase letter, one uppercase letter and a digit, and can only contain letters, numbers, hyphens, underscores, asterisks and parantheses")]
+        [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z0-9_\-*()]+$", ErrorMessage = "Password must contain at least one lowercase letter, one uppercase letter and a digit, and can only contain letters, numbers, hyphens, underscores, asterisks and parantheses")]
         public required string Password { get; set; }
     }
 }
