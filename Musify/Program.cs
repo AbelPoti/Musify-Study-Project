@@ -10,6 +10,16 @@ using Musify.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Configure Kestrel to listen only on localhost with HTTPS
+builder.WebHost.ConfigureKestrel(options =>
+{
+    // Listen only on loopback (localhost), not on all network interfaces.
+    options.ListenLocalhost(7250, listenOptions =>
+    {
+        listenOptions.UseHttps();
+    });
+});
+
 // Add services to the container.
 
 builder.Services.AddDbContext<MusifyDbContext>(options =>
