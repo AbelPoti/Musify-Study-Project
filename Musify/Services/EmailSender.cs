@@ -13,13 +13,13 @@ namespace Musify.Services
             _configuration = configuration;
         }
 
-        public Task SendEmailAsync(string email, string subject, string htmlMessage)
+        public async Task SendEmailAsync(string email, string subject, string htmlMessage)
         {
             var client = new SendGridClient(_configuration["EmailService:ApiKey"]);
 
             var msg = new SendGridMessage()
             {
-                From = new EmailAddress("auth@musify.com", "Musify team"),
+                From = new EmailAddress("noreply@learningaspproject.org", "Musify team"),
                 Subject = subject,
                 HtmlContent = htmlMessage
             };
@@ -29,7 +29,7 @@ namespace Musify.Services
             // Disable click tracking.
             msg.SetClickTracking(false, false);
 
-            throw new NotImplementedException();
+            await client.SendEmailAsync(msg);
         }
     }
 }
