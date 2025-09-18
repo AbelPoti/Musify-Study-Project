@@ -19,7 +19,7 @@ namespace Musify.Services
 
             var msg = new SendGridMessage()
             {
-                From = new EmailAddress("noreply@learningaspproject.org", "Musify team"),
+                From = new EmailAddress("noreply@em7171.api.learningaspproject.org", "Musify team"),
                 Subject = subject,
                 HtmlContent = htmlMessage
             };
