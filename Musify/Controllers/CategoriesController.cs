@@ -35,7 +35,7 @@ namespace Musify.Controllers
             return Ok(category);
         }
 
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = UserRole.Admin)]
         [HttpPost]
         public async Task<ActionResult<Category>> CreateCategory([FromBody] Category category)
         {
@@ -59,7 +59,7 @@ namespace Musify.Controllers
             return CreatedAtAction(nameof(GetCategoryById), new { id = category.Id }, category);
         }
 
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = UserRole.Admin)]
         [HttpPut("{id}")]
         public async Task<ActionResult<Category>> UpdateCategory(int id, [FromBody] Category category)
         {
@@ -92,7 +92,7 @@ namespace Musify.Controllers
             return Ok(existingCategory);
         }
 
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = UserRole.Admin)]
         [HttpDelete("{id}")]
         public async Task<ActionResult<Category>> DeleteCategory(int id)
         {

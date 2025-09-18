@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Musify.Models;
 
 namespace Musify.Services
 {
@@ -6,7 +7,7 @@ namespace Musify.Services
     {
         public static async Task SeedRolesAsync(RoleManager<IdentityRole> roleManager)
         {
-            string[] roles = { "User", "StoreManager", "WarehouseManager", "Admin" };
+            string[] roles = { UserRole.User, UserRole.StoreManager, UserRole.WarehouseManager, UserRole.Admin };
 
             foreach (string role in roles)
             {
@@ -23,7 +24,7 @@ namespace Musify.Services
             string email = builder.Configuration["AdminCredentials:Email"]!;
             string password = builder.Configuration["AdminCredentials:Password"]!;
 
-            const string adminRole = "Admin";
+            const string adminRole = UserRole.Admin;
 
             // Ensure Admin user exists
             var adminUser = await userManager.FindByNameAsync(username);

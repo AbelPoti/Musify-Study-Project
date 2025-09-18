@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Musify.Dtos;
+using Musify.Models;
 using Musify.Services;
 using System.Text;
 
@@ -51,7 +52,7 @@ namespace Musify.Controllers
             if (result.Succeeded)
             {
                 // Default role assignment
-                string jwtToken = _tokenService.GenerateToken(user, ["User"]);
+                string jwtToken = _tokenService.GenerateToken(user, [UserRole.User]);
 
                 // Fetch user again for Id
                 user = await _userManager.FindByNameAsync(dto.Username);
