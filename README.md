@@ -1,4 +1,4 @@
-# Musify
+# Musify Study project
 
 This is a learning project that is actively in development. 📚
 
@@ -16,5 +16,7 @@ This project aims to implement an ASP.NET Core Web API that should serve a websh
 
 # 🗺 Roadmap
 * Extend user authentication (account confirmation, password reset etc.)
+* Implement external authentication logins
 * Create endpoints for managing all necessary entities of the webshop
 * Give stock managing functionalities to managers
+* Implement pagination and sorting for API endpoints
