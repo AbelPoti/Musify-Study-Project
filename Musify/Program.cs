@@ -39,8 +39,9 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
     .AddEntityFrameworkStores<MusifyDbContext>()
     .AddDefaultTokenProviders();
 
-// Register custom token service
+// Register custom token services
 builder.Services.AddScoped<ITokenService, JwtTokenService>();
+builder.Services.AddScoped<IEmailConfirmTokenService, EmailConfirmTokenService>();
 
 // Register email service
 builder.Services.AddTransient<IEmailSender, EmailSender>();

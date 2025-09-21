@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Musify.Dtos;
 using Musify.Models;
 using Musify.Services;
@@ -17,17 +16,20 @@ namespace Musify.Controllers
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly ITokenService _tokenService;
+        private readonly IEmailConfirmTokenService _emailConfirmTokenService;
         private readonly IEmailSender _emailSender;
 
         public AuthController(
             UserManager<IdentityUser> userManager,
             SignInManager<IdentityUser> signInManager,
             ITokenService tokenService,
+            IEmailConfirmTokenService emailConfirmTokenService,
             IEmailSender emailSender)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _tokenService = tokenService;
+            _emailConfirmTokenService = emailConfirmTokenService;
             _emailSender = emailSender;
         }
 
@@ -54,12 +56,8 @@ namespace Musify.Controllers
                 // Default role assignment
                 string jwtToken = _tokenService.GenerateToken(user, [UserRole.User]);
 
-                // Fetch user again for Id
-                user = await _userManager.FindByNameAsync(dto.Username);
-
-                string emailConfirmToken = await _userManager.GenerateEmailConfirmationTokenAsync(user!);
-                // Since tokens may contain special characters, encode it
-                emailConfirmToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(emailConfirmToken));
+                // Generate email confirmation token
+                string emailConfirmToken = await _emailConfirmTokenService.GenerateEmailConfirmationToken(dto.Username);
 
                 var request = HttpContext.Request;
                 var baseUrl = $"{request.Scheme}://{request.Host}";
