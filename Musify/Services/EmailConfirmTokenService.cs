@@ -13,11 +13,8 @@ namespace Musify.Services
             _userManager = userManager;
         }
 
-        public async Task<string> GenerateEmailConfirmationToken(string username)
+        public async Task<string> GenerateEmailConfirmationToken(IdentityUser user)
         {
-            // Fetch user again for Id
-            var user = await _userManager.FindByNameAsync(username);
-
             string emailConfirmToken = await _userManager.GenerateEmailConfirmationTokenAsync(user!);
             // Since tokens may contain special characters, encode it
             return WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(emailConfirmToken));

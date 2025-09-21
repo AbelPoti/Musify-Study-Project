@@ -56,8 +56,10 @@ namespace Musify.Controllers
                 // Default role assignment
                 string jwtToken = _tokenService.GenerateToken(user, [UserRole.User]);
 
+                // Refetch user to get the Id
+                user = await _userManager.FindByNameAsync(dto.Username);
                 // Generate email confirmation token
-                string emailConfirmToken = await _emailConfirmTokenService.GenerateEmailConfirmationToken(dto.Username);
+                string emailConfirmToken = await _emailConfirmTokenService.GenerateEmailConfirmationToken(user!);
 
                 var request = HttpContext.Request;
                 var baseUrl = $"{request.Scheme}://{request.Host}";
