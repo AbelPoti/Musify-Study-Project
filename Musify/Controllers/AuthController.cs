@@ -139,5 +139,57 @@ namespace Musify.Controllers
             }
             return BadRequest(new { Message = "Email confirmation failed", Errors = result.Errors.Select(e => e.Description) });
         }
+
+        [HttpPost("resend-confirmation-email")]
+        public async Task<ActionResult> ResendConfirmationEmail([FromBody] ResendConfirmationEmailDto dto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var user = await _userManager.FindByEmailAsync(dto.Email);
+            if (user == null)
+            {
+                // To prevent email enumeration, always return OK
+                return Ok();
+            }
+
+            if (user.EmailConfirmed)
+            {
+                return BadRequest(new { Message = "Email is already confirmed" });
+            }
+
+            // Rate limiting: Allow resending only if last sent was more than 5 minutes ago
+            if (user.LastConfirmEmailSent.HasValue)
+            {
+                var diff = 5 - (DateTimeOffset.UtcNow - user.LastConfirmEmailSent.Value).TotalMinutes;
+
+                if (diff > 0)
+                {
+                    return BadRequest(new 
+                    { 
+                        Message = $"Confirmation email was sent recently. Please wait {diff} minutes before requesting again." 
+                    });
+                }
+            }
+
+            string emailConfirmToken = await _emailConfirmTokenService.GenerateEmailConfirmationToken(user);
+
+            var request = HttpContext.Request;
+            var baseUrl = $"{request.Scheme}://{request.Host}";
+            var confirmationLink = 
+                $"{baseUrl}/api/auth/confirmemail?userId={user.Id}&token={Uri.EscapeDataString(emailConfirmToken)}";
+
+            await _emailSender.SendEmailAsync(
+                dto.Email,
+                "Musify email confirmation",
+                $"Please confirm your account by <a href='{confirmationLink}'>Clicking here</a>.");
+
+            user.LastConfirmEmailSent = DateTimeOffset.UtcNow;
+            await _userManager.UpdateAsync(user);
+
+            return Ok(new { Message = "Confirmation email resent successfully" });
+        }
     }
 }
