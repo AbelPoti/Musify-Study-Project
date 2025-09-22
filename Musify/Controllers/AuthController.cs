@@ -152,7 +152,7 @@ namespace Musify.Controllers
             if (user == null)
             {
                 // To prevent email enumeration, always return OK
-                return Ok();
+                return Ok(new { Message = "Confirmation email resent successfully" });
             }
 
             if (user.EmailConfirmed)
