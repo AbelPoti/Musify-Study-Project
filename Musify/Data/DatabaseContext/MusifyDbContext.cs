@@ -6,7 +6,7 @@ using Musify.Models;
 
 namespace Musify.Data.DatabaseContext
 {
-    public class MusifyDbContext : IdentityDbContext<IdentityUser>
+    public class MusifyDbContext : IdentityDbContext<ApplicationUser>
     {
         public MusifyDbContext(DbContextOptions<MusifyDbContext> options) : base(options)
         {

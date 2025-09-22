@@ -1,9 +1,9 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Musify.Models;
 
 namespace Musify.Services
 {
     public interface IEmailConfirmTokenService
     {
-        Task<string> GenerateEmailConfirmationToken(IdentityUser user);
+        Task<string> GenerateEmailConfirmationToken(ApplicationUser user);
     }
 }

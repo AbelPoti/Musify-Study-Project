@@ -13,15 +13,15 @@ namespace Musify.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-        private readonly UserManager<IdentityUser> _userManager;
-        private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly ITokenService _tokenService;
         private readonly IEmailConfirmTokenService _emailConfirmTokenService;
         private readonly IEmailSender _emailSender;
 
         public AuthController(
-            UserManager<IdentityUser> userManager,
-            SignInManager<IdentityUser> signInManager,
+            UserManager<ApplicationUser> userManager,
+            SignInManager<ApplicationUser> signInManager,
             ITokenService tokenService,
             IEmailConfirmTokenService emailConfirmTokenService,
             IEmailSender emailSender)
@@ -47,7 +47,7 @@ namespace Musify.Controllers
                 return BadRequest(new { Message = "Username already taken" });
             }
 
-            user = new IdentityUser { UserName = dto.Username, Email = dto.Email };
+            user = new ApplicationUser { UserName = dto.Username, Email = dto.Email, RegistrationTime = DateTimeOffset.UtcNow };
             var result = await _userManager.CreateAsync(user, dto.Password);
 
             // Assign role and generate token, as well as send confirmation email
