@@ -70,6 +70,9 @@ namespace Musify.Controllers
                     "Musify email confirmation",
                     $"Please confirm your account by <a href='{confirmationLink}'>Clicking here</a>.");
 
+                user.LastConfirmEmailSent = DateTimeOffset.UtcNow;
+                await _userManager.UpdateAsync(user);
+
                 return Ok(new { Message = "User registered successfully", jwtToken });
             }
 
