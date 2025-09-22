@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Musify.Dtos;
 using Musify.Models;
 using Musify.Services;
@@ -14,20 +13,23 @@ namespace Musify.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-        private readonly UserManager<IdentityUser> _userManager;
-        private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly ITokenService _tokenService;
+        private readonly IEmailConfirmTokenService _emailConfirmTokenService;
         private readonly IEmailSender _emailSender;
 
         public AuthController(
-            UserManager<IdentityUser> userManager,
-            SignInManager<IdentityUser> signInManager,
+            UserManager<ApplicationUser> userManager,
+            SignInManager<ApplicationUser> signInManager,
             ITokenService tokenService,
+            IEmailConfirmTokenService emailConfirmTokenService,
             IEmailSender emailSender)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _tokenService = tokenService;
+            _emailConfirmTokenService = emailConfirmTokenService;
             _emailSender = emailSender;
         }
 
@@ -45,7 +47,7 @@ namespace Musify.Controllers
                 return BadRequest(new { Message = "Username already taken" });
             }
 
-            user = new IdentityUser { UserName = dto.Username, Email = dto.Email };
+            user = new ApplicationUser { UserName = dto.Username, Email = dto.Email, RegistrationTime = DateTimeOffset.UtcNow };
             var result = await _userManager.CreateAsync(user, dto.Password);
 
             // Assign role and generate token, as well as send confirmation email
@@ -54,12 +56,10 @@ namespace Musify.Controllers
                 // Default role assignment
                 string jwtToken = _tokenService.GenerateToken(user, [UserRole.User]);
 
-                // Fetch user again for Id
+                // Refetch user to get the Id
                 user = await _userManager.FindByNameAsync(dto.Username);
-
-                string emailConfirmToken = await _userManager.GenerateEmailConfirmationTokenAsync(user!);
-                // Since tokens may contain special characters, encode it
-                emailConfirmToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(emailConfirmToken));
+                // Generate email confirmation token
+                string emailConfirmToken = await _emailConfirmTokenService.GenerateEmailConfirmationToken(user!);
 
                 var request = HttpContext.Request;
                 var baseUrl = $"{request.Scheme}://{request.Host}";
@@ -69,6 +69,9 @@ namespace Musify.Controllers
                     dto.Email,
                     "Musify email confirmation",
                     $"Please confirm your account by <a href='{confirmationLink}'>Clicking here</a>.");
+
+                user.LastConfirmEmailSent = DateTimeOffset.UtcNow;
+                await _userManager.UpdateAsync(user);
 
                 return Ok(new { Message = "User registered successfully", jwtToken });
             }
@@ -135,6 +138,58 @@ namespace Musify.Controllers
                 return Ok(new { Message = "Email confirmed successfully" });
             }
             return BadRequest(new { Message = "Email confirmation failed", Errors = result.Errors.Select(e => e.Description) });
+        }
+
+        [HttpPost("resend-confirmation-email")]
+        public async Task<ActionResult> ResendConfirmationEmail([FromBody] ResendConfirmationEmailDto dto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var user = await _userManager.FindByEmailAsync(dto.Email);
+            if (user == null)
+            {
+                // To prevent email enumeration, always return OK
+                return Ok(new { Message = "Confirmation email resent successfully" });
+            }
+
+            if (user.EmailConfirmed)
+            {
+                return BadRequest(new { Message = "Email is already confirmed" });
+            }
+
+            // Rate limiting: Allow resending only if last sent was more than 5 minutes ago
+            if (user.LastConfirmEmailSent.HasValue)
+            {
+                var diff = 5 - (DateTimeOffset.UtcNow - user.LastConfirmEmailSent.Value).TotalMinutes;
+
+                if (diff > 0)
+                {
+                    return BadRequest(new 
+                    { 
+                        Message = $"Confirmation email was sent recently. Please wait {diff} minutes before requesting again." 
+                    });
+                }
+            }
+
+            string emailConfirmToken = await _emailConfirmTokenService.GenerateEmailConfirmationToken(user);
+
+            var request = HttpContext.Request;
+            var baseUrl = $"{request.Scheme}://{request.Host}";
+            var confirmationLink = 
+                $"{baseUrl}/api/auth/confirmemail?userId={user.Id}&token={Uri.EscapeDataString(emailConfirmToken)}";
+
+            await _emailSender.SendEmailAsync(
+                dto.Email,
+                "Musify email confirmation",
+                $"Please confirm your account by <a href='{confirmationLink}'>Clicking here</a>.");
+
+            user.LastConfirmEmailSent = DateTimeOffset.UtcNow;
+            await _userManager.UpdateAsync(user);
+
+            return Ok(new { Message = "Confirmation email resent successfully" });
         }
     }
 }

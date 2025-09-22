@@ -18,7 +18,7 @@ namespace Musify.Services
             }
         }
 
-        public static async Task SeedAdminUserAsync(RoleManager<IdentityRole> roleManager, UserManager<IdentityUser> userManager, WebApplicationBuilder builder)
+        public static async Task SeedAdminUserAsync(RoleManager<IdentityRole> roleManager, UserManager<ApplicationUser> userManager, WebApplicationBuilder builder)
         {
             string username = builder.Configuration["AdminCredentials:Username"]!;
             string email = builder.Configuration["AdminCredentials:Email"]!;
@@ -30,11 +30,12 @@ namespace Musify.Services
             var adminUser = await userManager.FindByNameAsync(username);
             if (adminUser == null)
             {
-                adminUser = new IdentityUser
+                adminUser = new ApplicationUser
                 {
                     UserName = username,
                     Email = email,
-                    EmailConfirmed = true
+                    EmailConfirmed = true,
+                    RegistrationTime = DateTimeOffset.UtcNow
                 };
 
                 var result = await userManager.CreateAsync(adminUser, password);

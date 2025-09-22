@@ -3,10 +3,10 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
-
 using Musify.Data.DatabaseContext;
+using Musify.Models;
 using Musify.Services;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,7 +26,7 @@ builder.Services.AddDbContext<MusifyDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("Development")));
 
 // Register Identity services
-builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
     options.Password.RequireDigit = true;
     options.Password.RequireLowercase = true;
@@ -39,8 +39,9 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
     .AddEntityFrameworkStores<MusifyDbContext>()
     .AddDefaultTokenProviders();
 
-// Register custom token service
+// Register custom token services
 builder.Services.AddScoped<ITokenService, JwtTokenService>();
+builder.Services.AddScoped<IEmailConfirmTokenService, EmailConfirmTokenService>();
 
 // Register email service
 builder.Services.AddTransient<IEmailSender, EmailSender>();
@@ -80,7 +81,7 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
     await IdentitySeeder.SeedRolesAsync(roleManager);
     await IdentitySeeder.SeedAdminUserAsync(roleManager, userManager, builder);
