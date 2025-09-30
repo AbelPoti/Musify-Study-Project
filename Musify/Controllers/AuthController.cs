@@ -235,6 +235,9 @@ namespace Musify.Controllers
                 "Musify Password Reset",
                 $"You can reset your password by <a href='{resetLink}'>Clicking here</a>. If you did not request a password reset, please ignore this email.");
 
+            user.LastPasswordResetSent = DateTimeOffset.UtcNow;
+            await _userManager.UpdateAsync(user);
+
             return Ok(new { Message = "If a user was registered with the provided email, a password reset link has been sent." });
         }
 
