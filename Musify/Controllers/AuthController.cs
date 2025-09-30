@@ -221,5 +221,36 @@ namespace Musify.Controllers
 
             return Ok(new { Message = "If a user was registered with the provided email, a password reset link has been sent." });
         }
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto dto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var user = await _userManager.FindByIdAsync(dto.UserId);
+            if (user == null)
+            {
+                // To prevent user enumeration, always return OK
+                return Ok(new { Message = "Password has been reset successfully." });
+            }
+
+            var decodedTokenBytes = WebEncoders.Base64UrlDecode(dto.Token);
+            var decodedToken = Encoding.UTF8.GetString(decodedTokenBytes);
+            var result = await _userManager.ResetPasswordAsync(user, decodedToken, dto.NewPassword);
+
+            if (result.Succeeded)
+            {
+                return Ok(new { Message = "Password has been reset successfully." });
+            }
+
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError(string.Empty, error.Description);
+            }
+            return BadRequest(ModelState);
+        }
     }
 }
