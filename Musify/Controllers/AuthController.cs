@@ -19,6 +19,8 @@ namespace Musify.Controllers
         private readonly IEmailConfirmTokenService _emailConfirmTokenService;
         private readonly IEmailSender _emailSender;
 
+        private const int RateLimitMinutes = 2;
+
         public AuthController(
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
@@ -160,10 +162,10 @@ namespace Musify.Controllers
                 return BadRequest(new { Message = "Email is already confirmed" });
             }
 
-            // Rate limiting: Allow resending only if last sent was more than 5 minutes ago
+            // Rate limiting: Allow resending only if last sent was more than n minutes ago
             if (user.LastConfirmEmailSent.HasValue)
             {
-                var diff = 5 - (DateTimeOffset.UtcNow - user.LastConfirmEmailSent.Value).TotalMinutes;
+                var diff = RateLimitMinutes - (DateTimeOffset.UtcNow - user.LastConfirmEmailSent.Value).TotalMinutes;
 
                 if (diff > 0)
                 {
@@ -207,10 +209,10 @@ namespace Musify.Controllers
                 return Ok(new { Message = "If a user was registered with the provided email, a password reset link has been sent." });
             }
 
-            // Rate limiting: Allow resending only if last sent was more than 5 minutes ago
+            // Rate limiting: Allow sending only if last sent was more than n minutes ago
             if (user.LastPasswordResetSent.HasValue)
             {
-                var diff = 5 - (DateTimeOffset.UtcNow - user.LastPasswordResetSent.Value).TotalMinutes;
+                var diff = RateLimitMinutes - (DateTimeOffset.UtcNow - user.LastPasswordResetSent.Value).TotalMinutes;
 
                 if (diff > 0)
                 {
