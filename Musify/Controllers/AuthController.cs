@@ -169,10 +169,7 @@ namespace Musify.Controllers
 
                 if (diff > 0)
                 {
-                    return BadRequest(new 
-                    { 
-                        Message = $"Confirmation email was sent recently. Please wait {diff} minutes before requesting again." 
-                    });
+                    return Ok(new { Message = "Confirmation email resent successfully" });
                 }
             }
 
@@ -216,10 +213,7 @@ namespace Musify.Controllers
 
                 if (diff > 0)
                 {
-                    return BadRequest(new
-                    {
-                        Message = $"Password reset email was sent recently. Please wait {diff} minutes before requesting again."
-                    });
+                    return Ok(new { Message = "If a user was registered with the provided email, a password reset link has been sent." });
                 }
             }
 
