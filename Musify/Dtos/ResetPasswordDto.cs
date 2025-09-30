@@ -12,5 +12,8 @@ namespace Musify.Dtos
 
         [Required]
         public required string NewPassword { get; set; }
+
+        [Required]
+        public required string ConfirmPassword { get; set; }
     }
 }

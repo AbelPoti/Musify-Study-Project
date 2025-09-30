@@ -230,6 +230,12 @@ namespace Musify.Controllers
                 return BadRequest(ModelState);
             }
 
+            if (dto.NewPassword != dto.ConfirmPassword)
+            {
+                ModelState.AddModelError(string.Empty, "New password and confirmation password do not match.");
+                return BadRequest(ModelState);
+            }
+
             var user = await _userManager.FindByIdAsync(dto.UserId);
             if (user == null)
             {
