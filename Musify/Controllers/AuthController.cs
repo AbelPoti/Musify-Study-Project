@@ -207,6 +207,20 @@ namespace Musify.Controllers
                 return Ok(new { Message = "If a user was registered with the provided email, a password reset link has been sent." });
             }
 
+            // Rate limiting: Allow resending only if last sent was more than 5 minutes ago
+            if (user.LastPasswordResetSent.HasValue)
+            {
+                var diff = 5 - (DateTimeOffset.UtcNow - user.LastPasswordResetSent.Value).TotalMinutes;
+
+                if (diff > 0)
+                {
+                    return BadRequest(new
+                    {
+                        Message = $"Password reset email was sent recently. Please wait {diff} minutes before requesting again."
+                    });
+                }
+            }
+
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
             var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
 
