@@ -191,5 +191,35 @@ namespace Musify.Controllers
 
             return Ok(new { Message = "Confirmation email resent successfully" });
         }
+
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto dto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var user = await _userManager.FindByEmailAsync(dto.Email);
+            if (user == null || !(await _userManager.IsEmailConfirmedAsync(user)))
+            {
+                // To prevent email enumeration, always return OK
+                return Ok(new { Message = "If a user was registered with the provided email, a password reset link has been sent." });
+            }
+
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
+
+            var request = HttpContext.Request;
+            var baseUrl = $"{request.Scheme}://{request.Host}";
+            var resetLink = $"{baseUrl}/reset-password?userId={user.Id}&token={encodedToken}";
+
+            await _emailSender.SendEmailAsync(
+                dto.Email,
+                "Musify Password Reset",
+                $"You can reset your password by <a href='{resetLink}'>Clicking here</a>. If you did not request a password reset, please ignore this email.");
+
+            return Ok(new { Message = "If a user was registered with the provided email, a password reset link has been sent." });
+        }
     }
 }
