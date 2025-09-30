@@ -10,5 +10,7 @@ namespace Musify.Models
         public DateTimeOffset? LastLoginTime { get; set; }
 
         public DateTimeOffset? LastConfirmEmailSent { get; set; }
+
+        public DateTimeOffset? LastPasswordResetSent { get; set; }
     }
 }

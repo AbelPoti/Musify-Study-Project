@@ -19,6 +19,8 @@ namespace Musify.Controllers
         private readonly IEmailConfirmTokenService _emailConfirmTokenService;
         private readonly IEmailSender _emailSender;
 
+        private const int RateLimitMinutes = 2;
+
         public AuthController(
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
@@ -160,17 +162,14 @@ namespace Musify.Controllers
                 return BadRequest(new { Message = "Email is already confirmed" });
             }
 
-            // Rate limiting: Allow resending only if last sent was more than 5 minutes ago
+            // Rate limiting: Allow resending only if last sent was more than n minutes ago
             if (user.LastConfirmEmailSent.HasValue)
             {
-                var diff = 5 - (DateTimeOffset.UtcNow - user.LastConfirmEmailSent.Value).TotalMinutes;
+                var diff = RateLimitMinutes - (DateTimeOffset.UtcNow - user.LastConfirmEmailSent.Value).TotalMinutes;
 
                 if (diff > 0)
                 {
-                    return BadRequest(new 
-                    { 
-                        Message = $"Confirmation email was sent recently. Please wait {diff} minutes before requesting again." 
-                    });
+                    return Ok(new { Message = "Confirmation email resent successfully" });
                 }
             }
 
@@ -190,6 +189,87 @@ namespace Musify.Controllers
             await _userManager.UpdateAsync(user);
 
             return Ok(new { Message = "Confirmation email resent successfully" });
+        }
+
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto dto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var user = await _userManager.FindByEmailAsync(dto.Email);
+            if (user == null || !(await _userManager.IsEmailConfirmedAsync(user)))
+            {
+                // To prevent email enumeration, always return OK
+                return Ok(new { Message = "If a user was registered with the provided email, a password reset link has been sent." });
+            }
+
+            // Rate limiting: Allow sending only if last sent was more than n minutes ago
+            if (user.LastPasswordResetSent.HasValue)
+            {
+                var diff = RateLimitMinutes - (DateTimeOffset.UtcNow - user.LastPasswordResetSent.Value).TotalMinutes;
+
+                if (diff > 0)
+                {
+                    return Ok(new { Message = "If a user was registered with the provided email, a password reset link has been sent." });
+                }
+            }
+
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
+
+            var request = HttpContext.Request;
+            var baseUrl = $"{request.Scheme}://{request.Host}";
+            var resetLink = $"{baseUrl}/reset-password?userId={user.Id}&token={encodedToken}";
+
+            await _emailSender.SendEmailAsync(
+                dto.Email,
+                "Musify Password Reset",
+                $"You can reset your password by <a href='{resetLink}'>Clicking here</a>. If you did not request a password reset, please ignore this email.");
+
+            user.LastPasswordResetSent = DateTimeOffset.UtcNow;
+            await _userManager.UpdateAsync(user);
+
+            return Ok(new { Message = "If a user was registered with the provided email, a password reset link has been sent." });
+        }
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto dto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            if (dto.NewPassword != dto.ConfirmPassword)
+            {
+                ModelState.AddModelError(string.Empty, "New password and confirmation password do not match.");
+                return BadRequest(ModelState);
+            }
+
+            var user = await _userManager.FindByIdAsync(dto.UserId);
+            if (user == null)
+            {
+                // To prevent user enumeration, always return OK
+                return Ok(new { Message = "Password has been reset successfully." });
+            }
+
+            var decodedTokenBytes = WebEncoders.Base64UrlDecode(dto.Token);
+            var decodedToken = Encoding.UTF8.GetString(decodedTokenBytes);
+            var result = await _userManager.ResetPasswordAsync(user, decodedToken, dto.NewPassword);
+
+            if (result.Succeeded)
+            {
+                return Ok(new { Message = "Password has been reset successfully." });
+            }
+
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError(string.Empty, error.Description);
+            }
+            return BadRequest(ModelState);
         }
     }
 }
