@@ -15,8 +15,7 @@ This project aims to implement an ASP.NET Core Web API that should serve a websh
 * **Database**: SQL Server ⛃ 
 
 # 🗺 Roadmap
-* Extend user authentication (account confirmation, password reset etc.)
-* Implement external authentication logins
 * Create endpoints for managing all necessary entities of the webshop
 * Give stock managing functionalities to managers
 * Implement pagination and sorting for API endpoints
+* Implement external authentication logins
