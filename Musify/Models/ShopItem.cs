@@ -15,6 +15,6 @@ namespace Musify.Models
         public int Stock { get; set; }
 
         [Required]
-        public required string Condition { get; set; } = "New";
+        public required string Condition { get; set; } = ShopItemCondition.New;
     }
 }
