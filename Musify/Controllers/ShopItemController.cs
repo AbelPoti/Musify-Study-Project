@@ -81,6 +81,94 @@ namespace Musify.Controllers
             return Ok(existingShopItem);
         }
 
+        [HttpPatch("{id}/stock")]
+        [Authorize(Roles = $"{UserRole.StoreManager}, {UserRole.WarehouseManager}, {UserRole.Admin}")]
+        public async Task<IActionResult> UpdateShopItemStock(int id, [FromBody] int newStock)
+        {
+            var existingShopItem = await _dbContext.ShopItems.FindAsync(id);
+            if (existingShopItem == null)
+            {
+                return NotFound();
+            }
+
+            existingShopItem.Stock = newStock;
+
+            _dbContext.ShopItems.Update(existingShopItem);
+            await _dbContext.SaveChangesAsync();
+            return Ok(existingShopItem);
+        }
+
+        [HttpPatch("{id}/stock/increment")]
+        [Authorize(Roles = $"{UserRole.StoreManager}, {UserRole.WarehouseManager}, {UserRole.Admin}")]
+        public async Task<IActionResult> IncrementShopItemStock(int id, [FromBody] int incrementBy)
+        {
+            if (incrementBy <= 0)
+            {
+                return BadRequest("Increment value must be positive.");
+            }
+
+            var existingShopItem = await _dbContext.ShopItems.FindAsync(id);
+            if (existingShopItem == null)
+            {
+                return NotFound();
+            }
+
+            existingShopItem.Stock += incrementBy;
+
+            _dbContext.ShopItems.Update(existingShopItem);
+            await _dbContext.SaveChangesAsync();
+            return Ok(existingShopItem);
+        }
+
+        [HttpPatch("{id}/stock/decrement")]
+        [Authorize(Roles = $"{UserRole.StoreManager}, {UserRole.WarehouseManager}, {UserRole.Admin}")]
+        public async Task<IActionResult> DecrementShopItemStock(int id, [FromBody] int decrementBy)
+        {
+            if (decrementBy <= 0)
+            {
+                return BadRequest("Decrement value most be positive.");
+            }
+
+            var existingShopItem = await _dbContext.ShopItems.FindAsync(id);
+            if (existingShopItem == null)
+            {
+                return NotFound();
+            }
+
+            if (decrementBy > existingShopItem.Stock)
+            {
+                return BadRequest("Decrement value exceeds current stock.");
+            }
+
+            existingShopItem.Stock -= decrementBy;
+
+            _dbContext.ShopItems.Update(existingShopItem);
+            await _dbContext.SaveChangesAsync();
+            return Ok(existingShopItem);
+        }
+
+        [HttpPatch("{id}/price")]
+        [Authorize(Roles = $"{UserRole.StoreManager}, {UserRole.WarehouseManager}, {UserRole.Admin}")]
+        public async Task<IActionResult> UpdateShopItemPrice(int id, [FromBody] decimal newPrice)
+        {
+            if (newPrice <= 0)
+            {
+                return BadRequest("Price must be strictly positive.");
+            }
+
+            var existingShopItem = await _dbContext.ShopItems.FindAsync(id);
+            if (existingShopItem == null)
+            {
+                return NotFound();
+            }
+
+            existingShopItem.Price = newPrice;
+
+            _dbContext.ShopItems.Update(existingShopItem);
+            await _dbContext.SaveChangesAsync();
+            return Ok(existingShopItem);
+        }
+
         [HttpDelete("{id}")]
         [Authorize(Roles = UserRole.Admin)]
         public async Task<IActionResult> DeleteShopItem(int id)
