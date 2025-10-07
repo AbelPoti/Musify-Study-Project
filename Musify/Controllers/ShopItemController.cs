@@ -68,9 +68,9 @@ namespace Musify.Controllers
 
         [HttpPut("{id}")]
         [Authorize(Roles = $"{UserRole.StoreManager}, {UserRole.WarehouseManager}, {UserRole.Admin}")]
-        public async Task<IActionResult> UpdateShopItem(int id, [FromBody] ShopItem shopItem)
+        public async Task<IActionResult> UpdateShopItem(int id, [FromBody] ShopItemUpdateDto shopItemDto)
         {
-            if (shopItem == null || shopItem.Id != id)
+            if (shopItemDto == null || shopItemDto.Id != id)
             {
                 return BadRequest("Shop item data is invalid.");
             }
@@ -81,10 +81,10 @@ namespace Musify.Controllers
                 return NotFound();
             }
 
-            existingShopItem.InstrumentId = shopItem.InstrumentId;
-            existingShopItem.Price = shopItem.Price;
-            existingShopItem.Stock = shopItem.Stock;
-            existingShopItem.Condition = shopItem.Condition;
+            existingShopItem.InstrumentId = shopItemDto.InstrumentId;
+            existingShopItem.Price = shopItemDto.Price;
+            existingShopItem.Stock = shopItemDto.Stock;
+            existingShopItem.Condition = shopItemDto.Condition;
 
             _dbContext.ShopItems.Update(existingShopItem);
             await _dbContext.SaveChangesAsync();
