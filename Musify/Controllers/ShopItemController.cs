@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Musify.Data.DatabaseContext;
+using Musify.Dtos;
 using Musify.Models;
 
 namespace Musify.Controllers
@@ -37,23 +38,32 @@ namespace Musify.Controllers
 
         [HttpPost]
         [Authorize(Roles = $"{UserRole.StoreManager}, {UserRole.WarehouseManager}, {UserRole.Admin}")]
-        public async Task<IActionResult> CreateShopItem([FromBody] ShopItem shopItem)
+        public async Task<IActionResult> CreateShopItem([FromBody] ShopItemCreateDto shopItemDto)
         {
-            if (shopItem == null)
+            if (shopItemDto == null)
             {
                 return BadRequest("Shop item cannot be null.");
             }
 
             // Check if the associated Instrument exists
-            var instrument = await _dbContext.Instruments.FindAsync(shopItem.InstrumentId);
+            var instrument = await _dbContext.Instruments.FindAsync(shopItemDto.InstrumentId);
             if (instrument == null)
             {
                 return BadRequest("Associated instrument does not exist.");
             }
 
-            _dbContext.ShopItems.Add(shopItem);
+            var createdShopItem = new ShopItem
+            {
+                InstrumentId = shopItemDto.InstrumentId,
+                Instrument = instrument,
+                Price = shopItemDto.Price,
+                Stock = shopItemDto.Stock,
+                Condition = shopItemDto.Condition
+            };
+
+            _dbContext.ShopItems.Add(createdShopItem);
             await _dbContext.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetShopItemById), new { id = shopItem.Id }, shopItem);
+            return CreatedAtAction(nameof(GetShopItemById), new { id = createdShopItem.Id }, createdShopItem);
         }
 
         [HttpPut("{id}")]
