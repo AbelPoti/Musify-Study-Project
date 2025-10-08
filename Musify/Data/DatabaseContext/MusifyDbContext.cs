@@ -18,6 +18,12 @@ namespace Musify.Data.DatabaseContext
             // Configure your entity mappings here
             // Example: modelBuilder.Entity<YourEntity>().ToTable("YourTableName");
             base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<Instrument>()
+                .HasMany(i => i.CustomAttributes)
+                .WithOne(av => av.Instrument)
+                .HasForeignKey(av => av.InstrumentId)
+                .OnDelete(DeleteBehavior.ClientCascade);
         }
 
         public DbSet<Instrument> Instruments { get; set; }
