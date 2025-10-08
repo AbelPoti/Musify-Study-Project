@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Musify.Data.DatabaseContext;
+using Musify.Dtos.InstrumentDtos;
 using Musify.Models;
 
 namespace Musify.Controllers
@@ -37,16 +38,25 @@ namespace Musify.Controllers
 
         [HttpPost]
         [Authorize(Roles = UserRole.Admin)]
-        public async Task<ActionResult<Instrument>> CreateInstrument([FromBody] Instrument instrument)
+        public async Task<ActionResult<Instrument>> CreateInstrument([FromBody] InstrumentCreateDto instrumentDto)
         {
-            if (instrument == null)
+            if (instrumentDto == null)
             {
                 return BadRequest("Instrument cannot be null.");
             }
 
-            _dbContext.Instruments.Add(instrument);
+            var newInstrument = new Instrument
+            {
+                Name = instrumentDto.Name,
+                Brand = instrumentDto.Brand,
+                CategoryId = instrumentDto.CategoryId,
+                Category = instrumentDto.Category,
+                Description = instrumentDto.Description
+            };
+
+            _dbContext.Instruments.Add(newInstrument);
             await _dbContext.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetInstrumentById), new { id = instrument.Id }, instrument);
+            return CreatedAtAction(nameof(GetInstrumentById), new { id = newInstrument.Id }, instrumentDto);
         }
 
         [HttpPut("{id}")]
