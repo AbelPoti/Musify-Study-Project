@@ -1,8 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Musify.Models;
+using System.ComponentModel.DataAnnotations;
 
-namespace Musify.Models
+namespace Musify.Dtos.AttributeDefinitionDtos
 {
-    public class AttributeDefinition : ModelBase
+    public class AttributeDefinitionCreateDto
     {
         [Required]
         public required string Name { get; set; }
@@ -11,8 +12,5 @@ namespace Musify.Models
         public required string DataType { get; set; }
 
         public int CategoryId { get; set; }
-
-        [Required]
-        public required Category Category { get; set; }
     }
 }

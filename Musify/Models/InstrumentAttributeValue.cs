@@ -2,10 +2,8 @@
 
 namespace Musify.Models
 {
-    public class InstrumentAttributeValue
+    public class InstrumentAttributeValue : ModelBase
     {
-        public int Id { get; set; }
-
         public int InstrumentId { get; set; }
 
         [Required]

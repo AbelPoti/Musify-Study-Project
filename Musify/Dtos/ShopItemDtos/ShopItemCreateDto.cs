@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Musify.Dtos.ShopItem
+namespace Musify.Dtos.ShopItemDtos
 {
     public class ShopItemCreateDto
     {
