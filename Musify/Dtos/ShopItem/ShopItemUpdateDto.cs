@@ -1,9 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Musify.Dtos
+namespace Musify.Dtos.ShopItem
 {
-    public class ShopItemCreateDto
+    public class ShopItemUpdateDto
     {
+        public int Id { get; set; }
+
         public int InstrumentId { get; set; }
 
         public decimal Price { get; set; }

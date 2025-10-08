@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Musify.Data.DatabaseContext;
-using Musify.Dtos;
+using Musify.Dtos.ShopItem;
 using Musify.Models;
 
 namespace Musify.Controllers

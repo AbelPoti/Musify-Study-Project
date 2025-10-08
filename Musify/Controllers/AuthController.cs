@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
-using Musify.Dtos;
+using Musify.Dtos.Auth;
 using Musify.Models;
 using Musify.Services;
 using System.Text;
