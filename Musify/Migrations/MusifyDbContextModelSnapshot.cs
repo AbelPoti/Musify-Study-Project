@@ -232,32 +232,6 @@ namespace Musify.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("Musify.Models.AttributeDefinition", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("CategoryId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("DataType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CategoryId");
-
-                    b.ToTable("AttributeDefinition");
-                });
-
             modelBuilder.Entity("Musify.Models.Category", b =>
                 {
                     b.Property<int>("Id")
@@ -275,7 +249,7 @@ namespace Musify.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Categories");
+                    b.ToTable("Categories", (string)null);
                 });
 
             modelBuilder.Entity("Musify.Models.Instrument", b =>
@@ -304,34 +278,7 @@ namespace Musify.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.ToTable("Instruments");
-                });
-
-            modelBuilder.Entity("Musify.Models.InstrumentAttributeValue", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("AttributeDefinitionId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("InstrumentId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Value")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AttributeDefinitionId");
-
-                    b.HasIndex("InstrumentId");
-
-                    b.ToTable("InstrumentAttributeValue");
+                    b.ToTable("Instruments", (string)null);
                 });
 
             modelBuilder.Entity("Musify.Models.ShopItem", b =>
@@ -360,7 +307,7 @@ namespace Musify.Migrations
 
                     b.HasIndex("InstrumentId");
 
-                    b.ToTable("ShopItems");
+                    b.ToTable("ShopItems", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -414,17 +361,6 @@ namespace Musify.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Musify.Models.AttributeDefinition", b =>
-                {
-                    b.HasOne("Musify.Models.Category", "Category")
-                        .WithMany()
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Category");
-                });
-
             modelBuilder.Entity("Musify.Models.Instrument", b =>
                 {
                     b.HasOne("Musify.Models.Category", "Category")
@@ -434,25 +370,6 @@ namespace Musify.Migrations
                         .IsRequired();
 
                     b.Navigation("Category");
-                });
-
-            modelBuilder.Entity("Musify.Models.InstrumentAttributeValue", b =>
-                {
-                    b.HasOne("Musify.Models.AttributeDefinition", "AttributeDefinition")
-                        .WithMany()
-                        .HasForeignKey("AttributeDefinitionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Musify.Models.Instrument", "Instrument")
-                        .WithMany("CustomAttributes")
-                        .HasForeignKey("InstrumentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("AttributeDefinition");
-
-                    b.Navigation("Instrument");
                 });
 
             modelBuilder.Entity("Musify.Models.ShopItem", b =>
@@ -464,11 +381,6 @@ namespace Musify.Migrations
                         .IsRequired();
 
                     b.Navigation("Instrument");
-                });
-
-            modelBuilder.Entity("Musify.Models.Instrument", b =>
-                {
-                    b.Navigation("CustomAttributes");
                 });
 #pragma warning restore 612, 618
         }
