@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Musify.Data.DatabaseContext;
+using Musify.Filters;
 using Musify.Models;
 using Musify.Services;
 using System.Text;
@@ -46,7 +47,10 @@ builder.Services.AddScoped<IEmailConfirmTokenService, EmailConfirmTokenService>(
 // Register email service
 builder.Services.AddTransient<IEmailSender, EmailSender>();
 
-builder.Services.AddControllers();
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add<ValidateModelAttribute>();
+});
 builder.Services.AddAuthentication();
 builder.Services.AddAuthorization();
 
