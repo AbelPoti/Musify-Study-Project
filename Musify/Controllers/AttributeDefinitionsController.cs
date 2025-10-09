@@ -74,5 +74,37 @@ namespace Musify.Controllers
             await _musifyDbContext.SaveChangesAsync();
             return CreatedAtAction(nameof(GetAttributeDefinitionById), new { id = newAttributeDefinition.Id }, newAttributeDefinition);
         }
+
+        [HttpPut]
+        [Authorize(Roles = UserRole.Admin)]
+        public async Task<IActionResult> UpdateAttributeDefinition([FromBody] AttributeDefinitionUpdateDto attributeDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var existingAttributeDefinition = await _musifyDbContext.AttributeDefinitions.FindAsync(attributeDto.Id);
+            if (existingAttributeDefinition == null)
+            {
+                return NotFound("Attribute definition not found.");
+            }
+
+            // Check if the associated Category exists
+            var category = await _musifyDbContext.Categories.FindAsync(attributeDto.CategoryId);
+            if (category == null)
+            {
+                return BadRequest("Associated category does not exist.");
+            }
+
+            existingAttributeDefinition.Name = attributeDto.Name;
+            existingAttributeDefinition.DataType = attributeDto.DataType;
+            existingAttributeDefinition.CategoryId = attributeDto.CategoryId;
+            existingAttributeDefinition.Category = category;
+
+            _musifyDbContext.AttributeDefinitions.Update(existingAttributeDefinition);
+            await _musifyDbContext.SaveChangesAsync();
+            return NoContent();
+        }
     }
 }
