@@ -31,5 +31,9 @@ namespace Musify.Data.DatabaseContext
         public DbSet<Category> Categories { get; set; }
 
         public DbSet<ShopItem> ShopItems { get; set; }
+
+        public DbSet<AttributeDefinition> AttributeDefinitions { get; set; }
+
+        public DbSet<InstrumentAttributeValue> InstrumentAttributeValues { get; set; }
     }
 }
