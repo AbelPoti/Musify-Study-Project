@@ -13,9 +13,6 @@ namespace Musify.Dtos.InstrumentDtos
 
         public int CategoryId { get; set; }
 
-        [Required]
-        public required Category Category { get; set; }
-
         public string? Description { get; set; }
 
         public ICollection<InstrumentAttributeValue> CustomAttributes { get; set; } = [];

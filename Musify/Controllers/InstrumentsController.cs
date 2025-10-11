@@ -40,12 +40,18 @@ namespace Musify.Controllers
         [Authorize(Roles = UserRole.Admin)]
         public async Task<ActionResult<Instrument>> CreateInstrument([FromBody] InstrumentCreateDto instrumentDto)
         {
+            var category = await _dbContext.Categories.FindAsync(instrumentDto.CategoryId);
+            if (category == null)
+            {
+                return BadRequest("Associated category does not exist.");
+            }
+
             var newInstrument = new Instrument
             {
                 Name = instrumentDto.Name,
                 Brand = instrumentDto.Brand,
                 CategoryId = instrumentDto.CategoryId,
-                Category = instrumentDto.Category,
+                Category = category,
                 Description = instrumentDto.Description
             };
 
