@@ -96,5 +96,20 @@ namespace Musify.Controllers
             await _musifyDbContext.SaveChangesAsync();
             return NoContent();
         }
+
+        [HttpDelete("{id}")]
+        [Authorize(Roles = UserRole.Admin)]
+        public async Task<IActionResult> DeleteAttributeDefinition(int id)
+        {
+            var attributeDefinition = await _musifyDbContext.AttributeDefinitions.FindAsync(id);
+            if (attributeDefinition == null)
+            {
+                return NotFound("Attribute definition not found.");
+            }
+
+            _musifyDbContext.AttributeDefinitions.Remove(attributeDefinition);
+            await _musifyDbContext.SaveChangesAsync();
+            return NoContent();
+        }
     }
 }
