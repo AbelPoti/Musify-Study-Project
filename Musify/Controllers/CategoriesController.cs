@@ -40,11 +40,6 @@ namespace Musify.Controllers
         [HttpPost]
         public async Task<ActionResult<Category>> CreateCategory([FromBody] CategoryCreateDto categoryDto)
         {
-            if (categoryDto == null)
-            {
-                return BadRequest("Category cannot be null.");
-            }
-
             // Check if parent category exists if ParentId is set
             if (categoryDto.ParentId.HasValue)
             {
@@ -70,9 +65,9 @@ namespace Musify.Controllers
         [HttpPut("{id}")]
         public async Task<ActionResult<Category>> UpdateCategory(int id, [FromBody] Category category)
         {
-            if (category == null || id != category.Id)
+            if (id != category.Id)
             {
-                return BadRequest("Category data is invalid.");
+                return BadRequest("Category id is invalid.");
             }
 
             var existingCategory = await _dbContext.Categories.FindAsync(id);

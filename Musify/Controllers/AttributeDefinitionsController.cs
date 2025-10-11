@@ -50,11 +50,6 @@ namespace Musify.Controllers
         [Authorize(Roles = UserRole.Admin)]
         public async Task<IActionResult> CreateAttributeDefinition([FromBody] AttributeDefinitionCreateDto attributeDto)
         {
-            if (attributeDto == null)
-            {
-                return BadRequest("Attribute definition cannot be null.");
-            }
-
             // Check if the associated Category exists
             var category = await _musifyDbContext.Categories.FindAsync(attributeDto.CategoryId);
             if (category == null)
@@ -79,11 +74,6 @@ namespace Musify.Controllers
         [Authorize(Roles = UserRole.Admin)]
         public async Task<IActionResult> UpdateAttributeDefinition([FromBody] AttributeDefinitionUpdateDto attributeDto)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
             var existingAttributeDefinition = await _musifyDbContext.AttributeDefinitions.FindAsync(attributeDto.Id);
             if (existingAttributeDefinition == null)
             {

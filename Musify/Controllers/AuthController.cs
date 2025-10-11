@@ -38,11 +38,6 @@ namespace Musify.Controllers
         [HttpPost("register")]
         public async Task<ActionResult> Register([FromBody] RegisterDto dto)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
             var user = await _userManager.FindByNameAsync(dto.Username);
             if (user != null)
             {
@@ -88,11 +83,6 @@ namespace Musify.Controllers
         [HttpPost("login")]
         public async Task<ActionResult> Login([FromBody] LoginDto dto)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
             var user = await _userManager.FindByNameAsync(dto.Username);
 
             if (user == null)
@@ -145,11 +135,6 @@ namespace Musify.Controllers
         [HttpPost("resend-confirmation-email")]
         public async Task<ActionResult> ResendConfirmationEmail([FromBody] ResendConfirmationEmailDto dto)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
             var user = await _userManager.FindByEmailAsync(dto.Email);
             if (user == null)
             {
@@ -194,11 +179,6 @@ namespace Musify.Controllers
         [HttpPost("forgot-password")]
         public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto dto)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
             var user = await _userManager.FindByEmailAsync(dto.Email);
             if (user == null || !(await _userManager.IsEmailConfirmedAsync(user)))
             {
@@ -238,11 +218,6 @@ namespace Musify.Controllers
         [HttpPost("reset-password")]
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto dto)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
             if (dto.NewPassword != dto.ConfirmPassword)
             {
                 ModelState.AddModelError(string.Empty, "New password and confirmation password do not match.");

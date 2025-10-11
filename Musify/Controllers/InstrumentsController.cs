@@ -40,11 +40,6 @@ namespace Musify.Controllers
         [Authorize(Roles = UserRole.Admin)]
         public async Task<ActionResult<Instrument>> CreateInstrument([FromBody] InstrumentCreateDto instrumentDto)
         {
-            if (instrumentDto == null)
-            {
-                return BadRequest("Instrument cannot be null.");
-            }
-
             var newInstrument = new Instrument
             {
                 Name = instrumentDto.Name,
@@ -63,9 +58,9 @@ namespace Musify.Controllers
         [Authorize(Roles = UserRole.Admin)]
         public async Task<ActionResult<Instrument>> UpdateInstrument(int id, [FromBody] Instrument instrument)
         {
-            if (instrument == null || instrument.Id != id)
+            if (instrument.Id != id)
             {
-                return BadRequest("Instrument data is invalid.");
+                return BadRequest("Instrument id is invalid.");
             }
 
             var existingInstrument = await _dbContext.Instruments.FindAsync(id);

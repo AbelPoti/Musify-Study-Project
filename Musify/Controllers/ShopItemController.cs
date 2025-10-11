@@ -40,11 +40,6 @@ namespace Musify.Controllers
         [Authorize(Roles = $"{UserRole.StoreManager}, {UserRole.WarehouseManager}, {UserRole.Admin}")]
         public async Task<IActionResult> CreateShopItem([FromBody] ShopItemCreateDto shopItemDto)
         {
-            if (shopItemDto == null)
-            {
-                return BadRequest("Shop item cannot be null.");
-            }
-
             // Check if the associated Instrument exists
             var instrument = await _dbContext.Instruments.FindAsync(shopItemDto.InstrumentId);
             if (instrument == null)
@@ -70,9 +65,9 @@ namespace Musify.Controllers
         [Authorize(Roles = $"{UserRole.StoreManager}, {UserRole.WarehouseManager}, {UserRole.Admin}")]
         public async Task<IActionResult> UpdateShopItem(int id, [FromBody] ShopItemUpdateDto shopItemDto)
         {
-            if (shopItemDto == null || shopItemDto.Id != id)
+            if (shopItemDto.Id != id)
             {
-                return BadRequest("Shop item data is invalid.");
+                return BadRequest("Shop item id is invalid.");
             }
 
             var existingShopItem = await _dbContext.ShopItems.FindAsync(id);
