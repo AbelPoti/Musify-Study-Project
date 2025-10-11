@@ -24,7 +24,8 @@ builder.WebHost.ConfigureKestrel(options =>
 // Add services to the container.
 
 builder.Services.AddDbContext<MusifyDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("Development")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("Development"))
+);
 
 // Register Identity services
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>

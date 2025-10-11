@@ -13,6 +13,13 @@ namespace Musify.Data.DatabaseContext
 
         }
 
+        // This method is called even when using AddDbContext in Program.cs, being ideal for context configurations
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            base.OnConfiguring(optionsBuilder);
+            optionsBuilder.LogTo(Console.WriteLine);
+        }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             // Configure your entity mappings here
