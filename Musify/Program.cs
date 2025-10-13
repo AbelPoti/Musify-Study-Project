@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Musify.Data.DatabaseContext;
@@ -52,6 +53,26 @@ builder.Services.AddControllers(options =>
 {
     options.Filters.Add<ValidateModelAttribute>();
 });
+
+builder.Services.Configure<ApiBehaviorOptions>(options =>
+{
+    options.InvalidModelStateResponseFactory = context =>
+    {
+        var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
+        var errors = context.ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+
+        logger.LogWarning("Model validation failed: {Errors}", string.Join(", ", errors));
+
+        var response = new
+        {
+            Message = "Model validation failed",
+            Errors = errors
+        };
+
+        return new BadRequestObjectResult(response);
+    };
+});
+
 builder.Services.AddAuthentication();
 builder.Services.AddAuthorization();
 
