@@ -86,6 +86,34 @@ namespace Musify.Controllers
             return Ok(existingInstrument);
         }
 
+        [HttpGet("{id}/attributes")]
+        public async Task<ActionResult<IEnumerable<InstrumentAttributeValueReadMinimalDto>>> GetAttributesForInstrument(int id)
+        {
+            var instrument = await _dbContext.Instruments
+                .Include(i => i.Attributes)
+                .ThenInclude(av => av.AttributeDefinition)
+                .FirstOrDefaultAsync(i => i.Id == id);
+
+            if (instrument == null)
+            {
+                return NotFound();
+            }
+
+            List<InstrumentAttributeValueReadMinimalDto> attributeDtos = [];
+            foreach (var attr in instrument.Attributes)
+            {
+                attributeDtos.Add(new InstrumentAttributeValueReadMinimalDto
+                {
+                    Id = attr.Id,
+                    InstrumentId = attr.InstrumentId,
+                    AttributeDefinitionId = attr.AttributeDefinitionId,
+                    Value = attr.Value
+                });
+            }
+
+            return Ok(attributeDtos);
+        }
+
         [HttpPost("{id}/attributes")]
         [Authorize(Roles = UserRole.Admin)]
         public async Task<ActionResult<Instrument>> AddAttributeToInstrument(int id, [FromBody] InstrumentAttributeValueCreateDto attribute)
