@@ -9,7 +9,7 @@ namespace Musify.Dtos.AttributeDefinitionDtos
         public required string Name { get; set; }
 
         [Required]
-        public required string DataType { get; set; }
+        public required AttributeDefinitionDataType DataType { get; set; }
 
         public int CategoryId { get; set; }
     }
