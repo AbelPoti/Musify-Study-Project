@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Musify.Data.DatabaseContext;
+using Musify.Dtos.AttributeDefinitionDtos;
 using Musify.Dtos.AttributeValueDtos;
 using Musify.Dtos.InstrumentDtos;
 using Musify.Models;
@@ -87,7 +88,7 @@ namespace Musify.Controllers
         }
 
         [HttpGet("{id}/attributes")]
-        public async Task<ActionResult<IEnumerable<InstrumentAttributeValueReadMinimalDto>>> GetAttributesForInstrument(int id)
+        public async Task<ActionResult<IEnumerable<InstrumentAttributeValueReadDetailedDto>>> GetAttributesForInstrument(int id)
         {
             var instrument = await _dbContext.Instruments
                 .Include(i => i.Attributes)
@@ -99,14 +100,21 @@ namespace Musify.Controllers
                 return NotFound();
             }
 
-            List<InstrumentAttributeValueReadMinimalDto> attributeDtos = [];
+            List<InstrumentAttributeValueReadDetailedDto> attributeDtos = [];
             foreach (var attr in instrument.Attributes)
             {
-                attributeDtos.Add(new InstrumentAttributeValueReadMinimalDto
+                attributeDtos.Add(new InstrumentAttributeValueReadDetailedDto
                 {
                     Id = attr.Id,
                     InstrumentId = attr.InstrumentId,
                     AttributeDefinitionId = attr.AttributeDefinitionId,
+                    AttributeDefinition = new AttributeDefinitionReadMinimalDto
+                    {
+                        Id = attr.AttributeDefinition.Id,
+                        Name = attr.AttributeDefinition.Name,
+                        DataType = attr.AttributeDefinition.DataType,
+                        CategoryId = attr.AttributeDefinition.CategoryId
+                    },
                     Value = attr.Value
                 });
             }
