@@ -8,6 +8,7 @@ using Musify.Data.DatabaseContext;
 using Musify.Models;
 using Musify.Services;
 using System.Text;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -48,7 +49,12 @@ builder.Services.AddScoped<IEmailConfirmTokenService, EmailConfirmTokenService>(
 // Register email service
 builder.Services.AddTransient<IEmailSender, EmailSender>();
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        // Allow enums to be serialized/deserialized as strings
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
 
 builder.Services.Configure<ApiBehaviorOptions>(options =>
 {
