@@ -17,7 +17,7 @@ namespace Musify.Models
 
         public string? Description { get; set; }
 
-        public ICollection<InstrumentAttributeValue> CustomAttributes { get; set; } = [];
+        public ICollection<InstrumentAttributeValue> Attributes { get; set; } = [];
 
         public Instrument()
         {

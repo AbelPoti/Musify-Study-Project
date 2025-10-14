@@ -1,9 +1,7 @@
 ﻿namespace Musify.Dtos.AttributeValueDtos
 {
-    public class AttributeValueUpdateDto
+    public class InstrumentAttributeValueCreateDto
     {
-        public int Id { get; set; }
-
         public int InstrumentId { get; set; }
 
         public int AttributeDefinitionId { get; set; }

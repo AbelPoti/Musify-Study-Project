@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Musify.Data.DatabaseContext;
+using Musify.Dtos.AttributeValueDtos;
 using Musify.Dtos.InstrumentDtos;
 using Musify.Models;
 
@@ -83,6 +84,53 @@ namespace Musify.Controllers
             _dbContext.Instruments.Update(existingInstrument);
             await _dbContext.SaveChangesAsync();
             return Ok(existingInstrument);
+        }
+
+        [HttpPost("{id}/attributes")]
+        [Authorize(Roles = UserRole.Admin)]
+        public async Task<ActionResult<Instrument>> AddAttributeToInstrument(int id, [FromBody] InstrumentAttributeValueCreateDto attribute)
+        {
+            if (id != attribute.InstrumentId)
+            {
+                return BadRequest("Instrument id is invalid.");
+            }
+
+            var instrument = await _dbContext.Instruments.Include(i => i.Attributes).FirstOrDefaultAsync(i => i.Id == id);
+            if (instrument == null)
+            {
+                return BadRequest("The specified instrument does not exist.");
+            }
+
+            var attributeDefinition = await _dbContext.AttributeDefinitions.FindAsync(attribute.AttributeDefinitionId);
+            if (attributeDefinition == null)
+            {
+                return BadRequest("Associated attribute definition does not exist.");
+            }
+
+            var attributeValue = new InstrumentAttributeValue
+            {
+                InstrumentId = id,
+                Instrument = instrument,
+                AttributeDefinitionId = attribute.AttributeDefinitionId,
+                AttributeDefinition = attributeDefinition,
+                Value = attribute.Value
+            };
+
+
+            instrument.Attributes.Add(attributeValue);
+
+            _dbContext.Instruments.Update(instrument);
+            await _dbContext.SaveChangesAsync();
+            return CreatedAtAction(
+                nameof(GetInstrumentById),
+                new { id = instrument.Id },
+                new InstrumentAttributeValueReadMinimalDto
+                {
+                    Id = attributeValue.Id,
+                    InstrumentId = attributeValue.InstrumentId,
+                    AttributeDefinitionId = attributeValue.AttributeDefinitionId,
+                    Value = attributeValue.Value
+                });
         }
 
         [HttpDelete("{id}")]

@@ -28,7 +28,7 @@ namespace Musify.Data.DatabaseContext
 
             // To prevent multiple cascade paths issue
             modelBuilder.Entity<Instrument>()
-                .HasMany(i => i.CustomAttributes)
+                .HasMany(i => i.Attributes)
                 .WithOne(av => av.Instrument)
                 .HasForeignKey(av => av.InstrumentId)
                 .OnDelete(DeleteBehavior.ClientCascade);
