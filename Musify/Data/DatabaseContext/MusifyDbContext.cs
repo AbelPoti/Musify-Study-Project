@@ -26,11 +26,16 @@ namespace Musify.Data.DatabaseContext
             // Example: modelBuilder.Entity<YourEntity>().ToTable("YourTableName");
             base.OnModelCreating(modelBuilder);
 
+            // To prevent multiple cascade paths issue
             modelBuilder.Entity<Instrument>()
                 .HasMany(i => i.CustomAttributes)
                 .WithOne(av => av.Instrument)
                 .HasForeignKey(av => av.InstrumentId)
                 .OnDelete(DeleteBehavior.ClientCascade);
+
+            modelBuilder.Entity<AttributeDefinition>()
+                .Property(a => a.DataType)
+                .HasConversion<string>();
         }
 
         public DbSet<Instrument> Instruments { get; set; }
