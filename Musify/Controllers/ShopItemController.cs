@@ -44,7 +44,7 @@ namespace Musify.Controllers
             var instrument = await _dbContext.Instruments.FindAsync(shopItemDto.InstrumentId);
             if (instrument == null)
             {
-                return BadRequest("Associated instrument does not exist.");
+                return BadRequest(new { Message = "Associated instrument does not exist." });
             }
 
             var createdShopItem = new ShopItem
@@ -67,7 +67,7 @@ namespace Musify.Controllers
         {
             if (shopItemDto.Id != id)
             {
-                return BadRequest("Shop item id is invalid.");
+                return BadRequest(new { Message = "Shop item id is invalid." });
             }
 
             var existingShopItem = await _dbContext.ShopItems.FindAsync(id);
@@ -109,7 +109,7 @@ namespace Musify.Controllers
         {
             if (incrementBy <= 0)
             {
-                return BadRequest("Increment value must be positive.");
+                return BadRequest(new { Message = "Increment value must be positive." });
             }
 
             var existingShopItem = await _dbContext.ShopItems.FindAsync(id);
@@ -131,7 +131,7 @@ namespace Musify.Controllers
         {
             if (decrementBy <= 0)
             {
-                return BadRequest("Decrement value most be positive.");
+                return BadRequest(new { Message = "Decrement value most be positive." });
             }
 
             var existingShopItem = await _dbContext.ShopItems.FindAsync(id);
@@ -142,7 +142,7 @@ namespace Musify.Controllers
 
             if (decrementBy > existingShopItem.Stock)
             {
-                return BadRequest("Decrement value exceeds current stock.");
+                return BadRequest(new { Message = "Decrement value exceeds current stock." });
             }
 
             existingShopItem.Stock -= decrementBy;
@@ -158,7 +158,7 @@ namespace Musify.Controllers
         {
             if (newPrice <= 0)
             {
-                return BadRequest("Price must be strictly positive.");
+                return BadRequest(new { Message = "Price must be strictly positive." });
             }
 
             var existingShopItem = await _dbContext.ShopItems.FindAsync(id);

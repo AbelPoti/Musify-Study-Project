@@ -46,7 +46,7 @@ namespace Musify.Controllers
                 var parentCategory = await _dbContext.Categories.FindAsync(categoryDto.ParentId.Value);
                 if (parentCategory == null)
                 {
-                    return BadRequest("Parent category does not exist.");
+                    return BadRequest(new { Message = "Parent category does not exist." });
                 }
             }
 
@@ -67,7 +67,7 @@ namespace Musify.Controllers
         {
             if (id != category.Id)
             {
-                return BadRequest("Category id is invalid.");
+                return BadRequest(new { Message = "Category id is invalid." });
             }
 
             var existingCategory = await _dbContext.Categories.FindAsync(id);
@@ -82,7 +82,7 @@ namespace Musify.Controllers
                 var parentCategory = await _dbContext.Categories.FindAsync(category.ParentId.Value);
                 if (parentCategory == null)
                 {
-                    return BadRequest("Parent category does not exist.");
+                    return BadRequest(new { Message = "Parent category does not exist." });
                 }
             }
 
@@ -108,7 +108,7 @@ namespace Musify.Controllers
             var childCategories = await _dbContext.Categories.Where(c => c.ParentId == id).ToListAsync();
             if (childCategories.Any())
             {
-                return BadRequest("Cannot delete category with child categories.");
+                return BadRequest(new { Message = "Cannot delete category with child categories." });
             }
 
             _dbContext.Categories.Remove(category);

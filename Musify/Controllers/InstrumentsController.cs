@@ -44,7 +44,7 @@ namespace Musify.Controllers
             var category = await _dbContext.Categories.FindAsync(instrumentDto.CategoryId);
             if (category == null)
             {
-                return BadRequest("Associated category does not exist.");
+                return BadRequest(new { Message = "Associated category does not exist." });
             }
 
             var newInstrument = new Instrument
@@ -67,7 +67,7 @@ namespace Musify.Controllers
         {
             if (instrument.Id != id)
             {
-                return BadRequest("Instrument id is invalid.");
+                return BadRequest(new { Message = "Instrument id is invalid." });
             }
 
             var existingInstrument = await _dbContext.Instruments.FindAsync(id);
@@ -92,19 +92,19 @@ namespace Musify.Controllers
         {
             if (id != attribute.InstrumentId)
             {
-                return BadRequest("Instrument id is invalid.");
+                return BadRequest(new { Message = "Instrument id is invalid." });
             }
 
             var instrument = await _dbContext.Instruments.Include(i => i.Attributes).FirstOrDefaultAsync(i => i.Id == id);
             if (instrument == null)
             {
-                return BadRequest("The specified instrument does not exist.");
+                return BadRequest(new { Message = "The specified instrument does not exist." });
             }
 
             var attributeDefinition = await _dbContext.AttributeDefinitions.FindAsync(attribute.AttributeDefinitionId);
             if (attributeDefinition == null)
             {
-                return BadRequest("Associated attribute definition does not exist.");
+                return BadRequest(new { Message = "Associated attribute definition does not exist." });
             }
 
             var attributeValue = new InstrumentAttributeValue
