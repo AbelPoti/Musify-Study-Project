@@ -6,6 +6,7 @@ using Musify.Dtos.AttributeDefinitionDtos;
 using Musify.Dtos.AttributeValueDtos;
 using Musify.Dtos.InstrumentDtos;
 using Musify.Models;
+using System.Linq.Expressions;
 
 namespace Musify.Controllers
 {
@@ -131,7 +132,9 @@ namespace Musify.Controllers
                 return BadRequest(new { Message = "Instrument id is invalid." });
             }
 
-            var instrument = await _dbContext.Instruments.Include(i => i.Attributes).FirstOrDefaultAsync(i => i.Id == id);
+            var instrument = await _dbContext.Instruments
+                .Include(i => i.Attributes)
+                .FirstOrDefaultAsync(i => i.Id == id);
             if (instrument == null)
             {
                 return NotFound(new { Message = "The specified instrument does not exist." });
@@ -237,6 +240,29 @@ namespace Musify.Controllers
             };
 
             return Ok(attributeValueReadDto);
+        }
+
+        [HttpDelete("{instrumentId}/attributes/{attributeId}")]
+        [Authorize(Roles = UserRole.Admin)]
+        public async Task<IActionResult> DeleteAttributeOfInstrument(int instrumentId, int attributeId)
+        {
+            var instrument = await _dbContext.Instruments
+                .Include(i => i.Attributes)
+                .FirstOrDefaultAsync(i => i.Id == instrumentId);
+            if (instrument == null)
+            {
+                return NotFound(new { Message = "The specified instrument does not exist." });
+            }
+
+            var attributeValue = instrument.Attributes.FirstOrDefault(a => a.Id == attributeId);
+            if (attributeValue == null)
+            {
+                return NotFound(new { Message = "The specified attribute does not exist." });
+            }
+
+            instrument.Attributes.Remove(attributeValue);
+            await _dbContext.SaveChangesAsync();
+            return NoContent();
         }
 
         [HttpDelete("{id}")]
