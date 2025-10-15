@@ -242,6 +242,21 @@ namespace Musify.Controllers
             return Ok(attributeValueReadDto);
         }
 
+        [HttpDelete("{id}")]
+        [Authorize(Roles = UserRole.Admin)]
+        public async Task<IActionResult> DeleteInstrument(int id)
+        {
+            var instrument = await _dbContext.Instruments.FindAsync(id);
+            if (instrument == null)
+            {
+                return NotFound();
+            }
+
+            _dbContext.Instruments.Remove(instrument);
+            await _dbContext.SaveChangesAsync();
+            return NoContent();
+        }
+
         [HttpDelete("{instrumentId}/attributes/{attributeId}")]
         [Authorize(Roles = UserRole.Admin)]
         public async Task<IActionResult> DeleteAttributeOfInstrument(int instrumentId, int attributeId)
@@ -261,21 +276,6 @@ namespace Musify.Controllers
             }
 
             instrument.Attributes.Remove(attributeValue);
-            await _dbContext.SaveChangesAsync();
-            return NoContent();
-        }
-
-        [HttpDelete("{id}")]
-        [Authorize(Roles = UserRole.Admin)]
-        public async Task<IActionResult> DeleteInstrument(int id)
-        {
-            var instrument = await _dbContext.Instruments.FindAsync(id);
-            if (instrument == null)
-            {
-                return NotFound();
-            }
-
-            _dbContext.Instruments.Remove(instrument);
             await _dbContext.SaveChangesAsync();
             return NoContent();
         }
