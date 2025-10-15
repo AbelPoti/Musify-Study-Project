@@ -134,7 +134,7 @@ namespace Musify.Controllers
             var instrument = await _dbContext.Instruments.Include(i => i.Attributes).FirstOrDefaultAsync(i => i.Id == id);
             if (instrument == null)
             {
-                return BadRequest(new { Message = "The specified instrument does not exist." });
+                return NotFound(new { Message = "The specified instrument does not exist." });
             }
 
             var attributeDefinition = await _dbContext.AttributeDefinitions.FindAsync(attribute.AttributeDefinitionId);
@@ -167,6 +167,76 @@ namespace Musify.Controllers
                     AttributeDefinitionId = attributeValue.AttributeDefinitionId,
                     Value = attributeValue.Value
                 });
+        }
+
+        [HttpPut("{instrumentId}/attributes/{attributeId}")]
+        [Authorize(Roles = UserRole.Admin)]
+        public async Task<ActionResult<InstrumentAttributeValue>> UpdateAttributeOfInstrument(
+            int instrumentId,
+            int attributeId,
+            [FromBody] InstrumentAttributeValueUpdateDto attribute
+        )
+        {
+            if (attribute.Id != attributeId)
+            {
+                return BadRequest(new { Message = "Attribute id is invalid." });
+            }
+
+            if (attribute.InstrumentId != instrumentId)
+            {
+                return BadRequest(new { Message = "Instrument id is invalid." });
+            }
+
+            var instrument = await _dbContext.Instruments.
+                Include(i => i.Attributes)
+                .ThenInclude(av => av.AttributeDefinition)
+                .FirstOrDefaultAsync(i => i.Id == instrumentId);
+
+            if (instrument == null)
+            {
+                return NotFound(new { Message = "The specified instrument does not exist." });
+            }
+
+            var existingAttribute = instrument.Attributes.FirstOrDefault(a => a.Id == attributeId);
+            if (existingAttribute == null)
+            {
+                return NotFound(new { Message = "The specified attribute does not exist." });
+            }
+
+            // Check if the new AttributeDefinitionId exists
+            var attributeDefinition = await _dbContext.AttributeDefinitions.FindAsync(attribute.AttributeDefinitionId);
+            if (attributeDefinition == null)
+            {
+                return BadRequest(new { Message = "The newly associated attribute definition does not exist." });
+            }
+
+            existingAttribute.AttributeDefinitionId = attribute.AttributeDefinitionId;
+            existingAttribute.Value = attribute.Value;
+
+            _dbContext.InstrumentAttributeValues.Update(existingAttribute);
+            await _dbContext.SaveChangesAsync();
+
+            // Construct after SaveChanges to ensure that correct navigation properties are loaded
+            existingAttribute = await _dbContext.InstrumentAttributeValues
+                .Include(av => av.AttributeDefinition)
+                .FirstOrDefaultAsync(av => av.Id == attributeId);
+
+            var attributeValueReadDto = new InstrumentAttributeValueReadDetailedDto
+            {
+                Id = existingAttribute!.Id,
+                InstrumentId = existingAttribute.InstrumentId,
+                AttributeDefinitionId = existingAttribute.AttributeDefinitionId,
+                AttributeDefinition = new AttributeDefinitionReadMinimalDto
+                {
+                    Id = existingAttribute.AttributeDefinition.Id,
+                    Name = existingAttribute.AttributeDefinition.Name,
+                    DataType = existingAttribute.AttributeDefinition.DataType,
+                    CategoryId = existingAttribute.AttributeDefinition.CategoryId
+                },
+                Value = existingAttribute.Value
+            };
+
+            return Ok(attributeValueReadDto);
         }
 
         [HttpDelete("{id}")]
