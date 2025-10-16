@@ -6,7 +6,6 @@ using Musify.Dtos.AttributeDefinitionDtos;
 using Musify.Dtos.AttributeValueDtos;
 using Musify.Dtos.InstrumentDtos;
 using Musify.Models;
-using System.Linq.Expressions;
 
 namespace Musify.Controllers
 {
@@ -22,26 +21,50 @@ namespace Musify.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Instrument>>> GetAllInstruments()
+        public async Task<ActionResult<IEnumerable<InstrumentReadMinimalDto>>> GetAllInstruments()
         {
             var instruments = await _dbContext.Instruments.ToListAsync();
-            return Ok(instruments);
+
+            List<InstrumentReadMinimalDto> instrumentDtos = [];
+            foreach (var instrument in instruments)
+            {
+                instrumentDtos.Add(new InstrumentReadMinimalDto
+                {
+                    Id = instrument.Id,
+                    Name = instrument.Name,
+                    Brand = instrument.Brand,
+                    CategoryId = instrument.CategoryId,
+                    Attributes = []
+                });
+            }
+
+            return Ok(instrumentDtos);
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<Instrument>> GetInstrumentById(int id)
+        public async Task<ActionResult<InstrumentReadMinimalDto>> GetInstrumentById(int id)
         {
             var instrument = await _dbContext.Instruments.FindAsync(id);
             if (instrument == null)
             {
                 return NotFound();
             }
-            return Ok(instrument);
+
+            var instrumentDto = new InstrumentReadMinimalDto
+            {
+                Id = instrument.Id,
+                Name = instrument.Name,
+                Brand = instrument.Brand,
+                CategoryId = instrument.CategoryId,
+                Attributes = []
+            };
+
+            return Ok(instrumentDto);
         }
 
         [HttpPost]
         [Authorize(Roles = UserRole.Admin)]
-        public async Task<ActionResult<Instrument>> CreateInstrument([FromBody] InstrumentCreateDto instrumentDto)
+        public async Task<ActionResult<InstrumentReadMinimalDto>> CreateInstrument([FromBody] InstrumentCreateDto instrumentDto)
         {
             var category = await _dbContext.Categories.FindAsync(instrumentDto.CategoryId);
             if (category == null)
@@ -58,6 +81,15 @@ namespace Musify.Controllers
                 Description = instrumentDto.Description
             };
 
+            var returnedInstrumentDto = new InstrumentReadMinimalDto
+            {
+                Id = newInstrument.Id,
+                Name = newInstrument.Name,
+                Brand = newInstrument.Brand,
+                CategoryId = newInstrument.CategoryId,
+                Attributes = []
+            };
+
             _dbContext.Instruments.Add(newInstrument);
             await _dbContext.SaveChangesAsync();
             return CreatedAtAction(nameof(GetInstrumentById), new { id = newInstrument.Id }, instrumentDto);
@@ -65,7 +97,7 @@ namespace Musify.Controllers
 
         [HttpPut("{id}")]
         [Authorize(Roles = UserRole.Admin)]
-        public async Task<ActionResult<Instrument>> UpdateInstrument(int id, [FromBody] Instrument instrument)
+        public async Task<ActionResult<Instrument>> UpdateInstrument(int id, [FromBody] InstrumentUpdateDto instrument)
         {
             if (instrument.Id != id)
             {
@@ -98,7 +130,7 @@ namespace Musify.Controllers
 
             if (instrument == null)
             {
-                return NotFound();
+                return NotFound(); 
             }
 
             List<InstrumentAttributeValueReadDetailedDto> attributeDtos = [];
