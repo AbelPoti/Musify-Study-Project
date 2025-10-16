@@ -34,6 +34,7 @@ namespace Musify.Controllers
                     Name = instrument.Name,
                     Brand = instrument.Brand,
                     CategoryId = instrument.CategoryId,
+                    Description = instrument.Description,
                     Attributes = []
                 });
             }
@@ -56,6 +57,7 @@ namespace Musify.Controllers
                 Name = instrument.Name,
                 Brand = instrument.Brand,
                 CategoryId = instrument.CategoryId,
+                Description = instrument.Description,
                 Attributes = []
             };
 
@@ -87,6 +89,7 @@ namespace Musify.Controllers
                 Name = newInstrument.Name,
                 Brand = newInstrument.Brand,
                 CategoryId = newInstrument.CategoryId,
+                Description = newInstrument.Description,
                 Attributes = []
             };
 
@@ -97,9 +100,9 @@ namespace Musify.Controllers
 
         [HttpPut("{id}")]
         [Authorize(Roles = UserRole.Admin)]
-        public async Task<ActionResult<Instrument>> UpdateInstrument(int id, [FromBody] InstrumentUpdateDto instrument)
+        public async Task<ActionResult<Instrument>> UpdateInstrument(int id, [FromBody] InstrumentUpdateDto instrumentDto)
         {
-            if (instrument.Id != id)
+            if (instrumentDto.Id != id)
             {
                 return BadRequest(new { Message = "Instrument id is invalid." });
             }
@@ -110,10 +113,10 @@ namespace Musify.Controllers
                 return NotFound();
             }
 
-            existingInstrument.Name = instrument.Name;
-            existingInstrument.Brand = instrument.Brand;
-            existingInstrument.CategoryId = instrument.CategoryId;
-            existingInstrument.Description = instrument.Description;
+            existingInstrument.Name = instrumentDto.Name;
+            existingInstrument.Brand = instrumentDto.Brand;
+            existingInstrument.CategoryId = instrumentDto.CategoryId;
+            existingInstrument.Description = instrumentDto.Description;
 
             _dbContext.Instruments.Update(existingInstrument);
             await _dbContext.SaveChangesAsync();
