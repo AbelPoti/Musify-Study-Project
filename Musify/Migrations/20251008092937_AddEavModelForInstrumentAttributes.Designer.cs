@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Musify.Data.DatabaseContext;
 
@@ -11,9 +12,11 @@ using Musify.Data.DatabaseContext;
 namespace Musify.Migrations
 {
     [DbContext(typeof(MusifyDbContext))]
-    partial class MusifyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251008092937_AddEavModelForInstrumentAttributes")]
+    partial class AddEavModelForInstrumentAttributes
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -255,7 +258,7 @@ namespace Musify.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.ToTable("AttributeDefinitions");
+                    b.ToTable("AttributeDefinition");
                 });
 
             modelBuilder.Entity("Musify.Models.Category", b =>
@@ -331,7 +334,7 @@ namespace Musify.Migrations
 
                     b.HasIndex("InstrumentId");
 
-                    b.ToTable("InstrumentAttributeValues");
+                    b.ToTable("InstrumentAttributeValue");
                 });
 
             modelBuilder.Entity("Musify.Models.ShopItem", b =>

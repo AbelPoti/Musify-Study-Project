@@ -30,4 +30,8 @@
     <None Include="C:\Coding\Musify\Musify\.editorconfig" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Filters\" />
+  </ItemGroup>
+
 </Project>

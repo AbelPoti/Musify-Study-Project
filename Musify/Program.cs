@@ -1,12 +1,14 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Musify.Data.DatabaseContext;
 using Musify.Models;
 using Musify.Services;
 using System.Text;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,7 +25,8 @@ builder.WebHost.ConfigureKestrel(options =>
 // Add services to the container.
 
 builder.Services.AddDbContext<MusifyDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("Development")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("Development"))
+);
 
 // Register Identity services
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
@@ -46,7 +49,32 @@ builder.Services.AddScoped<IEmailConfirmTokenService, EmailConfirmTokenService>(
 // Register email service
 builder.Services.AddTransient<IEmailSender, EmailSender>();
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        // Allow enums to be serialized/deserialized as strings
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
+
+builder.Services.Configure<ApiBehaviorOptions>(options =>
+{
+    options.InvalidModelStateResponseFactory = context =>
+    {
+        var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
+        var errors = context.ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+
+        logger.LogWarning("Model validation failed: {Errors}", string.Join(", ", errors));
+
+        var response = new
+        {
+            Message = "Model validation failed",
+            Errors = errors
+        };
+
+        return new BadRequestObjectResult(response);
+    };
+});
+
 builder.Services.AddAuthentication();
 builder.Services.AddAuthorization();
 
