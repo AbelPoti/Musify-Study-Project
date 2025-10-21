@@ -14,6 +14,7 @@ namespace Musify.Models
         [Required]
         public required AttributeDefinition AttributeDefinition { get; set; }
 
+        [MaxLength(128)]
         public required string Value { get; set; }
     }
 }
