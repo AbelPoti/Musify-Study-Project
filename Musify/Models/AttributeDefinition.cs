@@ -5,6 +5,7 @@ namespace Musify.Models
     public class AttributeDefinition : ModelBase
     {
         [Required]
+        [MaxLength(128)]
         public required string Name { get; set; }
 
         [Required]
