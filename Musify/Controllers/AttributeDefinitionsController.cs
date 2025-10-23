@@ -40,7 +40,7 @@ namespace Musify.Controllers
         ///     This operation requires admin or manager privileges.
         /// </remarks>
         /// <returns>
-        ///     An <see cref="IActionResult"/> containing the list of all attribute definitions with an HTTP 200 OK status.
+        ///     An <see cref="OkObjectResult"/> response containing the list of all attribute definitions.
         /// </returns>
         [HttpGet]
         [Authorize(Roles = $"{UserRole.StoreManager}, {UserRole.WarehouseManager}, {UserRole.Admin}")]
@@ -59,7 +59,7 @@ namespace Musify.Controllers
         /// </remarks>
         /// <param name="id">The unique identifier of the attribute definition to retrieve.</param>
         /// <returns>
-        ///     An <see cref="IActionResult"/> containing the attribute definition if found; otherwise, a <see
+        ///     An <see cref="OkObjectResult"/> containing the attribute definition if found; otherwise, a <see
         ///     cref="NotFoundResult"/> if no attribute definition exists with the specified identifier.
         /// </returns>
         [HttpGet("{id}")]
@@ -126,7 +126,7 @@ namespace Musify.Controllers
         /// </remarks>
         /// <param name="attributeDto">The DTO used to create and persist the attribute definition.</param>
         /// <returns>
-        ///     A <see cref="CreatedAtActionResult"/> containing the created attribute definition with an HTTP 201 Created status if successful;
+        ///     A <see cref="CreatedAtActionResult"/> containing the created attribute definition if successful;
         ///     otherwise a <see cref="BadRequestObjectResult"/> if the associated category does not exist.
         /// </returns>
         [HttpPost]
@@ -205,7 +205,7 @@ namespace Musify.Controllers
         ///     Deletes an existing attribute definition by its unique identifier.
         /// </summary>
         /// <remarks>
-        ///     Deletes an existing <see cref="AttributeDefinition"/> entity corresponding to the provided identifier.
+        ///     Deletes an existing <see cref="AttributeDefinition"/> entity corresponding to the provided <paramref name="id"/>.
         ///     The provided identifier must correspond to an existing attribute definition; otherwise, a <see cref="NotFoundResult"/> is returned.
         /// </remarks>
         /// <param name="id">The unique identifier of the attribute definition to be deleted.</param>
