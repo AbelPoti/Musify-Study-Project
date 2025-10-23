@@ -9,12 +9,12 @@ using Musify.Models;
 namespace Musify.Controllers
 {
     /// <summary>
-    /// Provides endpoints for managing attribute definitions in the system.
+    ///     Provides endpoints for managing attribute definitions in the system.
     /// </summary>
     /// <remarks>
-    /// This controller allows clients to perform CRUD operations on attribute definitions, 
-    /// including retrieving all attribute definitions, retrieving by ID or category, creating new definitions, 
-    /// updating existing ones, and deleting definitions.  Operations outside reading actions require administrative privileges.
+    ///     This controller allows clients to perform CRUD operations on attribute definitions, 
+    ///     including retrieving all attribute definitions, retrieving by ID or category, creating new definitions, 
+    ///     updating existing ones, and deleting definitions.  Operations outside reading actions require administrative privileges.
     /// </remarks>
     [Route("api/[controller]")]
     [ApiController]
