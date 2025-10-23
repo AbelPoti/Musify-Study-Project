@@ -26,7 +26,7 @@ namespace Musify.Controllers
         ///     Initializes a new instance of the <see cref="AttributeDefinitionsController"/> class.
         /// </summary>
         /// <param
-        ///     name="musifyDbContext">The database context used to interact with the Musify database.  This parameter cannot be <see langword="null"/>.
+        ///     name="musifyDbContext">The database context used to interact with the Musify database./>.
         /// </param>
         public AttributeDefinitionsController(MusifyDbContext musifyDbContext)
         {

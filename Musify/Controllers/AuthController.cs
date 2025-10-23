@@ -9,6 +9,13 @@ using System.Text;
 
 namespace Musify.Controllers
 {
+    /// <summary>
+    ///     Provides endpoints for various authentication-related operations.
+    /// </summary>
+    /// <remarks>
+    ///     This controller allows users to register, log in, confirm their email addresses, and reset their passwords.
+    ///     It utilizes ASP.NET Core Identity for user management and JWT for token generation.
+    /// </remarks>
     [Route("api/[controller]")]
     [ApiController]
     public class AuthController : ControllerBase
@@ -21,6 +28,14 @@ namespace Musify.Controllers
 
         private const int RateLimitMinutes = 2;
 
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="AuthController"/> class.
+        /// </summary>
+        /// <param name="userManager">The user manager instance used to interact with ASP.NET Core Identity users.</param>
+        /// <param name="signInManager">The sign in manager instance used to manage sign ins.</param>
+        /// <param name="tokenService">The token service used to generate JWT tokens for user authentication.</param>
+        /// <param name="emailConfirmTokenService">The token service used to generate email confirmation tokens.</param>
+        /// <param name="emailSender">The email sender service used to send authentication related emails to users.</param>
         public AuthController(
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
@@ -35,6 +50,20 @@ namespace Musify.Controllers
             _emailSender = emailSender;
         }
 
+        /// <summary>
+        ///     Handles the user registration process.
+        /// </summary>
+        /// <remarks>
+        ///     Handles the registration of a new user by creating an account with the provided username, email, and password.
+        ///     This method assigns the default "User" role to the newly registered user, generates a JWT token for authentication,
+        ///     and send an email confirmation link to the user's email address.
+        ///     The username must be unique; if it is already taken, a <see cref="BadRequestObjectResult"/> response is returned.
+        /// </remarks>
+        /// <param name="dto">Contains the necessary user data to initialize registration.</param>
+        /// <returns>
+        ///     An <see cref="OkObjectResult"/> if the registration is successful, containing a success message and JWT token;
+        ///     otherwise, a <see cref="BadRequestObjectResult"/> with error details.
+        /// </returns>
         [HttpPost("register")]
         public async Task<ActionResult> Register([FromBody] RegisterDto dto)
         {
@@ -80,6 +109,18 @@ namespace Musify.Controllers
             return BadRequest(ModelState);
         }
 
+        /// <summary>
+        ///     Authenticates a user and generates a JWT token upon successful login.
+        /// </summary>
+        /// <remarks>
+        ///     Authenticates a user based on their credentials. The credentials must be valid, and the user's email must be confirmed;
+        ///     otherwise, an <see cref="UnauthorizedObjectResult"/> response is returned.
+        /// </remarks>
+        /// <param name="dto">Contains the necessary data to authenticate the user.</param>
+        /// <returns>
+        ///     An <see cref="OkObjectResult"/> if the login is successful, containing a success message and JWT token;
+        ///     othewise an <see cref="UnauthorizedObjectResult"/> with error details.
+        /// </returns>
         [HttpPost("login")]
         public async Task<ActionResult> Login([FromBody] LoginDto dto)
         {
@@ -106,6 +147,20 @@ namespace Musify.Controllers
             return Ok(new { Message = "Login successful", token });
         }
 
+        /// <summary>
+        ///     Handles the email confirmation process for a user.
+        /// </summary>
+        /// <remarks>
+        ///     Handles the email confirmation process by validating the provided user ID and confirmation token.
+        ///     The provided user identifier must correspond to an existing user, and the token must be valid;
+        ///     otherwise, appropriate error responses are returned.
+        /// </remarks>
+        /// <param name="userId">The unique identifier of the user.</param>
+        /// <param name="token">The confirmation token sent to the user's email address.</param>
+        /// <returns>
+        ///     An <see cref="OkObjectResult"/> response if the confirmation is successful;
+        ///     otherwise, a <see cref="NotFoundObjectResult"/> if the user is not found, or a <see cref="BadRequestObjectResult"/> if the confirmation fails.
+        /// </returns>
         [HttpGet("confirmemail")]
         public async Task<ActionResult> ConfirmEmail(string userId, string token)
         {
@@ -132,6 +187,18 @@ namespace Musify.Controllers
             return BadRequest(new { Message = "Email confirmation failed", Errors = result.Errors.Select(e => e.Description) });
         }
 
+        /// <summary>
+        ///     Handles resending of the email confirmation link to the user's email address.
+        /// </summary>
+        /// <remarks>
+        ///     Resends the email confirmation link to the specified email address.
+        ///     The email is only resent if the user exists, the email is not already confirmed,
+        ///     and the last email was sent more than a predefined rate limit duration ago to prevent abuse.
+        /// </remarks>
+        /// <param name="dto">Contains the email address to resend the confirmation email to.</param>
+        /// <returns>
+        ///     An <see cref="OkObjectResult"/> response regardless of the outcome to prevent email enumeration.
+        /// </returns>
         [HttpPost("resend-confirmation-email")]
         public async Task<ActionResult> ResendConfirmationEmail([FromBody] ResendConfirmationEmailDto dto)
         {
@@ -144,7 +211,7 @@ namespace Musify.Controllers
 
             if (user.EmailConfirmed)
             {
-                return BadRequest(new { Message = "Email is already confirmed" });
+                return Ok(new { Message = "Email is already confirmed" });
             }
 
             // Rate limiting: Allow resending only if last sent was more than n minutes ago
@@ -176,6 +243,18 @@ namespace Musify.Controllers
             return Ok(new { Message = "Confirmation email resent successfully" });
         }
 
+        /// <summary>
+        ///     Handles forgot password requests by sending a password reset link to the user's email.
+        /// </summary>
+        /// <remarks>
+        ///     The provided user identified by the email address must exist and have a confirmed email, and the last forgot password request
+        ///     must be sent within a rate limit interval to prevent abuse. Even if these conditions are not met,
+        ///     an <see cref="OkObjectResult"/> is returned to prevent email enumeration.
+        /// </remarks>
+        /// <param name="dto">Contains the email address of the user to send the email to.</param>
+        /// <returns>
+        ///     An <see cref="OkObjectResult"/> response regardless of the outcome to prevent email enumeration.
+        /// </returns>
         [HttpPost("forgot-password")]
         public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto dto)
         {
@@ -215,6 +294,18 @@ namespace Musify.Controllers
             return Ok(new { Message = "If a user was registered with the provided email, a password reset link has been sent." });
         }
 
+        /// <summary>
+        ///     Handles resetting the user's password.
+        /// </summary>
+        /// <remarks>
+        ///     Handles resetting the user's password using a valid reset token. The provided passwords must match.
+        ///     If the user does not exist, an <see cref="OkObjectResult"/> is still returned to prevent user enumeration.
+        /// </remarks>
+        /// <param name="dto">Contains the reset token and the necessary information to reset a user's password.</param>
+        /// <returns>
+        ///     An <see cref="OkObjectResult"/> response if the reset is successful or the user does not exist;
+        ///     otherwise, a <see cref="BadRequestObjectResult"/> with error details.
+        /// </returns>
         [HttpPost("reset-password")]
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto dto)
         {
