@@ -54,7 +54,7 @@ namespace Musify.Controllers
         ///     Retrieves an attribute definition by its unique identifier.
         /// </summary>
         /// <remarks>
-        ///     Retrieves the <see cref="AttributeDefinition"/> corresponding to the provided identifier.
+        ///     Retrieves the <see cref="AttributeDefinition"/> corresponding to the provided <paramref name="id"/>>.
         ///     If the attribute definition does not exist, a <see cref="NotFoundResult"/> is returned.
         /// </remarks>
         /// <param name="id">The unique identifier of the attribute definition to retrieve.</param>
@@ -77,7 +77,7 @@ namespace Musify.Controllers
         ///     Retrieves all attribute definitions associated with a specific category.
         /// </summary>
         /// <remarks>
-        ///     Retrieves a list of <see cref="AttributeDefinition"/> entities that belong to the category corresponding to the provided category identifier.
+        ///     Retrieves a list of <see cref="AttributeDefinition"/> entities that belong to the category corresponding to the provided <paramref name="categoryId"/>.
         ///     If the provided category does not exist, a <see cref="NotFoundResult"/> is returned.
         /// </remarks>
         /// <param name="categoryId">The unique identifier of the desired category.</param>
@@ -121,7 +121,8 @@ namespace Musify.Controllers
         /// </summary>
         /// <remarks>
         ///     The provided <see cref="AttributeDefinitionCreateDto"/> is used to create a new <see cref="AttributeDefinition"/> entity in the system.
-        ///     The category identifier must correspond to an existing category; otherwise, a <see cref="BadRequestObjectResult"/> is returned.
+        ///     The category identifier provided in <paramref name="attributeDto"/> must correspond to an existing category;
+        ///     otherwise, a <see cref="BadRequestObjectResult"/> is returned.
         ///     This operation requires admin privileges.
         /// </remarks>
         /// <param name="attributeDto">The DTO used to create and persist the attribute definition.</param>
@@ -158,7 +159,7 @@ namespace Musify.Controllers
         /// </summary>
         /// <remarks>
         ///     The provided <see cref="AttributeDefinitionUpdateDto"/> is used to update an existing <see cref="AttributeDefinition"/> entity in the system.
-        ///     The identifier provided in the URL must match the identifier in the DTO, and a corresponding attribute definition must exist;
+        ///     The <paramref name="id"/> in the URL must match the identifier in the DTO, and a corresponding attribute definition must exist;
         ///     otherwise, a <see cref="BadRequestObjectResult"/> is returned.
         ///     The category identifier must correspond to an existing category; otherwise, a <see cref="BadRequestObjectResult"/> is returned.
         ///     This operation requires admin privileges.
@@ -206,7 +207,7 @@ namespace Musify.Controllers
         /// </summary>
         /// <remarks>
         ///     Deletes an existing <see cref="AttributeDefinition"/> entity corresponding to the provided <paramref name="id"/>.
-        ///     The provided identifier must correspond to an existing attribute definition; otherwise, a <see cref="NotFoundResult"/> is returned.
+        ///     The provided <paramref name="id"/> must correspond to an existing attribute definition; otherwise, a <see cref="NotFoundResult"/> is returned.
         /// </remarks>
         /// <param name="id">The unique identifier of the attribute definition to be deleted.</param>
         /// <returns>

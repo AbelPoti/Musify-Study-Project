@@ -152,7 +152,7 @@ namespace Musify.Controllers
         /// </summary>
         /// <remarks>
         ///     Handles the email confirmation process by validating the provided user ID and confirmation token.
-        ///     The provided user identifier must correspond to an existing user, and the token must be valid;
+        ///     The provided <paramref name="userId"/> must correspond to an existing user, and the <paramref name="token"/> must be valid;
         ///     otherwise, appropriate error responses are returned.
         /// </remarks>
         /// <param name="userId">The unique identifier of the user.</param>
