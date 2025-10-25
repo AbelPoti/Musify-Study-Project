@@ -9,17 +9,33 @@ using Musify.Models;
 
 namespace Musify.Controllers
 {
+    /// <summary>
+    ///     Provides endpoints for managing instruments.
+    /// </summary>
+    /// <remarks>
+    ///     This controller allows users to perform CRUD operations on instruments.
+    /// </remarks>
     [Route("api/[controller]")]
     [ApiController]
     public class InstrumentsController : ControllerBase
     {
         private MusifyDbContext _dbContext;
 
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="InstrumentsController"/> class.
+        /// </summary>
+        /// <param name="dbContext">The database context used to interact with the Musify database.</param>
         public InstrumentsController(MusifyDbContext dbContext)
         {
             _dbContext = dbContext;
         }
 
+        /// <summary>
+        ///     Retrieves the list of all existing <see cref="Instrument"/> entities.
+        /// </summary>
+        /// <returns>
+        ///     An <see cref="OkObjectResult"/> response containing the list of categories.
+        /// </returns>
         [HttpGet]
         public async Task<ActionResult<IEnumerable<InstrumentReadMinimalDto>>> GetAllInstruments()
         {
@@ -42,6 +58,18 @@ namespace Musify.Controllers
             return Ok(instrumentDtos);
         }
 
+        /// <summary>
+        ///     Retrieves an instrument by its unique identifier.
+        /// </summary>
+        /// <remarks>
+        ///     Retrieves the <see cref="Instrument"/> corresponding to the provided <paramref name="id"/>.
+        ///     If the instrument does not exist, a <see cref="NotFoundResult"/> response is returned.
+        /// </remarks>
+        /// <param name="id">The unique identifier of the instrument to retrieve.</param>
+        /// <returns>
+        ///     An <see cref="OkObjectResult"/> containing the instrument if found;
+        ///     otherwise a <see cref="NotFoundResult"/> if no instrument exists with the specified identifier.
+        /// </returns>
         [HttpGet("{id}")]
         public async Task<ActionResult<InstrumentReadMinimalDto>> GetInstrumentById(int id)
         {
@@ -64,6 +92,19 @@ namespace Musify.Controllers
             return Ok(instrumentDto);
         }
 
+        /// <summary>
+        ///     Creates an instrument based on the provided data.
+        /// </summary>
+        /// <remarks>
+        ///     The provided <see cref="InstrumentCreateDto"/> is used to create a new <see cref="Instrument"/> entity in the system.
+        ///     The associated <see cref="Category"/> must exist; otherwise a <see cref="BadRequestObjectResult"/> response is returned.
+        ///     This operation requires admin privileges.
+        /// </remarks>
+        /// <param name="instrumentDto">The DTO used to create and persist the category.</param>
+        /// <returns>
+        ///     A <see cref="CreatedAtActionResult"/> response containing the created instrument if successful;
+        ///     otherwise a <see cref="BadRequestObjectResult"/> if the input data is invalid.
+        /// </returns>
         [HttpPost]
         [Authorize(Roles = UserRole.Admin)]
         public async Task<ActionResult<InstrumentReadMinimalDto>> CreateInstrument([FromBody] InstrumentCreateDto instrumentDto)
@@ -95,9 +136,24 @@ namespace Musify.Controllers
 
             _dbContext.Instruments.Add(newInstrument);
             await _dbContext.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetInstrumentById), new { id = newInstrument.Id }, instrumentDto);
+            return CreatedAtAction(nameof(GetInstrumentById), new { id = newInstrument.Id }, returnedInstrumentDto);
         }
 
+        /// <summary>
+        ///     Updates an existing instrument with the provided data.
+        /// </summary>
+        /// <remarks>
+        ///     The provided <see cref="InstrumentUpdateDto"/> is used to update an existing <see cref="Instrument"/> entity in the system.
+        ///     The <paramref name="id"/> provided in the URL must match the identifier in the <paramref name="instrumentDto"/> object,
+        ///     The associated category must exist, else a <see cref="BadRequestObjectResult"/> response is returned.
+        ///     This operation requires admin privileges.
+        /// </remarks>
+        /// <param name="id">The unique identifier of the instrument to be updated.</param>
+        /// <param name="instrumentDto">The DTO which holds the updated attributes.</param>
+        /// <returns>
+        ///     An <see cref="OkObjectResult"/> response if the update is successful;
+        ///     otherwise a <see cref="BadRequestObjectResult"/> if the input data is invalid.
+        /// </returns>
         [HttpPut("{id}")]
         [Authorize(Roles = UserRole.Admin)]
         public async Task<ActionResult<Instrument>> UpdateInstrument(int id, [FromBody] InstrumentUpdateDto instrumentDto)
@@ -105,6 +161,12 @@ namespace Musify.Controllers
             if (instrumentDto.Id != id)
             {
                 return BadRequest(new { Message = "Instrument id is invalid." });
+            }
+
+            var category = await _dbContext.Categories.FindAsync(instrumentDto.CategoryId);
+            if (category == null)
+            {
+                return BadRequest(new { Message = "Associated category does not exist." });
             }
 
             var existingInstrument = await _dbContext.Instruments.FindAsync(id);
@@ -123,6 +185,18 @@ namespace Musify.Controllers
             return Ok(existingInstrument);
         }
 
+        /// <summary>
+        ///     Retrieves the list of attribute values associated with a specific instrument.
+        /// </summary>
+        /// <remarks>
+        ///     Retrieves the list of <see cref="InstrumentAttributeValue"/> entities associated with the <see cref="Instrument"/> corrresponding
+        ///     to the provided <paramref name="id"/>. If the instrument does not exist, a <see cref="NotFoundResult"/> response is returned.
+        /// </remarks>
+        /// <param name="id">The unique identifier of the instrument.</param>
+        /// <returns>
+        ///     An <see cref="OkObjectResult"/> containing the list of attribute values if the instrument is found;
+        ///     otherwise a <see cref="NotFoundResult"/> if no instrument exists with the specified identifier.
+        /// </returns>
         [HttpGet("{id}/attributes")]
         public async Task<ActionResult<IEnumerable<InstrumentAttributeValueReadDetailedDto>>> GetAttributesForInstrument(int id)
         {
@@ -158,6 +232,24 @@ namespace Musify.Controllers
             return Ok(attributeDtos);
         }
 
+
+        /// <summary>
+        ///     Adds a new attribute value to a specific instrument.
+        /// </summary>
+        /// <remarks>
+        ///     Add a new <see cref="InstrumentAttributeValue"/> to the <see cref="Instrument"/> corresponding to the provided <paramref name="id"/>.
+        ///     The provided id in the URL must match that in the <paramref name="attribute"/> object and the associated attribute definition must exist;
+        ///     otherwise a <see cref="BadRequestObjectResult"/> response is returned.
+        ///     The <see cref="AttributeDefinition"/> associated with the new attribute value must exist;
+        ///     otherwise a <see cref="BadRequestObjectResult"/> response is returned.
+        ///     This operation requires admin privileges.
+        /// </remarks>
+        /// <param name="id">The unique identifier of the instrument.</param>
+        /// <param name="attribute">The DTO which holds the data used to create the new attribute value.</param>
+        /// <returns>
+        ///     A <see cref="CreatedAtActionResult"/> containing the created attribute value if successful;
+        ///     A <see cref="BadRequestObjectResult"/> if the input data is invalid.
+        /// </returns>
         [HttpPost("{id}/attributes")]
         [Authorize(Roles = UserRole.Admin)]
         public async Task<ActionResult<Instrument>> AddAttributeToInstrument(int id, [FromBody] InstrumentAttributeValueCreateDto attribute)
@@ -207,6 +299,25 @@ namespace Musify.Controllers
                 });
         }
 
+        /// <summary>
+        ///     Updates an attribute value of a specific instrument.
+        /// </summary>
+        /// <remarks>
+        ///     Updates a <see cref="InstrumentAttributeValue"/> identified by the provided <paramref name="attributeId"/> associated with
+        ///     the <see cref="Instrument"/> corresponding to the provided <paramref name="instrumentId"/>.
+        ///     The provided identifiers in the URL must match those in the <paramref name="attribute"/> object, and the associated instrument and
+        ///     attribute definition must exist; otherwise a <see cref="BadRequestObjectResult"/> response is returned.
+        ///     The newly associated <see cref="AttributeDefinition"/> referenced in <paramref name="attribute"/> must also exist;
+        ///     otherwise a <see cref="BadRequestObjectResult"/> response is returned.
+        ///     This operation requires admin privileges.
+        /// </remarks>
+        /// <param name="instrumentId">The unique identifier of the instrument.</param>
+        /// <param name="attributeId">The unique identifier of the attribute value.</param>
+        /// <param name="attribute">The DTO which holds the data used to update the specific attribute value.</param>
+        /// <returns>
+        ///     An <see cref="OkObjectResult"/> response if the update was successful;
+        ///     otherwise a <see cref="BadRequestObjectResult"/> if the input data is invalid.
+        /// </returns>
         [HttpPut("{instrumentId}/attributes/{attributeId}")]
         [Authorize(Roles = UserRole.Admin)]
         public async Task<ActionResult<InstrumentAttributeValue>> UpdateAttributeOfInstrument(
@@ -277,6 +388,19 @@ namespace Musify.Controllers
             return Ok(attributeValueReadDto);
         }
 
+        /// <summary>
+        ///     Deletes an existing instrument by its unique identifier.
+        /// </summary>
+        /// <remarks>
+        ///     Deletes an existing <see cref="Instrument"/> corresponding to the provided <paramref name="id"/>.
+        ///     The provided identifier must correspond to an existing instrument; otherwise a <see cref="NotFoundResult"/> response is returned.
+        ///     This operation requires admin privileges.
+        /// </remarks>
+        /// <param name="id">The unique identifier of the instrument to be deleted.</param>
+        /// <returns>
+        ///     A <see cref="NoContentResult"/> if the deletion is successful;
+        ///     otherwise a <see cref="NotFoundResult"/> response if no instrument exists with the specified identifier.
+        /// </returns>
         [HttpDelete("{id}")]
         [Authorize(Roles = UserRole.Admin)]
         public async Task<IActionResult> DeleteInstrument(int id)
@@ -292,6 +416,21 @@ namespace Musify.Controllers
             return NoContent();
         }
 
+        /// <summary>
+        ///     Deletes a specific attribute value from an instrument.
+        /// </summary>
+        /// <remarks>
+        ///     Deletes an <see cref="InstrumentAttributeValue"/> corresponding to the provided <paramref name="attributeId"/> associated with the instrument
+        ///     identified by the provided <paramref name="instrumentId"/>.
+        ///     Both identifiers must correspond to existing entities; and the targeted <see cref="InstrumentAttributeValue"/> must be associated with the
+        ///     targeted <see cref="Instrument"/>; otherwise a <see cref="NotFoundResult"/> response is returned.
+        ///     This operation requires admin privileges.
+        /// </remarks>
+        /// <param name="instrumentId">The unique identifier of the instrument.</param>
+        /// <param name="attributeId">The unique identifier of the attribute value.</param>
+        /// <returns>
+        ///     A <see cref="NoContentResult"/> if the deletion is successful; otherwise a <see cref="NotFoundResult"/> response if input data is invalid.
+        /// </returns>
         [HttpDelete("{instrumentId}/attributes/{attributeId}")]
         [Authorize(Roles = UserRole.Admin)]
         public async Task<IActionResult> DeleteAttributeOfInstrument(int instrumentId, int attributeId)
