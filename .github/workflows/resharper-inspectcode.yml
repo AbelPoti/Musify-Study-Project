@@ -1,0 +1,25 @@
+name: resharper-inspectcode
+
+on: [push]
+
+jobs:
+  inspection:
+    runs-on: ubuntu-latest # or macos-latest, windows-latest
+    name: ReSharper Inspection
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup .NET
+        id: setup-dotnet
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '9.0.x' # [7.0.x, 8.0.x, 9.0.x]
+      - name: Restore
+        run: dotnet restore
+      - name: Inspect code
+        uses: muno92/resharper_inspectcode@v1
+        with:
+          solutionPath: ./Musify.sln
+          dotnetVersion: ${{ steps.setup-dotnet.outputs.dotnet-version }}
+          minimumReportSeverity: WARNING
+          failOnIssue: '1'
