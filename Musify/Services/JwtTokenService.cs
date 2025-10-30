@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.IdentityModel.Tokens;
+﻿using Microsoft.IdentityModel.Tokens;
 using Musify.Models;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -21,7 +20,7 @@ namespace Musify.Services
             var claims = new List<Claim>
             {
                 new(JwtRegisteredClaimNames.Sub, user.Id),
-                new(JwtRegisteredClaimNames.Email, JwtRegisteredClaimNames.Email ?? user.Email),
+                new(JwtRegisteredClaimNames.Email, JwtRegisteredClaimNames.Email),
                 new(ClaimTypes.Name, user.UserName ?? string.Empty)
             };
 

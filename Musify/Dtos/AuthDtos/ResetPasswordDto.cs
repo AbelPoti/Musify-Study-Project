@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Musify.Dtos.Auth
+namespace Musify.Dtos.AuthDtos
 {
     public class ResetPasswordDto
     {

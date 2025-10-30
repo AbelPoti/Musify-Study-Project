@@ -23,3 +23,5 @@ jobs:
           dotnetVersion: ${{ steps.setup-dotnet.outputs.dotnet-version }}
           minimumReportSeverity: WARNING
           failOnIssue: '1'
+          ignoreIssueType: |
+            UnusedAutoPropertyAccessor.Global

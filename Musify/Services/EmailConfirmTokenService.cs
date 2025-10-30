@@ -16,7 +16,7 @@ namespace Musify.Services
 
         public async Task<string> GenerateEmailConfirmationToken(ApplicationUser user)
         {
-            string emailConfirmToken = await _userManager.GenerateEmailConfirmationTokenAsync(user!);
+            string emailConfirmToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
             // Since tokens may contain special characters, encode it
             return WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(emailConfirmToken));
         }
