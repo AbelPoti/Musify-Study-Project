@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Musify.Data.DatabaseContext;
@@ -20,7 +19,7 @@ namespace Musify.Controllers
     [ApiController]
     public class AttributeDefinitionsController : ControllerBase
     {
-        private MusifyDbContext _musifyDbContext;
+        private readonly MusifyDbContext _musifyDbContext;
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="AttributeDefinitionsController"/> class.

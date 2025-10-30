@@ -1,7 +1,4 @@
-﻿using Musify.Models;
-using System.ComponentModel.DataAnnotations;
-
-namespace Musify.Dtos.InstrumentAttributeValueDtos
+﻿namespace Musify.Dtos.InstrumentAttributeValueDtos
 {
     public class InstrumentAttributeValueCreateDto
     {
