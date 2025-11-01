@@ -99,7 +99,7 @@ namespace Musify.Controllers
                 user.LastConfirmEmailSent = DateTimeOffset.UtcNow;
                 await _userManager.UpdateAsync(user);
 
-                return Ok(new { Message = "User registered successfully", jwtToken });
+                return Ok(new RegisterGoodResponseDto{ Message = "User registered successfully", JwtToken = jwtToken});
             }
 
             foreach (var error in result.Errors)
