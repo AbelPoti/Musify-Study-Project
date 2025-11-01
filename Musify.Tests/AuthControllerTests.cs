@@ -65,6 +65,8 @@ namespace Musify.Tests
                 Id = "new-id"
             };
 
+            string sampleJwtToken = "jwt-token";
+
             // No existing user with the same username -> return null
             // Then return created user
             _userManagerMock.SetupSequence(u => u.FindByNameAsync(dto.Username))
@@ -77,7 +79,7 @@ namespace Musify.Tests
 
             // Mock jwt token generation
             _tokenServiceMock.Setup(t => t.GenerateToken(It.IsAny<ApplicationUser>(), It.IsAny<IList<string>>()))
-                .Returns("jwt-token");
+                .Returns(sampleJwtToken);
 
             // Mock email confirmation token generation
             _emailConfirmTokenServiceMock.Setup(t => t.GenerateEmailConfirmationTokenAsync(It.IsAny<ApplicationUser>()))
@@ -101,11 +103,11 @@ namespace Musify.Tests
             var result = await _authController.Register(dto);
 
             // Assert
-            result.Should().BeOfType<OkObjectResult>();
-            var ok = (OkObjectResult)result;
-            dynamic? payload = ok.Value;
-            ((string)payload!.Message).Should().Be("User registered successfully");
-            ((string)payload.jwtToken).Should().Be("jwt-token");
+            var ok = result.Should().BeOfType<OkObjectResult>().Subject;
+            var payload = ok.Value.Should().BeOfType<RegisterGoodResponseDto>().Subject;
+
+            payload.Message.Should().Be("User registered successfully");
+            payload.JwtToken.Should().Be(sampleJwtToken);
         }
     }
 }
