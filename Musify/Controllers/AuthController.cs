@@ -85,7 +85,7 @@ namespace Musify.Controllers
                 // Refetch user to get the Id
                 user = await _userManager.FindByNameAsync(dto.Username);
                 // Generate email confirmation token
-                string emailConfirmToken = await _emailConfirmTokenService.GenerateEmailConfirmationToken(user!);
+                string emailConfirmToken = await _emailConfirmTokenService.GenerateEmailConfirmationTokenAsync(user!);
 
                 var request = HttpContext.Request;
                 var baseUrl = $"{request.Scheme}://{request.Host}";
@@ -225,7 +225,7 @@ namespace Musify.Controllers
                 }
             }
 
-            string emailConfirmToken = await _emailConfirmTokenService.GenerateEmailConfirmationToken(user);
+            string emailConfirmToken = await _emailConfirmTokenService.GenerateEmailConfirmationTokenAsync(user);
 
             var request = HttpContext.Request;
             var baseUrl = $"{request.Scheme}://{request.Host}";

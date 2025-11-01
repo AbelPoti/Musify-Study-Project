@@ -4,6 +4,6 @@ namespace Musify.Services
 {
     public interface IEmailConfirmTokenService
     {
-        Task<string> GenerateEmailConfirmationToken(ApplicationUser user);
+        Task<string> GenerateEmailConfirmationTokenAsync(ApplicationUser user);
     }
 }
