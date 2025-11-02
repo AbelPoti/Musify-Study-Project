@@ -121,6 +121,7 @@ namespace Musify.Tests
                 Password = "Password123"
             };
 
+            // Return an existing user when checking for username
             _userManagerMock.Setup(u => u.FindByNameAsync(dto.Username))
                 .ReturnsAsync(new ApplicationUser
                 {
@@ -137,6 +138,51 @@ namespace Musify.Tests
             var payload = badRequest.Value.Should().BeOfType<RegisterUsernameAlreadyTakenDto>().Subject;
 
             payload.Message.Should().Be("Username already taken");
+        }
+
+        [Test]
+        public async Task Register_WhenUserCreationFails_ShouldReturnBadRequest()
+        {
+            // Arrange
+            var dto = new RegisterDto
+            {
+                Username = "test.user.fail",
+                Email = "fail@example.com",
+                Password = "weak"
+            };
+
+            // No existing user
+            _userManagerMock.Setup(u => u.FindByNameAsync(dto.Username))
+                .ReturnsAsync((ApplicationUser?)null);
+
+            // But user creation fails
+            var failedResult = IdentityResult.Failed
+            (
+                new IdentityError { Description = "Password too weak" },
+                new IdentityError { Description = "Email already used" }
+            );
+
+            _userManagerMock.Setup(u => u.CreateAsync(It.IsAny<ApplicationUser>(), dto.Password))
+                .ReturnsAsync(failedResult);
+
+            // Act
+            var result = await _authController.Register(dto);
+
+            // Assert
+            var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
+            
+            // ModelState passed as the Value
+            var modelState = badRequest.Value.Should().BeOfType<SerializableError>().Subject;
+
+            // The controller puts all errors under the empty key (model level errors)
+            modelState.Should().ContainKey(string.Empty);
+            var errors = modelState[string.Empty] as string[];
+            errors.Should().Contain("Password too weak");
+            errors.Should().Contain("Email already used");
+
+            // Verify that no email was sent and no user update was attempted
+            _emailSenderMock.Verify(e => e.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+            _userManagerMock.Verify(u => u.UpdateAsync(It.IsAny<ApplicationUser>()), Times.Never);
         }
     }
 }
