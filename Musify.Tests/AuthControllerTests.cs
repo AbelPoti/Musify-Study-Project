@@ -317,8 +317,6 @@ namespace Musify.Tests
             _userManagerMock.Verify(u => u.GetRolesAsync(It.IsAny<ApplicationUser>()), Times.Never);
         }
 
-        #endregion
-
         [Test]
         public async Task Login_WhenUserProvidesUnconfirmedAccount_ShouldReturnUnauthorized()
         {
@@ -355,5 +353,7 @@ namespace Musify.Tests
             // Verify only this call, subsequent calls should really never happen
             _userManagerMock.Verify(u => u.GetRolesAsync(It.IsAny<ApplicationUser>()), Times.Never);
         }
+
+        #endregion
     }
 }
