@@ -354,6 +354,53 @@ namespace Musify.Tests
             _userManagerMock.Verify(u => u.GetRolesAsync(It.IsAny<ApplicationUser>()), Times.Never);
         }
 
+        [Test]
+        public async Task Login_WhenUserProvidesInvalidPassword_ShouldReturnUnauthorized()
+        {
+            // Arrange
+            var dto = new LoginDto
+            {
+                Username = "confirmed.user",
+                Password = "WrongPassword123"
+            };
+
+            var returnedUser = new ApplicationUser
+            {
+                UserName = dto.Username,
+                Email = "email.wrongpassword@example.com",
+                EmailConfirmed = true
+            };
+
+            _userManagerMock.Setup(u => u.FindByNameAsync(dto.Username))
+                .ReturnsAsync(returnedUser);
+
+            _signInManagerMock.Setup(si => si.CheckPasswordSignInAsync(It.Is<ApplicationUser>(user =>
+                user.UserName == dto.Username && user.EmailConfirmed),
+                dto.Password,
+                false
+            )).ReturnsAsync(Microsoft.AspNetCore.Identity.SignInResult.Failed);
+
+            // Act
+            var result = await _authController.Login(dto);
+
+            // Assert
+            var unauthorized = result.Should().BeOfType<UnauthorizedObjectResult>().Subject;
+            var payload = unauthorized.Value.Should().BeOfType<LoginUnauthorizedResponseDto>().Subject;
+
+            payload.Message.Should().Be("Invalid username or password");
+
+            // Verify dependency calls
+            _userManagerMock.Verify(u => u.FindByNameAsync(dto.Username), Times.Once);
+
+            _signInManagerMock.Verify(si => si.CheckPasswordSignInAsync(
+                It.Is<ApplicationUser>(user => user.UserName == dto.Username && user.EmailConfirmed),
+                dto.Password,
+                false
+            ), Times.Once);
+
+            _userManagerMock.Verify(u => u.GetRolesAsync(It.IsAny<ApplicationUser>()), Times.Never);
+        }
+
         #endregion
     }
 }
