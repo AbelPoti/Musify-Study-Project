@@ -132,7 +132,7 @@ namespace Musify.Tests
 
             _emailSenderMock.Verify(e => e.SendEmailAsync(
                 dto.Email,
-                "Musify Email confirmation",
+                "Musify email confirmation",
                 It.IsAny<string>()));
 
             _userManagerMock.Verify(u => u.UpdateAsync(It.Is<ApplicationUser>(user => 
