@@ -128,18 +128,18 @@ namespace Musify.Controllers
 
             if (user == null)
             {
-                return Unauthorized(new { Message = "Invalid username or password" });
+                return Unauthorized(new LoginUnauthorizedResponseDto{ Message = "Invalid username or password" });
             }
 
             if (!user.EmailConfirmed)
             {
-                return Unauthorized(new { Message = "Email not confirmed. Please confirm your email before logging in." });
+                return Unauthorized(new LoginUnauthorizedResponseDto { Message = "Email not confirmed. Please confirm your email before logging in." });
             }
 
             var result = await _signInManager.CheckPasswordSignInAsync(user, dto.Password, false);
             if (!result.Succeeded)
             {
-                return Unauthorized(new { Message = "Invalid username or password" });
+                return Unauthorized(new LoginUnauthorizedResponseDto { Message = "Invalid username or password" });
             }
 
             var roles = await _userManager.GetRolesAsync(user);

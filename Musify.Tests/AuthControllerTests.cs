@@ -288,6 +288,35 @@ namespace Musify.Tests
             ), Times.Once);
         }
 
+        [Test]
+        public async Task Login_WhenUserProvidesNonexistentUsername_ShouldReturnUnauthorized()
+        {
+            // Arrange
+            var dto = new LoginDto
+            {
+                Username = "nonexistent.user",
+                Password = "Password123"
+            };
+
+            _userManagerMock.Setup(u => u.FindByNameAsync(dto.Username))
+                .ReturnsAsync((ApplicationUser?)null);
+
+            // Act
+            var result = await _authController.Login(dto);
+
+            // Assert
+            var unauthorized = result.Should().BeOfType<UnauthorizedObjectResult>().Subject;
+            var payload = unauthorized.Value.Should().BeOfType<LoginUnauthorizedResponseDto>().Subject;
+
+            payload.Message.Should().Be("Invalid username or password");
+
+            // Verify dependency calls
+            _userManagerMock.Verify(u => u.FindByNameAsync(dto.Username), Times.Once);
+
+            // Verify only this call, subsequent calls should really never happen
+            _userManagerMock.Verify(u => u.GetRolesAsync(It.IsAny<ApplicationUser>()), Times.Never);
+        }
+
         #endregion
     }
 }
