@@ -314,7 +314,11 @@ namespace Musify.Tests
             _userManagerMock.Verify(u => u.FindByNameAsync(dto.Username), Times.Once);
 
             // Verify only this call, subsequent calls should really never happen
-            _userManagerMock.Verify(u => u.GetRolesAsync(It.IsAny<ApplicationUser>()), Times.Never);
+            _signInManagerMock.Verify(si => si.CheckPasswordSignInAsync(
+                It.Is<ApplicationUser>(user => user.UserName == dto.Username && user.EmailConfirmed),
+                dto.Password,
+                false
+            ), Times.Never);
         }
 
         [Test]
@@ -351,7 +355,11 @@ namespace Musify.Tests
             _userManagerMock.Verify(u => u.FindByNameAsync(dto.Username), Times.Once);
 
             // Verify only this call, subsequent calls should really never happen
-            _userManagerMock.Verify(u => u.GetRolesAsync(It.IsAny<ApplicationUser>()), Times.Never);
+            _signInManagerMock.Verify(si => si.CheckPasswordSignInAsync(
+                It.Is<ApplicationUser>(user => user.UserName == dto.Username && user.EmailConfirmed),
+                dto.Password,
+                false
+            ), Times.Never);
         }
 
         [Test]
