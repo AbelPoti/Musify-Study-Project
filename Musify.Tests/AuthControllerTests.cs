@@ -108,6 +108,35 @@ namespace Musify.Tests
 
             payload.Message.Should().Be("User registered successfully");
             payload.JwtToken.Should().Be(sampleJwtToken);
+
+            // Verify that required dependencies were called correctly
+            _userManagerMock.Verify(u => u.FindByNameAsync(dto.Username), Times.Exactly(2));
+
+            _userManagerMock.Verify(u => u.CreateAsync(It.Is<ApplicationUser>(user =>
+                user.UserName == dto.Username && user.Email == dto.Email), dto.Password), Times.Once);
+
+            _tokenServiceMock.Verify(t => t.GenerateToken(
+                It.Is<ApplicationUser>(user =>
+                    user.UserName == dto.Username && user.Email == dto.Email
+                ),
+                It.Is<IList<string>>(rl =>
+                    rl.Count == 1 && rl[0] == UserRole.User
+                )
+            ), Times.Once);
+
+            _emailConfirmTokenServiceMock.Verify(t => t.GenerateEmailConfirmationTokenAsync(
+                It.Is<ApplicationUser>(user =>
+                    user.UserName == dto.Username && user.Email == dto.Email
+                )
+            ), Times.Once);
+
+            _emailSenderMock.Verify(e => e.SendEmailAsync(
+                dto.Email,
+                "Musify Email confirmation",
+                It.IsAny<string>()));
+
+            _userManagerMock.Verify(u => u.UpdateAsync(It.Is<ApplicationUser>(user => 
+                user.UserName == dto.Username && user.Email == dto.Email)), Times.Once);
         }
 
         [Test]
@@ -138,6 +167,9 @@ namespace Musify.Tests
             var payload = badRequest.Value.Should().BeOfType<RegisterUsernameAlreadyTakenDto>().Subject;
 
             payload.Message.Should().Be("Username already taken");
+
+            // Verify that no user creation was attempted
+            _userManagerMock.Verify(u => u.CreateAsync(It.IsAny<ApplicationUser>(), It.IsAny<string>()), Times.Never);
         }
 
         [Test]
@@ -156,8 +188,7 @@ namespace Musify.Tests
                 .ReturnsAsync((ApplicationUser?)null);
 
             // But user creation fails
-            var failedResult = IdentityResult.Failed
-            (
+            var failedResult = IdentityResult.Failed(
                 new IdentityError { Description = "Password too weak" },
                 new IdentityError { Description = "Email already used" }
             );
