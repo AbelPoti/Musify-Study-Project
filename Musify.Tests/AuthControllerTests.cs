@@ -47,6 +47,8 @@ namespace Musify.Tests
                 _emailSenderMock.Object);
         }
 
+        #region RegisterTests
+
         [Test]
         public async Task Register_WhenUserProvidesValidData_ShouldReturnOk()
         {
@@ -135,7 +137,7 @@ namespace Musify.Tests
                 "Musify email confirmation",
                 It.IsAny<string>()));
 
-            _userManagerMock.Verify(u => u.UpdateAsync(It.Is<ApplicationUser>(user => 
+            _userManagerMock.Verify(u => u.UpdateAsync(It.Is<ApplicationUser>(user =>
                 user.UserName == dto.Username && user.Email == dto.Email)), Times.Once);
         }
 
@@ -201,7 +203,7 @@ namespace Musify.Tests
 
             // Assert
             var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
-            
+
             // ModelState passed as the Value
             var modelState = badRequest.Value.Should().BeOfType<SerializableError>().Subject;
 
@@ -215,5 +217,9 @@ namespace Musify.Tests
             _emailSenderMock.Verify(e => e.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
             _userManagerMock.Verify(u => u.UpdateAsync(It.IsAny<ApplicationUser>()), Times.Never);
         }
+
+        #endregion
+
+
     }
 }
