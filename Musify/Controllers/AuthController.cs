@@ -131,7 +131,7 @@ namespace Musify.Controllers
                 return Unauthorized(new { Message = "Invalid username or password" });
             }
 
-            if (user.EmailConfirmed == false)
+            if (!user.EmailConfirmed)
             {
                 return Unauthorized(new { Message = "Email not confirmed. Please confirm your email before logging in." });
             }
@@ -144,7 +144,7 @@ namespace Musify.Controllers
 
             var roles = await _userManager.GetRolesAsync(user);
             var token = _tokenService.GenerateToken(user, roles);
-            return Ok(new { Message = "Login successful", token });
+            return Ok(new LoginOkResponseDto{Message = "Login successful", JwtToken = token});
         }
 
         /// <summary>

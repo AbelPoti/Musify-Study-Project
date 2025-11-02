@@ -214,12 +214,80 @@ namespace Musify.Tests
             errors.Should().Contain("Email already used");
 
             // Verify that no email was sent and no user update was attempted
-            _emailSenderMock.Verify(e => e.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+            _emailSenderMock.Verify(e => e.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()),
+                Times.Never);
             _userManagerMock.Verify(u => u.UpdateAsync(It.IsAny<ApplicationUser>()), Times.Never);
         }
 
         #endregion
 
+        #region LoginTests
 
+        [Test]
+        public async Task Login_WhenUserProvidesValidCredentials_ShouldReturnOk()
+        {
+            // Arrange
+            var dto = new LoginDto
+            {
+                Username = "valid.user",
+                Password = "ValidPassword123"
+            };
+
+            var returnedUser = new ApplicationUser
+            {
+                UserName = dto.Username,
+                Email = "email@example.com",
+                EmailConfirmed = true
+            };
+
+            IList<string> returnedRoles = [UserRole.User];
+
+            string returnedToken = "sampleJwtToken";
+
+            _userManagerMock.Setup(u => u.FindByNameAsync(dto.Username))
+                .ReturnsAsync(returnedUser);
+
+            _signInManagerMock.Setup(si => si.CheckPasswordSignInAsync(It.IsAny<ApplicationUser>(), dto.Password, false))
+                .ReturnsAsync(Microsoft.AspNetCore.Identity.SignInResult.Success);
+
+            _userManagerMock.Setup(u => u.GetRolesAsync(returnedUser))
+                .ReturnsAsync(returnedRoles);
+
+            _tokenServiceMock.Setup(t => t.GenerateToken(returnedUser, returnedRoles))
+                .Returns(returnedToken);
+
+            // Act
+            var result = await _authController.Login(dto);
+
+            // Assert
+            var ok = result.Should().BeOfType<OkObjectResult>().Subject;
+            var payload = ok.Value.Should().BeOfType<LoginOkResponseDto>().Subject;
+
+            payload.Message.Should().Be("Login successful");
+            payload.JwtToken.Should().Be(returnedToken);
+
+            // Verify dependency calls
+            _userManagerMock.Verify(u => u.FindByNameAsync(dto.Username), Times.Once);
+
+            _signInManagerMock.Verify(si => si.CheckPasswordSignInAsync(
+                It.Is<ApplicationUser>(u => u.UserName == dto.Username && u.EmailConfirmed),
+                dto.Password,
+                false
+            ), Times.Once);
+
+            _userManagerMock.Verify(u => u.GetRolesAsync(It.Is<ApplicationUser>(u =>
+                u.UserName == dto.Username && u.EmailConfirmed == true)), Times.Once);
+
+            _tokenServiceMock.Verify(t => t.GenerateToken(
+                It.Is<ApplicationUser>(u =>
+                    u.UserName == dto.Username && u.EmailConfirmed
+                ),
+                It.Is<IList<string>>(ur =>
+                    ur == returnedRoles
+                )
+            ), Times.Once);
+        }
+
+        #endregion
     }
 }
