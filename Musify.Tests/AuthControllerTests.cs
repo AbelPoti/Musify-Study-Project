@@ -318,5 +318,42 @@ namespace Musify.Tests
         }
 
         #endregion
+
+        [Test]
+        public async Task Login_WhenUserProvidesUnconfirmedAccount_ShouldReturnUnauthorized()
+        {
+            // Arrange
+            var dto = new LoginDto
+            {
+                Username = "unconfirmed.user",
+                Password = "Password123"
+            };
+
+            var returnedUser = new ApplicationUser
+            {
+                UserName = dto.Username,
+                Email = "email.unconfirmed@example.com",
+                EmailConfirmed = false
+            };
+
+            _userManagerMock.Setup(u => u.FindByNameAsync(dto.Username))
+                .ReturnsAsync(returnedUser);
+
+            // Act
+            var result = await _authController.Login(dto);
+
+
+            // Assert
+            var unauthorized = result.Should().BeOfType<UnauthorizedObjectResult>().Subject;
+            var payload = unauthorized.Value.Should().BeOfType<LoginUnauthorizedResponseDto>().Subject;
+
+            payload.Message.Should().Be("Email not confirmed. Please confirm your email before logging in.");
+
+            // Verify dependency calls
+            _userManagerMock.Verify(u => u.FindByNameAsync(dto.Username), Times.Once);
+
+            // Verify only this call, subsequent calls should really never happen
+            _userManagerMock.Verify(u => u.GetRolesAsync(It.IsAny<ApplicationUser>()), Times.Never);
+        }
     }
 }
