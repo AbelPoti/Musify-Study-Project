@@ -109,5 +109,34 @@ namespace Musify.Tests
             payload.Message.Should().Be("User registered successfully");
             payload.JwtToken.Should().Be(sampleJwtToken);
         }
+
+        [Test]
+        public async Task Register_WhenUserProvidesExistingUsername_ShouldReturnBadRequest()
+        {
+            // Arrange
+            var dto = new RegisterDto
+            {
+                Username = "test.existing.user",
+                Email = "test@example.com",
+                Password = "Password123"
+            };
+
+            _userManagerMock.Setup(u => u.FindByNameAsync(dto.Username))
+                .ReturnsAsync(new ApplicationUser
+                {
+                    UserName = dto.Username,
+                    Email = dto.Email,
+                    Id = "existing-id"
+                });
+
+            // Act
+            var result = await _authController.Register(dto);
+
+            // Assert
+            var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
+            var payload = badRequest.Value.Should().BeOfType<RegisterUsernameAlreadyTakenDto>().Subject;
+
+            payload.Message.Should().Be("Username already taken");
+        }
     }
 }

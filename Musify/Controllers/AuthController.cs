@@ -70,7 +70,7 @@ namespace Musify.Controllers
             var user = await _userManager.FindByNameAsync(dto.Username);
             if (user != null)
             {
-                return BadRequest(new { Message = "Username already taken" });
+                return BadRequest(new RegisterUsernameAlreadyTakenDto{Message = "Username already taken" });
             }
 
             user = new ApplicationUser { UserName = dto.Username, Email = dto.Email, RegistrationTime = DateTimeOffset.UtcNow };
