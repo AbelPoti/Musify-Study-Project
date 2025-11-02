@@ -270,20 +270,20 @@ namespace Musify.Tests
             _userManagerMock.Verify(u => u.FindByNameAsync(dto.Username), Times.Once);
 
             _signInManagerMock.Verify(si => si.CheckPasswordSignInAsync(
-                It.Is<ApplicationUser>(u => u.UserName == dto.Username && u.EmailConfirmed),
+                It.Is<ApplicationUser>(user => user.UserName == dto.Username && user.EmailConfirmed),
                 dto.Password,
                 false
             ), Times.Once);
 
-            _userManagerMock.Verify(u => u.GetRolesAsync(It.Is<ApplicationUser>(u =>
-                u.UserName == dto.Username && u.EmailConfirmed == true)), Times.Once);
+            _userManagerMock.Verify(u => u.GetRolesAsync(It.Is<ApplicationUser>(user =>
+                user.UserName == dto.Username && user.EmailConfirmed == true)), Times.Once);
 
             _tokenServiceMock.Verify(t => t.GenerateToken(
-                It.Is<ApplicationUser>(u =>
-                    u.UserName == dto.Username && u.EmailConfirmed
+                It.Is<ApplicationUser>(user =>
+                    user.UserName == dto.Username && user.EmailConfirmed
                 ),
-                It.Is<IList<string>>(ur =>
-                    ur == returnedRoles
+                It.Is<IList<string>>(roleList =>
+                    roleList == returnedRoles
                 )
             ), Times.Once);
         }
