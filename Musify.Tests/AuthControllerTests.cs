@@ -106,7 +106,7 @@ namespace Musify.Tests
 
             // Assert
             var ok = result.Should().BeOfType<OkObjectResult>().Subject;
-            var payload = ok.Value.Should().BeOfType<RegisterGoodResponseDto>().Subject;
+            var payload = ok.Value.Should().BeOfType<RegisterOkResponseDto>().Subject;
 
             payload.Message.Should().Be("User registered successfully");
             payload.JwtToken.Should().Be(sampleJwtToken);
