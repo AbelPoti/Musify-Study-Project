@@ -169,7 +169,7 @@ namespace Musify.Controllers
                 return BadRequest(new { Message = "UserId and Token are required" });
             }
 
-            var user = await _userManager.FindByIdAsync(userId);
+            ApplicationUser? user = await _userManager.FindByIdAsync(userId);
             if (user == null)
             {
                 return NotFound(new EmailConfirmNotFoundResponseDto { Message = "User not found" });
@@ -181,9 +181,9 @@ namespace Musify.Controllers
             }
 
             // Decode the token
-            var decodedTokenBytes = WebEncoders.Base64UrlDecode(token);
-            var decodedToken = Encoding.UTF8.GetString(decodedTokenBytes);
-            var result = await _userManager.ConfirmEmailAsync(user, decodedToken);
+            byte[] decodedTokenBytes = WebEncoders.Base64UrlDecode(token);
+            string decodedToken = Encoding.UTF8.GetString(decodedTokenBytes);
+            IdentityResult result = await _userManager.ConfirmEmailAsync(user, decodedToken);
 
             if (result.Succeeded)
             {

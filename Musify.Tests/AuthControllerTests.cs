@@ -410,5 +410,51 @@ namespace Musify.Tests
         }
 
         #endregion
+
+
+
+        #region ConfirmEmailTests
+
+        [Test]
+        public async Task ConfirmEmail_WhenInputIsValid_ShouldReturnOk()
+        {
+            // Arrange
+            const string sampleUserId = "valid-user-id";
+            var sampleToken = TestUtils.GenerateTestToken(length: 64);
+
+            var returnedUser = new ApplicationUser
+            {
+                Id = sampleUserId,
+                UserName = "user.to.confirm",
+                EmailConfirmed = false
+            };
+
+            _userManagerMock.Setup(u => u.FindByIdAsync(sampleUserId))
+                .ReturnsAsync(returnedUser);
+
+            _userManagerMock.Setup(u => u.ConfirmEmailAsync(It.IsAny<ApplicationUser>(), It.IsAny<string>()))
+                .ReturnsAsync(IdentityResult.Success);
+
+            // Act
+            var result = await _authController.ConfirmEmail(sampleUserId, sampleToken);
+
+            // Assert
+            var ok = result.Should().BeOfType<OkObjectResult>().Subject;
+            var payload = ok.Value.Should().BeOfType<EmailConfirmOkResponseDto>().Subject;
+
+            payload.Message.Should().Be("Email confirmed successfully");
+
+            // Verify dependency calls
+            _userManagerMock.Verify(u => u.FindByIdAsync(sampleUserId), Times.Once);
+
+            _userManagerMock.Verify(u => u.ConfirmEmailAsync(
+                It.Is<ApplicationUser>(user => 
+                    user.Id == sampleUserId
+                ),
+                It.IsAny<string>()
+            ), Times.Once);
+        }
+
+        #endregion
     }
 }
