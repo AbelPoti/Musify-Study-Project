@@ -490,6 +490,54 @@ namespace Musify.Tests
             ), Times.Never);
         }
 
+        [Test]
+        [TestCase(null, null)]
+        [TestCase("", "")]
+        [TestCase("   ", "   ")]
+        [TestCase("", null)]
+        [TestCase(null, "")]
+        public async Task ConfirmEmail_WhenInputIsNullOrWhitespace_ShouldReturnBadRequest(string? userId, string? token)
+        {
+            // Arranged by TestCase parameters
+
+            // Act
+            var result = await _authController.ConfirmEmail(userId!, token!);
+
+            // Assert
+            var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
+            var payload = badRequest.Value.Should().BeOfType<EmailConfirmBadRequestResponseDto>().Subject;
+
+            payload.Message.Should().Be("UserId and Token are required");
+            payload.Errors.Should().HaveCount(1).And.Contain("UserId and Token cannot be null or empty");
+        }
+
+        [Test]
+        public async Task ConfirmEmail_WhenProvidedUserDoesNotExist_ShouldReturnNotFound()
+        {
+            // Arrange
+            const string sampleUserId = "nonexistent-user-id";
+            var sampleToken = TestUtils.GenerateTestToken(length: 64);
+
+            _userManagerMock.Setup(u => u.FindByIdAsync(sampleUserId))
+                .ReturnsAsync((ApplicationUser?)null);
+
+            // Act
+            var result = await _authController.ConfirmEmail(sampleUserId, sampleToken);
+
+            // Assert
+            var notFound = result.Should().BeOfType<NotFoundObjectResult>().Subject;
+            var payload = notFound.Value.Should().BeOfType<EmailConfirmNotFoundResponseDto>().Subject;
+            payload.Message.Should().Be("User not found");
+
+            // Verify dependency calls
+            _userManagerMock.Verify(u => u.FindByIdAsync(sampleUserId), Times.Once);
+
+            _userManagerMock.Verify(u => u.ConfirmEmailAsync(
+                It.IsAny<ApplicationUser>(),
+                It.IsAny<string>()
+            ), Times.Never);
+        }
+
         #endregion
     }
 }

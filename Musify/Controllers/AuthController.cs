@@ -166,7 +166,11 @@ namespace Musify.Controllers
         {
             if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(token))
             {
-                return BadRequest(new { Message = "UserId and Token are required" });
+                return BadRequest(new EmailConfirmBadRequestResponseDto
+                {
+                    Message = "UserId and Token are required" ,
+                    Errors = new List<string> { "UserId and Token cannot be null or empty" }
+                });
             }
 
             ApplicationUser? user = await _userManager.FindByIdAsync(userId);
