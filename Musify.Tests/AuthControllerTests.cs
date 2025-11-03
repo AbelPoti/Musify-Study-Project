@@ -411,8 +411,6 @@ namespace Musify.Tests
 
         #endregion
 
-
-
         #region ConfirmEmailTests
 
         [Test]
@@ -536,6 +534,53 @@ namespace Musify.Tests
                 It.IsAny<ApplicationUser>(),
                 It.IsAny<string>()
             ), Times.Never);
+        }
+
+        [Test]
+        public async Task ConfirmEmail_WhenInvalidInputGiben_ShouldReturnBadRequest()
+        {
+            // Arrange
+            const string sampleUserId = "invalid-user-id";
+            var sampleToken = TestUtils.GenerateTestToken(length: 64);
+
+            var returnedUser = new ApplicationUser
+            {
+                Id = sampleUserId,
+                UserName = "user.to.confirm",
+                EmailConfirmed = false
+            };
+
+            var failedResult = IdentityResult.Failed(
+                new IdentityError { Description = "Invalid user Id" },
+                new IdentityError { Description = "Invalid confirmation token" }
+            );
+
+            _userManagerMock.Setup(u => u.FindByIdAsync(sampleUserId))
+                .ReturnsAsync(returnedUser);
+
+            _userManagerMock.Setup(u => u.ConfirmEmailAsync(It.IsAny<ApplicationUser>(), It.IsAny<string>()))
+                .ReturnsAsync(failedResult);
+
+            // Act
+            var result = await _authController.ConfirmEmail(sampleUserId, sampleToken);
+
+            // Assert
+            var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
+            var payload = badRequest.Value.Should().BeOfType<EmailConfirmBadRequestResponseDto>().Subject;
+
+            payload.Message.Should().Be("Email confirmation failed");
+            payload.Errors.Should().HaveCount(2)
+                .And.Contain("Invalid user Id")
+                .And.Contain("Invalid confirmation token");
+
+            // Verify dependency calls
+            _userManagerMock.Verify(u => u.FindByIdAsync(sampleUserId), Times.Once);
+            _userManagerMock.Verify(u => u.ConfirmEmailAsync(
+                It.Is<ApplicationUser>(user =>
+                    user.Id == sampleUserId
+                ),
+                It.IsAny<string>()
+            ), Times.Once);
         }
 
         #endregion
