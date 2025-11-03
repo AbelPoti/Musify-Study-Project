@@ -172,7 +172,12 @@ namespace Musify.Controllers
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
             {
-                return NotFound(new { Message = "User not found" });
+                return NotFound(new EmailConfirmNotFoundResponseDto { Message = "User not found" });
+            }
+
+            if (user.EmailConfirmed)
+            {
+                return Ok(new EmailConfirmOkResponseDto { Message = "Email confirmed successfully" });
             }
 
             // Decode the token
@@ -182,9 +187,13 @@ namespace Musify.Controllers
 
             if (result.Succeeded)
             {
-                return Ok(new { Message = "Email confirmed successfully" });
+                return Ok(new EmailConfirmOkResponseDto { Message = "Email confirmed successfully" });
             }
-            return BadRequest(new { Message = "Email confirmation failed", Errors = result.Errors.Select(e => e.Description) });
+            return BadRequest(new EmailConfirmBadRequestResponseDto
+            {
+                Message = "Email confirmation failed",
+                Errors = result.Errors.Select(e => e.Description)
+            });
         }
 
         /// <summary>
