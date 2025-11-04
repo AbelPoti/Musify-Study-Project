@@ -19,6 +19,7 @@ namespace Musify.Tests
         private Mock<ITokenService> _tokenServiceMock;
         private Mock<IEmailConfirmTokenService> _emailConfirmTokenServiceMock;
         private Mock<IEmailSender> _emailSenderMock;
+        private Mock<IDateTimeProvider> _dateTimeProviderMock;
         private AuthController _authController;
 
         [SetUp]
@@ -38,13 +39,16 @@ namespace Musify.Tests
             _tokenServiceMock = new Mock<ITokenService>();
             _emailConfirmTokenServiceMock = new Mock<IEmailConfirmTokenService>();
             _emailSenderMock = new Mock<IEmailSender>();
+            _dateTimeProviderMock = new Mock<IDateTimeProvider>();
 
             _authController = new AuthController(
                 _userManagerMock.Object,
                 _signInManagerMock.Object,
                 _tokenServiceMock.Object,
                 _emailConfirmTokenServiceMock.Object,
-                _emailSenderMock.Object);
+                _emailSenderMock.Object,
+                _dateTimeProviderMock.Object
+            );
         }
 
         #region RegisterTests
