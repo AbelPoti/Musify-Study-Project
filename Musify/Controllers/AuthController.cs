@@ -25,6 +25,7 @@ namespace Musify.Controllers
         private readonly ITokenService _tokenService;
         private readonly IEmailConfirmTokenService _emailConfirmTokenService;
         private readonly IEmailSender _emailSender;
+        private readonly IDateTimeProvider _dateTimeProvider;
 
         private const int RateLimitMinutes = 2;
 
@@ -36,18 +37,21 @@ namespace Musify.Controllers
         /// <param name="tokenService">The token service used to generate JWT tokens for user authentication.</param>
         /// <param name="emailConfirmTokenService">The token service used to generate email confirmation tokens.</param>
         /// <param name="emailSender">The email sender service used to send authentication related emails to users.</param>
+        /// <param name="dateTimeProvider">The DateTime provider user to check timestamps</param>
         public AuthController(
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
             ITokenService tokenService,
             IEmailConfirmTokenService emailConfirmTokenService,
-            IEmailSender emailSender)
+            IEmailSender emailSender,
+            IDateTimeProvider dateTimeProvider)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _tokenService = tokenService;
             _emailConfirmTokenService = emailConfirmTokenService;
             _emailSender = emailSender;
+            _dateTimeProvider = dateTimeProvider;
         }
 
         /// <summary>
@@ -73,7 +77,7 @@ namespace Musify.Controllers
                 return BadRequest(new RegisterUsernameAlreadyTakenDto{Message = "Username already taken" });
             }
 
-            user = new ApplicationUser { UserName = dto.Username, Email = dto.Email, RegistrationTime = DateTimeOffset.UtcNow };
+            user = new ApplicationUser { UserName = dto.Username, Email = dto.Email, RegistrationTime = _dateTimeProvider.UtcNow };
             var result = await _userManager.CreateAsync(user, dto.Password);
 
             // Assign role and generate token, as well as send confirmation email
@@ -96,7 +100,7 @@ namespace Musify.Controllers
                     "Musify email confirmation",
                     $"Please confirm your account by <a href='{confirmationLink}'>Clicking here</a>.");
 
-                user.LastConfirmEmailSent = DateTimeOffset.UtcNow;
+                user.LastConfirmEmailSent = _dateTimeProvider.UtcNow;
                 await _userManager.UpdateAsync(user);
 
                 return Ok(new RegisterOkResponseDto{ Message = "User registered successfully", JwtToken = jwtToken});
@@ -230,7 +234,7 @@ namespace Musify.Controllers
             // Rate limiting: Allow resending only if last sent was more than n minutes ago
             if (user.LastConfirmEmailSent.HasValue)
             {
-                var diff = RateLimitMinutes - (DateTimeOffset.UtcNow - user.LastConfirmEmailSent.Value).TotalMinutes;
+                var diff = RateLimitMinutes - (_dateTimeProvider.UtcNow - user.LastConfirmEmailSent.Value).TotalMinutes;
 
                 if (diff > 0)
                 {
@@ -250,7 +254,7 @@ namespace Musify.Controllers
                 "Musify email confirmation",
                 $"Please confirm your account by <a href='{confirmationLink}'>Clicking here</a>.");
 
-            user.LastConfirmEmailSent = DateTimeOffset.UtcNow;
+            user.LastConfirmEmailSent = _dateTimeProvider.UtcNow;
             await _userManager.UpdateAsync(user);
 
             return Ok(new { Message = "Confirmation email resent successfully" });
@@ -281,7 +285,7 @@ namespace Musify.Controllers
             // Rate limiting: Allow sending only if last sent was more than n minutes ago
             if (user.LastPasswordResetSent.HasValue)
             {
-                var diff = RateLimitMinutes - (DateTimeOffset.UtcNow - user.LastPasswordResetSent.Value).TotalMinutes;
+                var diff = RateLimitMinutes - (_dateTimeProvider.UtcNow - user.LastPasswordResetSent.Value).TotalMinutes;
 
                 if (diff > 0)
                 {
@@ -301,7 +305,7 @@ namespace Musify.Controllers
                 "Musify Password Reset",
                 $"You can reset your password by <a href='{resetLink}'>Clicking here</a>. If you did not request a password reset, please ignore this email.");
 
-            user.LastPasswordResetSent = DateTimeOffset.UtcNow;
+            user.LastPasswordResetSent = _dateTimeProvider.UtcNow;
             await _userManager.UpdateAsync(user);
 
             return Ok(new { Message = "If a user was registered with the provided email, a password reset link has been sent." });
