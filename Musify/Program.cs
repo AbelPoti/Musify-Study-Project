@@ -46,6 +46,9 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 builder.Services.AddScoped<ITokenService, JwtTokenService>();
 builder.Services.AddScoped<IEmailConfirmTokenService, EmailConfirmTokenService>();
 
+// Register date time provider
+builder.Services.AddSingleton<IDateTimeProvider, SystemDateTimeProvider>();
+
 // Register email service
 builder.Services.AddTransient<IEmailSender, EmailSender>();
 
