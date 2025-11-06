@@ -588,5 +588,78 @@ namespace Musify.Tests
         }
 
         #endregion
+
+        #region ResendConfirmEmailTests
+
+        [Test]
+        public async Task ResendConfirmEmail_WhenCalledWithValidInput_ShouldReturnOk()
+        {
+            var dto = new ResendConfirmationEmailDto
+            {
+                Email = "email.to.confirm@example.com"
+            };
+
+            // Set last sent time to more than rate limit duration ago
+            var returnedUser = new ApplicationUser
+            {
+                UserName = "user.to.confirm",
+                Email = dto.Email,
+                EmailConfirmed = false,
+                LastConfirmEmailSent = new DateTimeOffset(2025, 1, 1, 12, 0, 0, TimeSpan.Zero)
+            };
+
+            _userManagerMock.Setup(u => u.FindByEmailAsync(dto.Email))
+                .ReturnsAsync(returnedUser);
+
+            _dateTimeProviderMock.Setup(dtp => dtp.UtcNow)
+                .Returns(new DateTimeOffset(2025, 1, 1, 12, 10, 0, TimeSpan.Zero));
+
+            _emailConfirmTokenServiceMock.Setup(ect =>
+                ect.GenerateEmailConfirmationTokenAsync(It.IsAny<ApplicationUser>()))
+                .ReturnsAsync("new-email-confirmation-token");
+
+            _emailSenderMock.Setup(es => es.SendEmailAsync(dto.Email, It.IsAny<string>(), It.IsAny<string>()));
+
+            _userManagerMock.Setup(u => u.UpdateAsync(It.Is<ApplicationUser>(user => user.Email == dto.Email)));
+
+            // Provide a usable HttpContext so controller can build base URL
+            var httpContext = new DefaultHttpContext
+            {
+                Request =
+                {
+                    Scheme = "https",
+                    Host = new HostString("localhost", 5073)
+                }
+            };
+            _authController.ControllerContext = new ControllerContext
+            {
+                HttpContext = httpContext
+            };
+
+            // Act
+            var result = await _authController.ResendConfirmationEmail(dto);
+
+            // Assert
+            var ok = result.Should().BeOfType<OkObjectResult>().Subject;
+            var payload = ok.Value.Should().BeOfType<ResendConfirmationEmailOkResponseDto>().Subject;
+
+            payload.Message.Should().Be("Confirmation email resent successfully");
+
+            // Verify dependency calls
+            _userManagerMock.Verify(u => u.FindByEmailAsync(dto.Email), Times.Once);
+
+            _emailConfirmTokenServiceMock.Verify(ect =>
+                ect.GenerateEmailConfirmationTokenAsync(
+                    It.Is<ApplicationUser>(user => user.Email == dto.Email)
+                ), Times.Once);
+
+            _emailSenderMock.Verify(es => es.SendEmailAsync(dto.Email, It.IsAny<string>(), It.IsAny<string>()),
+                Times.Once);
+
+            _userManagerMock.Verify(u => u.UpdateAsync(It.Is<ApplicationUser>(user =>
+                user.Email == dto.Email)), Times.Once);
+        }
+
+        #endregion
     }
 }

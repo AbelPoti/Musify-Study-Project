@@ -223,12 +223,12 @@ namespace Musify.Controllers
             if (user == null)
             {
                 // To prevent email enumeration, always return OK
-                return Ok(new { Message = "Confirmation email resent successfully" });
+                return Ok(new ResendConfirmationEmailOkResponseDto{ Message = "Confirmation email resent successfully" });
             }
 
             if (user.EmailConfirmed)
             {
-                return Ok(new { Message = "Email is already confirmed" });
+                return Ok(new ResendConfirmationEmailOkResponseDto { Message = "Confirmation email resent successfully" });
             }
 
             // Rate limiting: Allow resending only if last sent was more than n minutes ago
@@ -238,7 +238,7 @@ namespace Musify.Controllers
 
                 if (diff > 0)
                 {
-                    return Ok(new { Message = "Confirmation email resent successfully" });
+                    return Ok(new ResendConfirmationEmailOkResponseDto { Message = "Confirmation email resent successfully" });
                 }
             }
 
@@ -257,7 +257,7 @@ namespace Musify.Controllers
             user.LastConfirmEmailSent = _dateTimeProvider.UtcNow;
             await _userManager.UpdateAsync(user);
 
-            return Ok(new { Message = "Confirmation email resent successfully" });
+            return Ok(new ResendConfirmationEmailOkResponseDto { Message = "Confirmation email resent successfully" });
         }
 
         /// <summary>
