@@ -336,7 +336,7 @@ namespace Musify.Controllers
             if (user == null)
             {
                 // To prevent user enumeration, always return OK
-                return Ok(new { Message = "Password has been reset successfully." });
+                return Ok(new ResetPasswordOkResponseDto { Message = "Password has been reset successfully." });
             }
 
             var decodedTokenBytes = WebEncoders.Base64UrlDecode(dto.Token);
@@ -345,7 +345,7 @@ namespace Musify.Controllers
 
             if (result.Succeeded)
             {
-                return Ok(new { Message = "Password has been reset successfully." });
+                return Ok(new ResetPasswordOkResponseDto { Message = "Password has been reset successfully." });
             }
 
             foreach (var error in result.Errors)

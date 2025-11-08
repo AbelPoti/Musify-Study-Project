@@ -936,5 +936,159 @@ namespace Musify.Tests
         }
 
         #endregion
+
+        #region ResetPasswordTests
+
+        [Test]
+        public async Task ResetPassword_WhenCalledWithValidInput_ShouldReturnOk()
+        {
+            // Arrange
+            var dto = new ResetPasswordDto
+            {
+                UserId = "valid-user-id",
+                Token = TestUtils.GenerateTestToken(length: 64),
+                NewPassword = "NewStrongPassword123_",
+                ConfirmPassword = "NewStrongPassword123_"
+            };
+
+            var returnedUser = new ApplicationUser
+            {
+                Id = dto.UserId,
+                UserName = "user.name",
+                Email = "email@example.com"
+            };
+
+            _userManagerMock.Setup(u => u.FindByIdAsync(dto.UserId))
+                .ReturnsAsync(returnedUser);
+
+            _userManagerMock.Setup(u => u.ResetPasswordAsync(
+                It.Is<ApplicationUser>(user => user.Id == dto.UserId),
+                It.IsAny<string>(),
+                dto.NewPassword)
+            ).ReturnsAsync(IdentityResult.Success);
+
+            // Act
+            var result = await _authController.ResetPassword(dto);
+
+            // Assert
+            var ok = result.Should().BeOfType<OkObjectResult>().Subject;
+            var payload = ok.Value.Should().BeOfType<ResetPasswordOkResponseDto>().Subject;
+
+            payload.Message.Should().Be("Password has been reset successfully.");
+
+            // Verify dependency calls
+            _userManagerMock.Verify(u => u.FindByIdAsync(dto.UserId), Times.Once);
+            _userManagerMock.Verify(u => u.ResetPasswordAsync(
+                It.Is<ApplicationUser>(user => user.Id == dto.UserId),
+                It.IsAny<string>(),
+                dto.NewPassword), Times.Once);
+        }
+
+        [Test]
+        public async Task ResetPassword_WhenConfirmPasswordDoesNotMatch_ShouldReturnBadRequest()
+        {
+            // Arrange
+            var dto = new ResetPasswordDto
+            {
+                UserId = "valid-user-id",
+                Token = TestUtils.GenerateTestToken(length: 64),
+                NewPassword = "NewStrongPassword123_",
+                ConfirmPassword = "DifferentPassword123_"
+            };
+
+            // Act
+            var result = await _authController.ResetPassword(dto);
+
+            // Assert
+            var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
+            var modelState = badRequest.Value.Should().BeOfType<SerializableError>().Subject;
+
+            // The controller puts all errors under the empty key (model level errors)
+            modelState.Should().ContainKey(string.Empty);
+            var errors = modelState[string.Empty] as string[];
+            errors.Should().Contain("New password and confirmation password do not match.");
+
+            // Verify dependency calls - no user lookup performed
+            _userManagerMock.Verify(u => u.FindByIdAsync(dto.UserId), Times.Never);
+        }
+
+        [Test]
+        public async Task ResetPassword_WhenCalledWithInvalidUserId_ShouldReturnNotFound()
+        {
+            // Arrange
+            var dto = new ResetPasswordDto
+            {
+                UserId = "nonexistent-user-id",
+                Token = TestUtils.GenerateTestToken(length: 64),
+                NewPassword = "NewStrongPassword123_",
+                ConfirmPassword = "NewStrongPassword123_"
+            };
+
+            _userManagerMock.Setup(u => u.FindByIdAsync(dto.UserId))
+                .ReturnsAsync((ApplicationUser?)null);
+
+            // Act
+            var result = await _authController.ResetPassword(dto);
+
+            // Assert
+            var notFound = result.Should().BeOfType<OkObjectResult>().Subject;
+            var payload = notFound.Value.Should().BeOfType<ResetPasswordOkResponseDto>().Subject;
+
+            payload.Message.Should().Be("Password has been reset successfully.");
+
+            // Verify dependency calls
+            _userManagerMock.Verify(u => u.FindByIdAsync(dto.UserId), Times.Once);
+            _userManagerMock.Verify(u => u.ResetPasswordAsync(
+                It.IsAny<ApplicationUser>(),
+                It.IsAny<string>(),
+                It.IsAny<string>()), Times.Never);
+        }
+
+        [Test]
+        public async Task ResetPassword_WhenResetDoesNotSucceed_ShouldReturnBadRequest()
+        {
+            // Arrange
+            var dto = new ResetPasswordDto
+            {
+                UserId = "valid-user-id",
+                Token = TestUtils.GenerateTestToken(length: 64),
+                NewPassword = "NewStrongPassword123_",
+                ConfirmPassword = "NewStrongPassword123_"
+            };
+
+            var returnedUser = new ApplicationUser
+            {
+                Id = dto.UserId,
+                UserName = "user.name",
+                Email = "email@example.com"
+            };
+
+            _userManagerMock.Setup(u => u.FindByIdAsync(dto.UserId))
+                .ReturnsAsync(returnedUser);
+
+            _userManagerMock.Setup(u => u.ResetPasswordAsync(
+                It.Is<ApplicationUser>(user => user.Id == dto.UserId),
+                It.IsAny<string>(),
+                dto.NewPassword)
+            ).ReturnsAsync(IdentityResult.Failed());
+
+            // Act
+            var result = await _authController.ResetPassword(dto);
+
+            // Assert
+            var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
+            var modelState = badRequest.Value.Should().BeOfType<SerializableError>().Subject;
+
+            // Since errors are not specified, we do not check for errors
+
+            // Verify dependency calls -> all should have happened as expected
+            _userManagerMock.Verify(u => u.FindByIdAsync(dto.UserId), Times.Once);
+            _userManagerMock.Verify(u => u.ResetPasswordAsync(
+                It.Is<ApplicationUser>(user => user.Id == dto.UserId),
+                It.IsAny<string>(),
+                dto.NewPassword), Times.Once);
+        }
+
+        #endregion
     }
 }
