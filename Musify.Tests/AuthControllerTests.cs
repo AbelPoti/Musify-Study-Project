@@ -821,6 +821,122 @@ namespace Musify.Tests
             _userManagerMock.Verify(u => u.UpdateAsync(It.Is<ApplicationUser>(user => user.Email == dto.Email)), Times.Once);
         }
 
+        [Test]
+        public async Task ForgotPassword_WhenCalledWithUnconfirmedUser_ShouldReturnOk()
+        {
+            // Arrange
+            var dto = new ForgotPasswordDto
+            {
+                Email = "email@example.com"
+            };
+
+            var returnedUser = new ApplicationUser
+            {
+                UserName = "user.name",
+                Email = dto.Email,
+                EmailConfirmed = false
+            };
+
+            _userManagerMock.Setup(u => u.FindByEmailAsync(dto.Email))
+                .ReturnsAsync(returnedUser);
+
+            _userManagerMock.Setup(u => u.IsEmailConfirmedAsync(returnedUser))
+                .ReturnsAsync(false);
+
+            // Act
+            var result = await _authController.ForgotPassword(dto);
+
+            // Assert
+            var ok = result.Should().BeOfType<OkObjectResult>().Subject;
+            var payload = ok.Value.Should().BeOfType<ForgotPasswordOkResponseDto>().Subject;
+
+            payload.Message.Should().Be(
+                "If a user was registered with the provided email, a password reset link has been sent.");
+
+            // Verify dependency calls
+            _userManagerMock.Verify(u => u.FindByEmailAsync(dto.Email), Times.Once);
+            _userManagerMock.Verify(u => u.IsEmailConfirmedAsync(
+                It.Is<ApplicationUser>(user => user.Email == dto.Email)), Times.Once);
+            _dateTimeProviderMock.Verify(d => d.UtcNow, Times.Never);
+        }
+
+        [Test]
+        public async Task ForgotPassword_WhenCalledWithNonexistentEmail_ShouldReturnOk()
+        {
+            // Arrange
+            var dto = new ForgotPasswordDto
+            {
+                Email = "nonexistent@example.com"
+            };
+
+            _userManagerMock.Setup(u => u.FindByEmailAsync(dto.Email))
+                .ReturnsAsync((ApplicationUser?)null);
+
+            // Act
+            var result = await _authController.ForgotPassword(dto);
+
+            // Assert
+            var ok = result.Should().BeOfType<OkObjectResult>().Subject;
+            var payload = ok.Value.Should().BeOfType<ForgotPasswordOkResponseDto>().Subject;
+
+            payload.Message.Should().Be(
+                "If a user was registered with the provided email, a password reset link has been sent.");
+
+            // Verify dependency calls
+            _userManagerMock.Verify(u => u.FindByEmailAsync(dto.Email), Times.Once);
+            _userManagerMock.Verify(u => u.IsEmailConfirmedAsync(
+                It.IsAny<ApplicationUser>()), Times.Never);
+        }
+
+        [Test]
+        public async Task ForgotPassword_WhenCalledWithinRateLimiting_ShouldReturnOk()
+        {
+            // Arrange
+            var dto = new ForgotPasswordDto
+            {
+                Email = "email@example.com"
+            };
+
+            var returnedUser = new ApplicationUser
+            {
+                UserName = "user.name",
+                Email = dto.Email,
+                EmailConfirmed = true,
+                LastPasswordResetSent = new DateTimeOffset(2025, 1, 1, 12, 0, 0, TimeSpan.Zero)
+            };
+
+            var sampleToken = TestUtils.GenerateTestToken(length: 64);
+
+            _userManagerMock.Setup(u => u.FindByEmailAsync(dto.Email))
+                .ReturnsAsync(returnedUser);
+
+            _userManagerMock.Setup(u => u.IsEmailConfirmedAsync(returnedUser))
+                .ReturnsAsync(true);
+
+            _dateTimeProviderMock.Setup(u => u.UtcNow)
+                .Returns(new DateTimeOffset(2025, 1, 1, 12, 1, 59, TimeSpan.Zero));
+
+            // Act
+            var result = await _authController.ForgotPassword(dto);
+
+            // Assert
+            var ok = result.Should().BeOfType<OkObjectResult>().Subject;
+            var payload = ok.Value.Should().BeOfType<ForgotPasswordOkResponseDto>().Subject;
+            payload.Message.Should().Be(
+                "If a user was registered with the provided email, a password reset link has been sent.");
+
+            // Verify dependency calls
+            _userManagerMock.Verify(u => u.FindByEmailAsync(dto.Email), Times.Once);
+
+            _userManagerMock.Verify(u => u.IsEmailConfirmedAsync(
+                It.Is<ApplicationUser>(user => user.Email == dto.Email)), Times.Once);
+
+            _dateTimeProviderMock.Verify(dt => dt.UtcNow, Times.Once);
+
+            _userManagerMock.Verify(u => u.GeneratePasswordResetTokenAsync(It.Is<ApplicationUser>(user =>
+                user.Email == dto.Email)), Times.Never);
+        }
+
         #endregion
     }
 }
