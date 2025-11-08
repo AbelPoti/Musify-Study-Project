@@ -905,8 +905,6 @@ namespace Musify.Tests
                 LastPasswordResetSent = new DateTimeOffset(2025, 1, 1, 12, 0, 0, TimeSpan.Zero)
             };
 
-            var sampleToken = TestUtils.GenerateTestToken(length: 64);
-
             _userManagerMock.Setup(u => u.FindByEmailAsync(dto.Email))
                 .ReturnsAsync(returnedUser);
 
