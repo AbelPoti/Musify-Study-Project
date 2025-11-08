@@ -1077,7 +1077,7 @@ namespace Musify.Tests
 
             // Assert
             var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
-            var modelState = badRequest.Value.Should().BeOfType<SerializableError>().Subject;
+            badRequest.Value.Should().BeOfType<SerializableError>();
 
             // Since errors are not specified, we do not check for errors
 
