@@ -279,7 +279,7 @@ namespace Musify.Controllers
             if (user == null || !(await _userManager.IsEmailConfirmedAsync(user)))
             {
                 // To prevent email enumeration, always return OK
-                return Ok(new { Message = "If a user was registered with the provided email, a password reset link has been sent." });
+                return Ok(new ForgotPasswordOkResponseDto { Message = "If a user was registered with the provided email, a password reset link has been sent." });
             }
 
             // Rate limiting: Allow sending only if last sent was more than n minutes ago
@@ -289,7 +289,7 @@ namespace Musify.Controllers
 
                 if (diff > 0)
                 {
-                    return Ok(new { Message = "If a user was registered with the provided email, a password reset link has been sent." });
+                    return Ok(new ForgotPasswordOkResponseDto { Message = "If a user was registered with the provided email, a password reset link has been sent." });
                 }
             }
 
@@ -308,7 +308,7 @@ namespace Musify.Controllers
             user.LastPasswordResetSent = _dateTimeProvider.UtcNow;
             await _userManager.UpdateAsync(user);
 
-            return Ok(new { Message = "If a user was registered with the provided email, a password reset link has been sent." });
+            return Ok(new ForgotPasswordOkResponseDto { Message = "If a user was registered with the provided email, a password reset link has been sent." });
         }
 
         /// <summary>

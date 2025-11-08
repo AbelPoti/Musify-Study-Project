@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.WebUtilities;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.WebUtilities;
 
 namespace Musify.Tests
 {
@@ -9,6 +10,18 @@ namespace Musify.Tests
             var randomBytes = new byte[length];
             new Random().NextBytes(randomBytes);
             return WebEncoders.Base64UrlEncode(randomBytes);
+        }
+
+        public static DefaultHttpContext CreateHttpContext()
+        {
+            return new DefaultHttpContext
+            {
+                Request =
+                {
+                    Scheme = "https",
+                    Host = new HostString("localhost", 5073)
+                }
+            };
         }
     }
 }

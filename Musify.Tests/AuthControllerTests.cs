@@ -92,14 +92,7 @@ namespace Musify.Tests
                 .ReturnsAsync("email-confirmation-token");
 
             // Provide a usable HttpContext so controller can build base URL
-            var httpContext = new DefaultHttpContext
-            {
-                Request =
-                {
-                    Scheme = "https",
-                    Host = new HostString("localhost", 5073)
-                }
-            };
+            var httpContext = TestUtils.CreateHttpContext();
             _authController.ControllerContext = new ControllerContext
             {
                 HttpContext = httpContext
@@ -594,6 +587,7 @@ namespace Musify.Tests
         [Test]
         public async Task ResendConfirmEmail_WhenCalledWithValidInput_ShouldReturnOk()
         {
+            // Arrange
             var dto = new ResendConfirmationEmailDto
             {
                 Email = "email.to.confirm@example.com"
@@ -623,14 +617,7 @@ namespace Musify.Tests
             _userManagerMock.Setup(u => u.UpdateAsync(It.Is<ApplicationUser>(user => user.Email == dto.Email)));
 
             // Provide a usable HttpContext so controller can build base URL
-            var httpContext = new DefaultHttpContext
-            {
-                Request =
-                {
-                    Scheme = "https",
-                    Host = new HostString("localhost", 5073)
-                }
-            };
+            var httpContext = TestUtils.CreateHttpContext();
             _authController.ControllerContext = new ControllerContext
             {
                 HttpContext = httpContext
@@ -663,6 +650,7 @@ namespace Musify.Tests
         [Test]
         public async Task ResendConfirmEmail_WhenCalledWithInvalidEmail_ShouldReturnOk()
         {
+            // Arrange
             var dto = new ResendConfirmationEmailDto
             {
                 Email = "nonexistent@example.com"
@@ -689,6 +677,7 @@ namespace Musify.Tests
         [Test]
         public async Task ResendConfirmEmail_WhenCalledWithConfirmedUser_ShouldReturnOk()
         {
+            // Arrange
             var dto = new ResendConfirmationEmailDto
             {
                 Email = "already.confirmed@example.com"
@@ -722,6 +711,7 @@ namespace Musify.Tests
         [Test]
         public async Task ResendConfirmEmail_WhenCalledWithinRateLimiting_ShouldReturnOk()
         {
+            // Arrange
             var dto = new ResendConfirmationEmailDto
             {
                 Email = "email.to.confirm@example.com"
@@ -755,6 +745,80 @@ namespace Musify.Tests
             _userManagerMock.Verify(u => u.FindByEmailAsync(dto.Email), Times.Once);
             _emailConfirmTokenServiceMock.Verify(ets =>
                 ets.GenerateEmailConfirmationTokenAsync(It.IsAny<ApplicationUser>()), Times.Never);
+        }
+
+        #endregion
+
+        #region ForgotPasswordTests
+
+        [Test]
+        public async Task ForgotPassword_WhenCalledWithValidInput_ShouldReturnOk()
+        {
+            // Arrange
+            var dto = new ForgotPasswordDto
+            {
+                Email = "email@example.com"
+            };
+
+            var returnedUser = new ApplicationUser
+            {
+                UserName = "user.name",
+                Email = dto.Email,
+                EmailConfirmed = true,
+                LastPasswordResetSent = new DateTimeOffset(2025, 1, 1, 12, 0, 0, TimeSpan.Zero)
+            };
+
+            var sampleToken = TestUtils.GenerateTestToken(length: 64);
+
+            _userManagerMock.Setup(u => u.FindByEmailAsync(dto.Email))
+                .ReturnsAsync(returnedUser);
+
+            _userManagerMock.Setup(u => u.IsEmailConfirmedAsync(returnedUser))
+                .ReturnsAsync(true);
+
+            _dateTimeProviderMock.Setup(u => u.UtcNow)
+                .Returns(new DateTimeOffset(2025, 1, 1, 12, 5, 0, TimeSpan.Zero));
+
+            _userManagerMock.Setup(u => u.GeneratePasswordResetTokenAsync(returnedUser))
+                .ReturnsAsync(sampleToken);
+
+            var httpContext = TestUtils.CreateHttpContext();
+            _authController.ControllerContext = new ControllerContext
+            {
+                HttpContext = httpContext
+            };
+
+            _emailSenderMock.Setup(es => es.SendEmailAsync(dto.Email, It.IsAny<string>(), It.IsAny<string>()));
+
+            _userManagerMock.Setup(u => u.UpdateAsync(It.Is<ApplicationUser>(user => user.Email == dto.Email)));
+
+            // Act
+            var result = await _authController.ForgotPassword(dto);
+
+            // Assert
+            var ok = result.Should().BeOfType<OkObjectResult>().Subject;
+            var payload = ok.Value.Should().BeOfType<ForgotPasswordOkResponseDto>().Subject;
+
+            payload.Message.Should().Be(
+                "If a user was registered with the provided email, a password reset link has been sent.");
+
+            // Verify dependency calls
+            _userManagerMock.Verify(u => u.FindByEmailAsync(dto.Email), Times.Once);
+
+            _userManagerMock.Verify(u => u.IsEmailConfirmedAsync(
+                It.Is<ApplicationUser>(user => user.Email == dto.Email)), Times.Once);
+
+            _dateTimeProviderMock.Verify(dt => dt.UtcNow, Times.Exactly(2));
+
+            _userManagerMock.Verify(u =>
+                u.GeneratePasswordResetTokenAsync(It.Is<ApplicationUser>(user =>
+                    user.Email == dto.Email)
+                ), Times.Once);
+
+            _emailSenderMock.Verify(es => es.SendEmailAsync(dto.Email, It.IsAny<string>(), It.IsAny<string>()),
+                Times.Once);
+
+            _userManagerMock.Verify(u => u.UpdateAsync(It.Is<ApplicationUser>(user => user.Email == dto.Email)), Times.Once);
         }
 
         #endregion
