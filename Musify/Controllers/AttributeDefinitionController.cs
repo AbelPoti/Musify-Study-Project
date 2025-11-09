@@ -43,7 +43,7 @@ namespace Musify.Controllers
         /// </returns>
         [HttpGet]
         [Authorize(Roles = $"{UserRole.StoreManager}, {UserRole.WarehouseManager}, {UserRole.Admin}")]
-        public async Task<ActionResult> GetAllAttributeDefinitions()
+        public async Task<IActionResult> GetAllAttributeDefinitions()
         {
             var attributeDefinitions = await _musifyDbContext.AttributeDefinitions.ToListAsync();
             return Ok(attributeDefinitions);

@@ -35,7 +35,7 @@ namespace Musify.Controllers
         ///     An <see cref="OkObjectResult"/> response containing the list of categories.
         /// </returns>
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Category>>> GetAllCategories()
+        public async Task<IActionResult> GetAllCategories()
         {
             var categories = await _dbContext.Categories.ToListAsync();
             return Ok(categories);
@@ -54,7 +54,7 @@ namespace Musify.Controllers
         ///     otherwise a <see cref="NotFoundResult"/> if no category exists with the specified identifier.
         /// </returns>
         [HttpGet("{id}")]
-        public async Task<ActionResult<Category>> GetCategoryById(int id)
+        public async Task<IActionResult> GetCategoryById(int id)
         {
             var category = await _dbContext.Categories.FindAsync(id);
             if (category == null)
@@ -79,7 +79,7 @@ namespace Musify.Controllers
         /// </returns>
         [Authorize(Roles = UserRole.Admin)]
         [HttpPost]
-        public async Task<ActionResult<Category>> CreateCategory([FromBody] CategoryCreateDto categoryDto)
+        public async Task<IActionResult> CreateCategory([FromBody] CategoryCreateDto categoryDto)
         {
             // Check if parent category exists if ParentId is set
             if (categoryDto.ParentId.HasValue)
@@ -120,7 +120,7 @@ namespace Musify.Controllers
         /// </returns>
         [Authorize(Roles = UserRole.Admin)]
         [HttpPut("{id}")]
-        public async Task<ActionResult<Category>> UpdateCategory(int id, [FromBody] Category category)
+        public async Task<IActionResult> UpdateCategory(int id, [FromBody] Category category)
         {
             if (id != category.Id)
             {
@@ -166,7 +166,7 @@ namespace Musify.Controllers
         /// </returns>
         [Authorize(Roles = UserRole.Admin)]
         [HttpDelete("{id}")]
-        public async Task<ActionResult<Category>> DeleteCategory(int id)
+        public async Task<IActionResult> DeleteCategory(int id)
         {
             var category = await _dbContext.Categories.FindAsync(id);
             if (category == null)

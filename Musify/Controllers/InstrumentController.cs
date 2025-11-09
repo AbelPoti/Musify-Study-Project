@@ -37,7 +37,7 @@ namespace Musify.Controllers
         ///     An <see cref="OkObjectResult"/> response containing the list of categories.
         /// </returns>
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<InstrumentReadMinimalDto>>> GetAllInstruments()
+        public async Task<IActionResult> GetAllInstruments()
         {
             var instruments = await _dbContext.Instruments.ToListAsync();
 
@@ -71,7 +71,7 @@ namespace Musify.Controllers
         ///     otherwise a <see cref="NotFoundResult"/> if no instrument exists with the specified identifier.
         /// </returns>
         [HttpGet("{id}")]
-        public async Task<ActionResult<InstrumentReadMinimalDto>> GetInstrumentById(int id)
+        public async Task<IActionResult> GetInstrumentById(int id)
         {
             var instrument = await _dbContext.Instruments.FindAsync(id);
             if (instrument == null)
@@ -107,7 +107,7 @@ namespace Musify.Controllers
         /// </returns>
         [HttpPost]
         [Authorize(Roles = UserRole.Admin)]
-        public async Task<ActionResult<InstrumentReadMinimalDto>> CreateInstrument([FromBody] InstrumentCreateDto instrumentDto)
+        public async Task<IActionResult> CreateInstrument([FromBody] InstrumentCreateDto instrumentDto)
         {
             var category = await _dbContext.Categories.FindAsync(instrumentDto.CategoryId);
             if (category == null)
@@ -156,7 +156,7 @@ namespace Musify.Controllers
         /// </returns>
         [HttpPut("{id}")]
         [Authorize(Roles = UserRole.Admin)]
-        public async Task<ActionResult<Instrument>> UpdateInstrument(int id, [FromBody] InstrumentUpdateDto instrumentDto)
+        public async Task<IActionResult> UpdateInstrument(int id, [FromBody] InstrumentUpdateDto instrumentDto)
         {
             if (instrumentDto.Id != id)
             {
@@ -198,7 +198,7 @@ namespace Musify.Controllers
         ///     otherwise a <see cref="NotFoundResult"/> if no instrument exists with the specified identifier.
         /// </returns>
         [HttpGet("{id}/attributes")]
-        public async Task<ActionResult<IEnumerable<InstrumentAttributeValueReadDetailedDto>>> GetAttributesForInstrument(int id)
+        public async Task<IActionResult> GetAttributesForInstrument(int id)
         {
             var instrument = await _dbContext.Instruments
                 .Include(i => i.Attributes)
@@ -252,7 +252,7 @@ namespace Musify.Controllers
         /// </returns>
         [HttpPost("{id}/attributes")]
         [Authorize(Roles = UserRole.Admin)]
-        public async Task<ActionResult<Instrument>> AddAttributeToInstrument(int id, [FromBody] InstrumentAttributeValueCreateDto attribute)
+        public async Task<IActionResult> AddAttributeToInstrument(int id, [FromBody] InstrumentAttributeValueCreateDto attribute)
         {
             if (id != attribute.InstrumentId)
             {
@@ -320,7 +320,7 @@ namespace Musify.Controllers
         /// </returns>
         [HttpPut("{instrumentId}/attributes/{attributeId}")]
         [Authorize(Roles = UserRole.Admin)]
-        public async Task<ActionResult<InstrumentAttributeValue>> UpdateAttributeOfInstrument(
+        public async Task<IActionResult> UpdateAttributeOfInstrument(
             int instrumentId,
             int attributeId,
             [FromBody] InstrumentAttributeValueUpdateDto attribute

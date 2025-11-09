@@ -19,14 +19,14 @@ namespace Musify.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ShopItem>>> GetAllShopItems()
+        public async Task<IActionResult> GetAllShopItems()
         {
             var shopItems = await _dbContext.ShopItems.ToListAsync();
             return Ok(shopItems);
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<ShopItem>> GetShopItemById(int id)
+        public async Task<IActionResult> GetShopItemById(int id)
         {
             var shopItem = await _dbContext.ShopItems.FindAsync(id);
             if (shopItem == null)

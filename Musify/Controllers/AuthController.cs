@@ -69,7 +69,7 @@ namespace Musify.Controllers
         ///     otherwise, a <see cref="BadRequestObjectResult"/> with error details.
         /// </returns>
         [HttpPost("register")]
-        public async Task<ActionResult> Register([FromBody] RegisterDto dto)
+        public async Task<IActionResult> Register([FromBody] RegisterDto dto)
         {
             var user = await _userManager.FindByNameAsync(dto.Username);
             if (user != null)
@@ -126,7 +126,7 @@ namespace Musify.Controllers
         ///     othewise an <see cref="UnauthorizedObjectResult"/> with error details.
         /// </returns>
         [HttpPost("login")]
-        public async Task<ActionResult> Login([FromBody] LoginDto dto)
+        public async Task<IActionResult> Login([FromBody] LoginDto dto)
         {
             var user = await _userManager.FindByNameAsync(dto.Username);
 
@@ -166,7 +166,7 @@ namespace Musify.Controllers
         ///     otherwise, a <see cref="NotFoundObjectResult"/> if the user is not found, or a <see cref="BadRequestObjectResult"/> if the confirmation fails.
         /// </returns>
         [HttpGet("confirmemail")]
-        public async Task<ActionResult> ConfirmEmail(string userId, string token)
+        public async Task<IActionResult> ConfirmEmail(string userId, string token)
         {
             if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(token))
             {
@@ -217,7 +217,7 @@ namespace Musify.Controllers
         ///     An <see cref="OkObjectResult"/> response regardless of the outcome to prevent email enumeration.
         /// </returns>
         [HttpPost("resend-confirmation-email")]
-        public async Task<ActionResult> ResendConfirmationEmail([FromBody] ResendConfirmationEmailDto dto)
+        public async Task<IActionResult> ResendConfirmationEmail([FromBody] ResendConfirmationEmailDto dto)
         {
             var user = await _userManager.FindByEmailAsync(dto.Email);
             if (user == null)
