@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using FluentAssertions;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Musify.Controllers;
 using Musify.Models;
 using Musify.Data.DatabaseContext;
@@ -37,6 +39,18 @@ namespace Musify.Tests
             );
 
             _dbContext.SaveChanges();
+        }
+
+        [Test]
+        public async Task GetAll_ShouldReturnOkWithList()
+        {
+            // Arrange done in Setup
+            // Act
+            var result = await _categoryController.GetAllCategories();
+
+            // Assert
+            var ok = result.Should().BeOfType<OkObjectResult>().Subject;
+            var payload = ok.Value.Should().BeAssignableTo<IEnumerable<Category>>().Subject;
         }
 
 
