@@ -9,7 +9,7 @@ namespace Musify.Tests
     public class CategoryControllerTests
     {
         private MusifyDbContext _dbContext;
-        private CategoriesController _categoryController;
+        private CategoryController _categoryController;
 
         [SetUp]
         public void Setup()
@@ -23,7 +23,7 @@ namespace Musify.Tests
 
             SeedDatabase();
 
-            _categoryController = new CategoriesController(_dbContext);
+            _categoryController = new CategoryController(_dbContext);
         }
 
         public void SeedDatabase()

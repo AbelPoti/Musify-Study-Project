@@ -15,15 +15,15 @@ namespace Musify.Controllers
     /// </remarks>
     [Route("api/[controller]")]
     [ApiController]
-    public class CategoriesController : ControllerBase
+    public class CategoryController : ControllerBase
     {
         private MusifyDbContext _dbContext;
 
         /// <summary>
-        ///     Initializes a new instance of the <see cref="CategoriesController"/> class.
+        ///     Initializes a new instance of the <see cref="CategoryController"/> class.
         /// </summary>
         /// <param name="dbContext">The database context used to interact with the Musify database.</param>
-        public CategoriesController(MusifyDbContext dbContext)
+        public CategoryController(MusifyDbContext dbContext)
         {
             _dbContext = dbContext;
         }
