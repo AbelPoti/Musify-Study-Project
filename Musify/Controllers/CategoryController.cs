@@ -121,17 +121,18 @@ namespace Musify.Controllers
         /// </returns>
         [Authorize(Roles = UserRole.Admin)]
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateCategory(int id, [FromBody] Category category)
+        public async Task<IActionResult> UpdateCategory(int id, [FromBody] CategoryUpdateDto category)
         {
             if (id != category.Id)
             {
-                return BadRequest(new { Message = "Category id is invalid." });
+                return BadRequest(new CategoryUpdateBadRequestResponseDto
+                    { Message = "Category Id mismatch between path and body." });
             }
 
             var existingCategory = await _dbContext.Categories.FindAsync(id);
             if (existingCategory == null)
             {
-                return NotFound();
+                return NotFound(new CategoryUpdateNotFoundResponseDto { Message = "Category Id is invalid."});
             }
 
             // Check if parent category exists if ParentId is set
@@ -140,7 +141,8 @@ namespace Musify.Controllers
                 var parentCategory = await _dbContext.Categories.FindAsync(category.ParentId.Value);
                 if (parentCategory == null)
                 {
-                    return BadRequest(new { Message = "Parent category does not exist." });
+                    return BadRequest(new CategoryUpdateBadRequestResponseDto
+                        { Message = "Parent category does not exist." });
                 }
             }
 
@@ -172,14 +174,19 @@ namespace Musify.Controllers
             var category = await _dbContext.Categories.FindAsync(id);
             if (category == null)
             {
-                return NotFound();
+                return NotFound(new CategoryDeleteNotFoundResponseDto
+                    { Message = "No category with the specified Id was found." });
             }
 
             // Check if the category has any child categories
-            var childCategories = await _dbContext.Categories.Where(c => c.ParentId == id).ToListAsync();
+            List<Category> childCategories = await _dbContext.Categories.Where(c => c.ParentId == id).ToListAsync();
             if (childCategories.Any())
             {
-                return BadRequest(new { Message = "Cannot delete category with child categories." });
+                return BadRequest(new CategoryDeleteBadRequestResponseDto
+                {
+                    Message = "Cannot delete category with child categories.",
+                    ChildCategoryIds = childCategories.Select(cc => cc.Id)
+                });
             }
 
             _dbContext.Categories.Remove(category);

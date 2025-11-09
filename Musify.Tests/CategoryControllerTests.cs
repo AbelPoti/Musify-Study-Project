@@ -117,6 +117,7 @@ namespace Musify.Tests
         [Test]
         public async Task Create_WhenProvidedParentCategoryIdExists_ShouldReturnCreated()
         {
+            // Arrange
             var dto = new CategoryCreateDto
             {
                 Name = "New Category",
@@ -142,6 +143,7 @@ namespace Musify.Tests
         [Test]
         public async Task Create_WhenProvidedParentCategoryIdDoesNotExist_ShouldReturnBadRequest()
         {
+            // Arrange
             var dto = new CategoryCreateDto
             {
                 Name = "Invalid Category",
@@ -157,6 +159,184 @@ namespace Musify.Tests
 
             var payload = badRequest.Value.Should().BeOfType<CategoryCreateBadRequestResponseDto>().Subject;
             payload.Message.Should().Be("Parent category does not exist.");
+        }
+
+        [Test]
+        public async Task Update_WhenProvidedDataIsValidWithValidParentCategoryId_ShouldReturnOk()
+        {
+            // Arrange
+            const int existingCategoryId = 5;
+
+            var dto = new CategoryUpdateDto
+            {
+                Id = existingCategoryId,
+                Name = "Updated Brass Snare Drums",
+                ParentId = 4 // Snare Drums
+            };
+
+            // Act
+            var result = await _categoryController.UpdateCategory(existingCategoryId, dto);
+
+            // Assert
+            var ok = result.Should().BeOfType<OkObjectResult>().Subject;
+            ok.Should().NotBeNull();
+
+            var updatedCategory = ok.Value.Should().BeAssignableTo<Category>().Subject;
+            updatedCategory.Id.Should().Be(existingCategoryId);
+            updatedCategory.Name.Should().Be("Updated Brass Snare Drums");
+            updatedCategory.ParentId.Should().Be(4);
+        }
+
+        [Test]
+        public async Task Update_WhenProvidedDataIsValidWithNullParentCategoryId_ShouldReturnOk()
+        {
+            // Arrange
+            const int existingCategoryId = 5;
+
+            var dto = new CategoryUpdateDto
+            {
+                Id = existingCategoryId,
+                Name = "Updated Brass Snare Drums",
+                ParentId = null // No parent
+            };
+
+            // Act
+            var result = await _categoryController.UpdateCategory(existingCategoryId, dto);
+
+            // Assert
+            var ok = result.Should().BeOfType<OkObjectResult>().Subject;
+            ok.Should().NotBeNull();
+
+            var updatedCategory = ok.Value.Should().BeAssignableTo<Category>().Subject;
+            updatedCategory.Id.Should().Be(existingCategoryId);
+            updatedCategory.Name.Should().Be("Updated Brass Snare Drums");
+            updatedCategory.ParentId.Should().BeNull();
+        }
+
+        [Test]
+        public async Task Upate_WhenPathIdAndDtoIdDoNotMatch_ShouldReturnBadRequest()
+        {
+            // Arrange
+            const int existingCategoryId = 5;
+
+            var dto = new CategoryUpdateDto
+            {
+                Id = existingCategoryId + 1,
+                Name = "Mismatched ID Category",
+                ParentId = 4
+            };
+
+            // Act
+            var result = await _categoryController.UpdateCategory(existingCategoryId, dto);
+
+            // Assert
+            var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
+            badRequest.Should().NotBeNull();
+
+            var payload = badRequest.Value.Should().BeOfType<CategoryUpdateBadRequestResponseDto>().Subject;
+            payload.Message.Should().Be("Category Id mismatch between path and body.");
+        }
+
+        [Test]
+        public async Task Update_WhenProvidedIdIsInvalid_ShouldReturnNotFound()
+        {
+            // Arrange
+            const int nonexistentCagoryId = 999;
+
+            var dto = new CategoryUpdateDto
+            {
+                Id = nonexistentCagoryId,
+                Name = "Non-existing Category",
+                ParentId = null
+            };
+
+            // Act
+            var result = await _categoryController.UpdateCategory(nonexistentCagoryId, dto);
+
+            // Assert
+            var notFound = result.Should().BeOfType<NotFoundObjectResult>().Subject;
+            notFound.Should().NotBeNull();
+
+            var payload = notFound.Value.Should().BeOfType<CategoryUpdateNotFoundResponseDto>().Subject;
+            payload.Message.Should().Be("Category Id is invalid.");
+        }
+
+        [Test]
+        public async Task Update_WhenProvidedParentCategoryIdIsInvalid_ShouldReturnBadRequest()
+        {
+            // Arrange
+            const int existingCategoryId = 3;
+            var dto = new CategoryUpdateDto
+            {
+                Id = existingCategoryId,
+                Name = "Category with Invalid Parent",
+                ParentId = 999 // Non-existing parent
+            };
+
+            // Act
+            var result = await _categoryController.UpdateCategory(existingCategoryId, dto);
+
+            // Arrange
+            var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
+            badRequest.Should().NotBeNull();
+
+            var payload = badRequest.Value.Should().BeOfType<CategoryUpdateBadRequestResponseDto>().Subject;
+            payload.Message.Should().Be("Parent category does not exist.");
+        }
+
+        [Test]
+        public async Task Delete_WhenProvidedIdIsInvalid_ShouldReturnNotFound()
+        {
+            // Arrange
+            const int nonexistingCategoryId = 999;
+
+            // Act
+            var result = await _categoryController.DeleteCategory(nonexistingCategoryId);
+
+            // Assert
+            var notFound = result.Should().BeOfType<NotFoundObjectResult>().Subject;
+            notFound.Should().NotBeNull();
+
+            var payload = notFound.Value.Should().BeOfType<CategoryDeleteNotFoundResponseDto>().Subject;
+            payload.Message.Should().Be("No category with the specified Id was found.");
+        }
+
+        [Test]
+        public async Task Delete_WhenProvidedCategoryHasChildren_ShouldReturnBadRequest()
+        {
+            // Arrange
+            const int existingCategoryWithChildrenId = 1; // Drums and Percussion has 2 children
+
+            // Act
+            var result = await _categoryController.DeleteCategory(existingCategoryWithChildrenId);
+
+            // Assert
+            var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
+            badRequest.Should().NotBeNull();
+
+            var payload = badRequest.Value.Should().BeOfType<CategoryDeleteBadRequestResponseDto>().Subject;
+            payload.Message.Should().Be("Cannot delete category with child categories.");
+
+            payload.ChildCategoryIds.Should().NotBeNull();
+            var childIds = payload.ChildCategoryIds.ToList();
+            childIds.Should().HaveCount(2);
+            childIds.Should().Contain(new List<int> { 3, 4 });
+        }
+
+        [Test]
+        public async Task Delete_WhenProvidedIdIsValidAndWithoutChildren_ShouldReturnNoContent()
+        {
+            // Arrange
+            int existingCategoryWithoutChildrenId = 5; // Brass Snare Drums has no children
+
+            // Act
+            var result = await _categoryController.DeleteCategory(existingCategoryWithoutChildrenId);
+
+            // Assert
+            result.Should().BeOfType<NoContentResult>();
+
+            _dbContext.Categories.Count().Should().Be(4);
+            _dbContext.Categories.ToList().Should().NotContain(cat => cat.Id == existingCategoryWithoutChildrenId);
         }
     }
 }
