@@ -50,7 +50,27 @@ namespace Musify.Tests
 
             // Assert
             var ok = result.Should().BeOfType<OkObjectResult>().Subject;
+            ok.Should().NotBeNull();
+
             var payload = ok.Value.Should().BeAssignableTo<IEnumerable<Category>>().Subject;
+            var list = payload as List<Category>;
+
+            list.Should().NotBeNull();
+            list.Should().HaveCount(5);
+
+            list.Select(c => c.Name).Should().Contain(
+            [
+                "Drums and Percussion",
+                "Guitars and Basses",
+                "Acoustic Drumkits",
+                "Snare Drums",
+                "Brass Snare Drums"
+            ]);
+
+            list.Select(c => c.ParentId).Should().Contain(
+            [
+                null, null, 1, 1, 4
+            ]);
         }
 
 
