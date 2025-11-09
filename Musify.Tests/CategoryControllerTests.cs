@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Musify.Controllers;
 using Musify.Models;
 using Musify.Data.DatabaseContext;
+using Musify.Dtos.CategoryDtos;
 
 namespace Musify.Tests
 {
@@ -84,8 +85,7 @@ namespace Musify.Tests
         public async Task GetById_WhenCategoryWithSpecifiedIdExists_ShouldReturnOk()
         {
             // Arrange
-            // Acoustic Drumkits
-            var existingCategoryId = 3;
+            var existingCategoryId = 3; // Acoustic Drumkits
 
             // Act
             var result = await _categoryController.GetCategoryById(existingCategoryId);
@@ -112,6 +112,51 @@ namespace Musify.Tests
 
             // Assert
             result.Should().BeOfType<NotFoundResult>();
+        }
+
+        [Test]
+        public async Task Create_WhenProvidedParentCategoryIdExists_ShouldReturnCreated()
+        {
+            var dto = new CategoryCreateDto
+            {
+                Name = "New Category",
+                ParentId = 1 // Drums and Percussion
+            };
+
+            // Act
+            var result = await _categoryController.CreateCategory(dto);
+
+            // Assert
+            var createdAt = result.Should().BeOfType<CreatedAtActionResult>().Subject;
+            createdAt.Should().NotBeNull();
+
+            createdAt.RouteValues.Should().NotBeNull();
+            createdAt.RouteValues.Keys.Should().Contain("id");
+            createdAt.RouteValues["id"].Should().Be(6);
+
+            var createdCategory = createdAt.Value.Should().BeAssignableTo<Category>().Subject;
+            createdCategory.Name.Should().Be("New Category");
+            createdCategory.ParentId.Should().Be(1);
+        }
+
+        [Test]
+        public async Task Create_WhenProvidedParentCategoryIdDoesNotExist_ShouldReturnBadRequest()
+        {
+            var dto = new CategoryCreateDto
+            {
+                Name = "Invalid Category",
+                ParentId = 999 // Non-existing parent
+            };
+
+            // Act
+            var result = await _categoryController.CreateCategory(dto);
+
+            // Assert
+            var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
+            badRequest.Should().NotBeNull();
+
+            var payload = badRequest.Value.Should().BeOfType<CategoryCreateBadRequestResponseDto>().Subject;
+            payload.Message.Should().Be("Parent category does not exist.");
         }
     }
 }

@@ -87,7 +87,8 @@ namespace Musify.Controllers
                 var parentCategory = await _dbContext.Categories.FindAsync(categoryDto.ParentId.Value);
                 if (parentCategory == null)
                 {
-                    return BadRequest(new { Message = "Parent category does not exist." });
+                    return BadRequest(new CategoryCreateBadRequestResponseDto
+                        { Message = "Parent category does not exist." });
                 }
             }
 
@@ -99,7 +100,7 @@ namespace Musify.Controllers
 
             _dbContext.Categories.Add(newCategory);
             await _dbContext.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetCategoryById), new { id = newCategory.Id }, categoryDto);
+            return CreatedAtAction(nameof(GetCategoryById), new { id = newCategory.Id }, newCategory);
         }
 
         /// <summary>
