@@ -41,6 +41,13 @@ namespace Musify.Tests
             _dbContext.SaveChanges();
         }
 
+        [TearDown]
+        public void Teardown()
+        {
+            _dbContext.Database.EnsureDeleted();
+            _dbContext.Dispose();
+        }
+
         [Test]
         public async Task GetAll_ShouldReturnOkWithList()
         {
@@ -73,12 +80,38 @@ namespace Musify.Tests
             ]);
         }
 
-
-        [TearDown]
-        public void Teardown()
+        [Test]
+        public async Task GetById_WhenCategoryWithSpecifiedIdExists_ShouldReturnOk()
         {
-            _dbContext.Database.EnsureDeleted();
-            _dbContext.Dispose();
+            // Arrange
+            // Acoustic Drumkits
+            var existingCategoryId = 3;
+
+            // Act
+            var result = await _categoryController.GetCategoryById(existingCategoryId);
+
+            // Assert
+            var ok = result.Should().BeOfType<OkObjectResult>().Subject;
+            ok.Should().NotBeNull();
+
+            var category = ok.Value.Should().BeAssignableTo<Category>().Subject;
+
+            category.Id.Should().Be(3);
+            category.Name.Should().Be("Acoustic Drumkits");
+            category.ParentId.Should().Be(1);
+        }
+
+        [Test]
+        public async Task GetById_WhenCategoryWithSpecifiedIdDoesNotExist_ShouldReturnNotFound()
+        {
+            // Arrange
+            var nonExistingCategoryId = 999;
+
+            // Act
+            var result = await _categoryController.GetCategoryById(nonExistingCategoryId);
+
+            // Assert
+            result.Should().BeOfType<NotFoundResult>();
         }
     }
 }
