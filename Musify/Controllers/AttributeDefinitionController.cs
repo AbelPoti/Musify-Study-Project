@@ -176,20 +176,20 @@ namespace Musify.Controllers
         {
             if (id != attributeDto.Id)
             {
-                return BadRequest("ID in URL does not match ID in body.");
+                return BadRequest(new AttributeDefinitionUpdateBadRequestResponseDto { Message = "ID in URL does not match ID in body." });
             }
 
             var existingAttributeDefinition = await _musifyDbContext.AttributeDefinitions.FindAsync(attributeDto.Id);
             if (existingAttributeDefinition == null)
             {
-                return NotFound("Attribute definition not found.");
+                return NotFound(new AttributeDefinitionUpdateNotFoundResponseDto { Message = "Attribute definition not found." });
             }
 
             // Check if the associated Category exists
             var category = await _musifyDbContext.Categories.FindAsync(attributeDto.CategoryId);
             if (category == null)
             {
-                return BadRequest(new { Message = "Associated category does not exist." });
+                return BadRequest(new AttributeDefinitionUpdateBadRequestResponseDto { Message = "Associated category does not exist." });
             }
 
             existingAttributeDefinition.Name = attributeDto.Name;
@@ -221,7 +221,7 @@ namespace Musify.Controllers
             var attributeDefinition = await _musifyDbContext.AttributeDefinitions.FindAsync(id);
             if (attributeDefinition == null)
             {
-                return NotFound("Attribute definition not found.");
+                return NotFound(new AttributeDefinitionDeleteNotFoundResponseDto { Message = "Attribute definition not found." });
             }
 
             _musifyDbContext.AttributeDefinitions.Remove(attributeDefinition);

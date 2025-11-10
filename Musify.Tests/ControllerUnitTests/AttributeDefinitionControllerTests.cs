@@ -213,6 +213,123 @@ namespace Musify.Tests.ControllerUnitTests
             payload.Message.Should().Be("Associated category does not exist.");
         }
 
+        [Test]
+        public async Task Update_WhenProvidedDataIsValid_ShouldReturnNoContent()
+        {
+            // Arrange
+            const int id = 1;
+
+            var dto = new AttributeDefinitionUpdateDto
+            {
+                Id = id,
+                Name = "Drums and Percussion Updated",
+                DataType = AttributeDefinitionDataType.String,
+                CategoryId = 2
+            };
+
+            // Act
+            var result = await _attributeDefinitionController.UpdateAttributeDefinition(id, dto);
+
+            // Assert
+            result.Should().BeOfType<NoContentResult>();
+        }
+
+        [Test]
+        public async Task Update_WhenIdsProvidedInPathAndBodyDoNotMatch_ShouldReturnBadRequest()
+        {
+            // Arrange
+            const int id = 1;
+
+            var dto = new AttributeDefinitionUpdateDto
+            {
+                Id = id + 1,
+                Name = "Drums and Percussion Updated",
+                DataType = AttributeDefinitionDataType.String,
+                CategoryId = 2
+            };
+
+            // Act
+            var result = await _attributeDefinitionController.UpdateAttributeDefinition(id, dto);
+
+            // Assert
+            var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
+            var payload = badRequest.Value.Should().BeOfType<AttributeDefinitionUpdateBadRequestResponseDto>().Subject;
+
+            payload.Message.Should().Be("ID in URL does not match ID in body.");
+        }
+
+        [Test]
+        public async Task Update_WhenAttributeDefinitionDoesNotExist_ShouldReturnNotFound()
+        {
+            // Arrange
+            const int nonexistentId = 999;
+            var dto = new AttributeDefinitionUpdateDto
+            {
+                Id = nonexistentId,
+                Name = "Nonexistent",
+                DataType = AttributeDefinitionDataType.String,
+                CategoryId = 2
+            };
+
+            // Act
+            var result = await _attributeDefinitionController.UpdateAttributeDefinition(nonexistentId, dto);
+
+            // Assert
+            var notFound = result.Should().BeOfType<NotFoundObjectResult>().Subject;
+            var payload = notFound.Value.Should().BeOfType<AttributeDefinitionUpdateNotFoundResponseDto>().Subject;
+            payload.Message.Should().Be("Attribute definition not found.");
+        }
+
+        [Test]
+        public async Task Update_WhenProvidedCategoryDoesNotExist_ShouldReturnBadRequest()
+        {
+            // Arrange
+            const int id = 1;
+            var dto = new AttributeDefinitionUpdateDto
+            {
+                Id = id,
+                Name = "Drums and Percussion Updated",
+                DataType = AttributeDefinitionDataType.String,
+                CategoryId = 999 // Does not exist
+            };
+
+            // Act
+            var result = await _attributeDefinitionController.UpdateAttributeDefinition(id, dto);
+
+            // Assert
+            var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
+            var payload = badRequest.Value.Should().BeOfType<AttributeDefinitionUpdateBadRequestResponseDto>().Subject;
+            payload.Message.Should().Be("Associated category does not exist.");
+        }
+
+        [Test]
+        public async Task Delete_WhenAttributeDefinitionWithProvidedIdExists_ShouldReturnNoContent()
+        {
+            // Arrange
+            const int existingId = 1;
+
+            // Act
+            var result = await _attributeDefinitionController.DeleteAttributeDefinition(existingId);
+
+            // Assert
+            result.Should().BeOfType<NoContentResult>();
+        }
+
+        [Test]
+        public async Task Delete_WhenAttributeDefinitionWithProvidedIdDoesNotExist_ShouldReturnNotFound()
+        {
+            // Arrange
+            const int nonexistentId = 999;
+
+            // Act
+            var result = await _attributeDefinitionController.DeleteAttributeDefinition(nonexistentId);
+
+            // Assert
+            var notFound = result.Should().BeOfType<NotFoundObjectResult>().Subject;
+            var payload = notFound.Value.Should().BeOfType<AttributeDefinitionDeleteNotFoundResponseDto>().Subject;
+            payload.Message.Should().Be("Attribute definition not found.");
+        }
+
         [TearDown]
         public void Teardown()
         {
