@@ -12,7 +12,7 @@ using Musify.Services;
 namespace Musify.Tests.ControllerUnitTests
 {
     [TestFixture]
-    public class AuthControllerTests
+    internal class AuthControllerTests
     {
         private Mock<UserManager<ApplicationUser>> _userManagerMock;
         private Mock<SignInManager<ApplicationUser>> _signInManagerMock;

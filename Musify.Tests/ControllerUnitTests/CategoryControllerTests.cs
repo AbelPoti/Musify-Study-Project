@@ -9,7 +9,7 @@ using Musify.Dtos.CategoryDtos;
 namespace Musify.Tests.ControllerUnitTests
 {
     [TestFixture]
-    public class CategoryControllerTests
+    internal class CategoryControllerTests
     {
         private MusifyDbContext _dbContext;
         private CategoryController _categoryController;
@@ -31,6 +31,8 @@ namespace Musify.Tests.ControllerUnitTests
 
         public void SeedDatabase()
         {
+            _dbContext.Database.EnsureCreated();
+
             _dbContext.Categories.AddRange(
                 new Category { Id = 1, Name = "Drums and Percussion", ParentId = null },
                 new Category { Id = 2, Name = "Guitars and Basses", ParentId = null },
@@ -85,7 +87,7 @@ namespace Musify.Tests.ControllerUnitTests
         public async Task GetById_WhenCategoryWithSpecifiedIdExists_ShouldReturnOk()
         {
             // Arrange
-            var existingCategoryId = 3; // Acoustic Drumkits
+            const int existingCategoryId = 3; // Acoustic Drumkits
 
             // Act
             var result = await _categoryController.GetCategoryById(existingCategoryId);

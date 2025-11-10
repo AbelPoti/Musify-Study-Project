@@ -91,7 +91,8 @@ namespace Musify.Controllers
             var category = await _musifyDbContext.Categories.FindAsync(categoryId);
             if (category == null)
             {
-                return NotFound(new { Message = "Category not found." });
+                return NotFound(new AttributeDefinitionGetByCategoryIdNotFoundResponseDto
+                    { Message = "Category not found." });
             }
 
             var attributeDefinitions = await _musifyDbContext.AttributeDefinitions

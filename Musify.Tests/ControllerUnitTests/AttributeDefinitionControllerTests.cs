@@ -1,0 +1,173 @@
+﻿using FluentAssertions;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Musify.Controllers;
+using Musify.Data.DatabaseContext;
+using Musify.Dtos.AttributeDefinitionDtos;
+using Musify.Models;
+
+namespace Musify.Tests.ControllerUnitTests
+{
+    [TestFixture]
+    internal class AttributeDefinitionControllerTests
+    {
+        private MusifyDbContext _dbContext;
+        private AttributeDefinitionController _attributeDefinitionController;
+
+        [SetUp]
+        public void Setup()
+        {
+            // Use a unique name per test class (or test) to isolate data between tests
+            var options = new DbContextOptionsBuilder<MusifyDbContext>()
+                .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+                .Options;
+
+            _dbContext = new MusifyDbContext(options);
+
+            SeedDatabase();
+
+            _attributeDefinitionController = new AttributeDefinitionController(_dbContext);
+        }
+
+        public void SeedDatabase()
+        {
+            _dbContext.Database.EnsureCreated();
+
+            // Seed Categories (parent entities)
+            _dbContext.Categories.AddRange(
+                new Category { Id = 1, Name = "Drums and Percussion", ParentId = null },
+                new Category { Id = 2, Name = "Snare Drums", ParentId = 1 },
+                new Category { Id = 3, Name = "Brass Snare Drums", ParentId = 2 }
+            );
+
+            // Seed AttributeDefinitions
+            _dbContext.AttributeDefinitions.AddRange(
+                new AttributeDefinition
+                {
+                    Id = 1,
+                    Name = "Diameter",
+                    DataType = AttributeDefinitionDataType.Decimal,
+                    CategoryId = 2,
+                    Category = _dbContext.Categories.Find(2)!
+                },
+                new AttributeDefinition
+                {
+                    Id = 2,
+                    Name = "Brass Alloy",
+                    DataType = AttributeDefinitionDataType.String,
+                    CategoryId = 3,
+                    Category = _dbContext.Categories.Find(3)!
+                }
+            );
+
+            _dbContext.SaveChanges();
+        }
+
+        [Test]
+        public async Task GetAll_ShouldReturnOkWithList()
+        {
+            // Arrange done in Setup
+            // Act
+            var result = await _attributeDefinitionController.GetAllAttributeDefinitions();
+
+            // Assert
+            var ok = result.Should().BeOfType<OkObjectResult>().Subject;
+            var payload = ok.Value.Should().BeAssignableTo<IEnumerable<AttributeDefinition>>().Subject;
+
+            var list = payload as List<AttributeDefinition>;
+
+            list.Should().NotBeNull();
+            list.Count.Should().Be(2);
+
+            list.Select(ad => ad.Name).Should().Contain("Diameter", "Brass Alloy");
+            list.Select(ad => ad.CategoryId).Should().Contain([2, 3]);
+            list.Select(ad => ad.Category).Should().Contain(
+            [
+                await _dbContext.Categories.FindAsync(2),
+                await _dbContext.Categories.FindAsync(3)
+            ]);
+        }
+
+        [Test]
+        public async Task GetById_WhenAttributeDefinitionWithProvidedIdExists_ShouldReturnOk()
+        {
+            // Arrange
+            const int existingId = 1;
+
+            // Act
+            var result = await _attributeDefinitionController.GetAttributeDefinitionById(existingId);
+
+            // Assert
+            var ok = result.Should().BeOfType<OkObjectResult>().Subject;
+            var attributeDefinition = ok.Value.Should().BeAssignableTo<AttributeDefinition>().Subject;
+
+            attributeDefinition.Id.Should().Be(1);
+            attributeDefinition.Name.Should().Be("Diameter");
+            attributeDefinition.DataType.Should().Be(AttributeDefinitionDataType.Decimal);
+            attributeDefinition.CategoryId.Should().Be(2);
+            attributeDefinition.Category.Should().Be(await _dbContext.Categories.FindAsync(2));
+        }
+
+        [Test]
+        public async Task GetById_WhenNoAttributeDefinitionWithProvidedIdExists_ShouldReturnNotFound()
+        {
+            // Arrange
+            const int nonexistentId = 999;
+
+            // Act
+            var result = await _attributeDefinitionController.GetAttributeDefinitionById(nonexistentId);
+
+            // Assert
+            result.Should().BeOfType<NotFoundResult>();
+        }
+
+        [Test]
+        public async Task GetByCategoryId_WhenCategoryWithProvidedCategoryIdExists_ShouldReturnOkWithList()
+        {
+            // Arrange
+            const int existingCategoryId = 2;
+
+            // Act
+            var result = await _attributeDefinitionController.GetAttributeDefinitionsByCategoryId(existingCategoryId);
+
+            // Assert
+            var ok = result.Should().BeOfType<OkObjectResult>().Subject;
+            var payload = ok.Value.Should().BeAssignableTo<IEnumerable<AttributeDefinitionReadDetailedDto>>().Subject;
+
+            var list = payload as List<AttributeDefinitionReadDetailedDto>;
+            list.Should().NotBeNull();
+            list.Should().HaveCount(1);
+
+            var attributeDefinition = list.First();
+            attributeDefinition.Id.Should().Be(1);
+            attributeDefinition.Name.Should().Be("Diameter");
+            attributeDefinition.DataType.Should().Be(AttributeDefinitionDataType.Decimal);
+            attributeDefinition.CategoryId.Should().Be(2);
+            attributeDefinition.Category.Should().Be(await _dbContext.Categories.FindAsync(2));
+        }
+
+        [Test]
+        public async Task GetByCategoryId_WhenNoCategoryWithProvidedCategoryIdExists_ShouldReturnNotFound()
+        {
+            // Arrange
+            const int nonexistentCategoryId = 999;
+
+            // Act
+            var result =
+                await _attributeDefinitionController.GetAttributeDefinitionsByCategoryId(nonexistentCategoryId);
+
+            // Assert
+            var notFound = result.Should().BeOfType<NotFoundObjectResult>().Subject;
+            var payload = notFound.Value.Should().BeOfType<AttributeDefinitionGetByCategoryIdNotFoundResponseDto>().Subject;
+            payload.Message.Should().Be("Category not found.");
+
+        }
+
+        [TearDown]
+        public void Teardown()
+        {
+            _dbContext.Database.EnsureDeleted();
+            _dbContext.Dispose();
+        }
+    }
+}
