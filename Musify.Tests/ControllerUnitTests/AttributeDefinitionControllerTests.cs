@@ -17,7 +17,7 @@ namespace Musify.Tests.ControllerUnitTests
         [SetUp]
         public void Setup()
         {
-            // Use a unique name per test class (or test) to isolate data between tests
+            // Use a unique name per test class to isolate data between tests
             var options = new DbContextOptionsBuilder<MusifyDbContext>()
                 .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
                 .Options;
@@ -61,6 +61,13 @@ namespace Musify.Tests.ControllerUnitTests
             );
 
             _dbContext.SaveChanges();
+        }
+
+        [TearDown]
+        public void Teardown()
+        {
+            _dbContext.Database.EnsureDeleted();
+            _dbContext.Dispose();
         }
 
         [Test]
@@ -328,13 +335,6 @@ namespace Musify.Tests.ControllerUnitTests
             var notFound = result.Should().BeOfType<NotFoundObjectResult>().Subject;
             var payload = notFound.Value.Should().BeOfType<AttributeDefinitionDeleteNotFoundResponseDto>().Subject;
             payload.Message.Should().Be("Attribute definition not found.");
-        }
-
-        [TearDown]
-        public void Teardown()
-        {
-            _dbContext.Database.EnsureDeleted();
-            _dbContext.Dispose();
         }
     }
 }

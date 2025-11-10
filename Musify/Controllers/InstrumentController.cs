@@ -42,18 +42,15 @@ namespace Musify.Controllers
             var instruments = await _dbContext.Instruments.ToListAsync();
 
             List<InstrumentReadMinimalDto> instrumentDtos = [];
-            foreach (var instrument in instruments)
+            instrumentDtos.AddRange(instruments.Select(instrument => new InstrumentReadMinimalDto
             {
-                instrumentDtos.Add(new InstrumentReadMinimalDto
-                {
-                    Id = instrument.Id,
-                    Name = instrument.Name,
-                    Brand = instrument.Brand,
-                    CategoryId = instrument.CategoryId,
-                    Description = instrument.Description,
-                    Attributes = []
-                });
-            }
+                Id = instrument.Id,
+                Name = instrument.Name,
+                Brand = instrument.Brand,
+                CategoryId = instrument.CategoryId,
+                Description = instrument.Description,
+                Attributes = []
+            }));
 
             return Ok(instrumentDtos);
         }

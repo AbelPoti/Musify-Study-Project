@@ -17,7 +17,7 @@ namespace Musify.Tests.ControllerUnitTests
         [SetUp]
         public void Setup()
         {
-            // Use a unique name per test class (or test) to isolate data between tests
+            // Use a unique name per test class to isolate data between tests
             var options = new DbContextOptionsBuilder<MusifyDbContext>()
                 .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
                 .Options;
