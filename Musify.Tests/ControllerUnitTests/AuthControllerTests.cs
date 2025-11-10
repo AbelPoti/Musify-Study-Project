@@ -9,7 +9,7 @@ using Musify.Dtos.AuthDtos;
 using Musify.Models;
 using Musify.Services;
 
-namespace Musify.Tests
+namespace Musify.Tests.ControllerUnitTests
 {
     [TestFixture]
     public class AuthControllerTests

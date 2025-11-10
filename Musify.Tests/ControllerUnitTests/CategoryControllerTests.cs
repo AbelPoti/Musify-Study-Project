@@ -6,7 +6,7 @@ using Musify.Models;
 using Musify.Data.DatabaseContext;
 using Musify.Dtos.CategoryDtos;
 
-namespace Musify.Tests
+namespace Musify.Tests.ControllerUnitTests
 {
     [TestFixture]
     public class CategoryControllerTests
