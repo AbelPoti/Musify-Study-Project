@@ -138,7 +138,7 @@ namespace Musify.Controllers
             var category = await _musifyDbContext.Categories.FindAsync(attributeDto.CategoryId);
             if (category == null)
             {
-                return BadRequest(new { Message = "Associated category does not exist." });
+                return BadRequest(new AttributeDefinitionCreateBadRequestResponseDto { Message = "Associated category does not exist." });
             }
 
             var newAttributeDefinition = new AttributeDefinition

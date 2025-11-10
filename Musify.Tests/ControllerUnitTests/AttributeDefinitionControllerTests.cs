@@ -163,6 +163,56 @@ namespace Musify.Tests.ControllerUnitTests
 
         }
 
+        [Test]
+        public async Task Create_WhenProvidedDataIsValid_ShouldReturnCreated()
+        {
+            // Arrange
+            var dto = new AttributeDefinitionCreateDto
+            {
+                Name = "Material",
+                DataType = AttributeDefinitionDataType.String,
+                CategoryId = 2
+            };
+
+            // Act
+            var result = await _attributeDefinitionController.CreateAttributeDefinition(dto);
+
+            // Assert
+            var createdAt = result.Should().BeOfType<CreatedAtActionResult>().Subject;
+            createdAt.Should().NotBeNull();
+
+            createdAt.RouteValues.Should().NotBeNull();
+            createdAt.RouteValues.Keys.Should().Contain("id");
+            createdAt.RouteValues["id"].Should().Be(3);
+
+            var createdAttributeDefinition = createdAt.Value.Should().BeAssignableTo<AttributeDefinition>().Subject;
+            createdAttributeDefinition.Id.Should().Be(3);
+            createdAttributeDefinition.Name.Should().Be("Material");
+            createdAttributeDefinition.DataType.Should().Be(AttributeDefinitionDataType.String);
+            createdAttributeDefinition.Category.Should().Be(await _dbContext.Categories.FindAsync(dto.CategoryId));
+        }
+
+        [Test]
+        public async Task Create_WhenProvidedCategoryDoesNotExist_ShouldReturnBadRequest()
+        {
+            // Arrange
+            var dto = new AttributeDefinitionCreateDto
+            {
+                Name = "Material",
+                DataType = AttributeDefinitionDataType.String,
+                CategoryId = 999 // Does not exist
+            };
+
+            // Act
+            var result = await _attributeDefinitionController.CreateAttributeDefinition(dto);
+
+            // Assert
+            var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
+            var payload = badRequest.Value.Should().BeOfType<AttributeDefinitionCreateBadRequestResponseDto>().Subject;
+
+            payload.Message.Should().Be("Associated category does not exist.");
+        }
+
         [TearDown]
         public void Teardown()
         {
