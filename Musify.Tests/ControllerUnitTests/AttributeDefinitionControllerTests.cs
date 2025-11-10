@@ -86,7 +86,7 @@ namespace Musify.Tests.ControllerUnitTests
             list.Should().NotBeNull();
             list.Count.Should().Be(2);
 
-            list.Select(ad => ad.Name).Should().Contain("Diameter", "Brass Alloy");
+            list.Select(ad => ad.Name).Should().Contain(["Diameter", "Brass Alloy"]);
             list.Select(ad => ad.CategoryId).Should().Contain([2, 3]);
             list.Select(ad => ad.Category).Should().Contain(
             [
