@@ -422,10 +422,18 @@ namespace Musify.Controllers
                 return NotFound(new DeleteAttributeValueNotFoundResponseDto { Message = "The specified instrument does not exist." });
             }
 
-            var attributeValue = instrument.Attributes.FirstOrDefault(a => a.Id == attributeId);
+            var attributeValue = await _dbContext.InstrumentAttributeValues.FindAsync(attributeId);
             if (attributeValue == null)
             {
                 return NotFound(new DeleteAttributeValueNotFoundResponseDto { Message = "The specified attribute value does not exist." });
+            }
+
+            if (attributeValue.InstrumentId != instrumentId)
+            {
+                return BadRequest(new DeleteAttributeValueBadRequestResponseDto
+                {
+                    Message = "The provided attribute value is not associated with the provided instrument."
+                });
             }
 
             instrument.Attributes.Remove(attributeValue);

@@ -334,7 +334,7 @@ namespace Musify.Tests.ControllerUnitTests
         {
             // Arrange
             const int existingId = 1;
-            await SeedAttributeDefinitionsAndValuesForInstrument(existingId);
+            await SeedAttributeDefinitionsAndValuesForInstruments([existingId]);
 
             // Act
             var result = await _instrumentController.GetAttributesOfInstrument(existingId);
@@ -378,7 +378,7 @@ namespace Musify.Tests.ControllerUnitTests
         {
             // Arrange
             const int instrumentId = 1;
-            await SeedAttributeDefinitionsAndValuesForInstrument(instrumentId);
+            await SeedAttributeDefinitionsAndValuesForInstruments([instrumentId]);
 
             var dto = new InstrumentAttributeValueCreateDto
             {
@@ -409,7 +409,7 @@ namespace Musify.Tests.ControllerUnitTests
         {
             // Arrange
             const int instrumentId = 1;
-            await SeedAttributeDefinitionsAndValuesForInstrument(instrumentId);
+            await SeedAttributeDefinitionsAndValuesForInstruments([instrumentId]);
 
             var dto = new InstrumentAttributeValueCreateDto
             {
@@ -457,7 +457,7 @@ namespace Musify.Tests.ControllerUnitTests
         {
             // Arrange
             const int instrumentId = 1; // Exists
-            await SeedAttributeDefinitionsAndValuesForInstrument(instrumentId);
+            await SeedAttributeDefinitionsAndValuesForInstruments([instrumentId]);
             
             var dto = new InstrumentAttributeValueCreateDto
             {
@@ -483,7 +483,7 @@ namespace Musify.Tests.ControllerUnitTests
             const int instrumentId = 1;
             const int attributeValueId = 1;
 
-            await SeedAttributeDefinitionsAndValuesForInstrument(instrumentId);
+            await SeedAttributeDefinitionsAndValuesForInstruments([instrumentId]);
 
             var dto = new InstrumentAttributeValueUpdateDto
             {
@@ -507,7 +507,7 @@ namespace Musify.Tests.ControllerUnitTests
             const int instrumentId = 1;
             const int attributeValueId = 1;
 
-            await SeedAttributeDefinitionsAndValuesForInstrument(instrumentId);
+            await SeedAttributeDefinitionsAndValuesForInstruments([instrumentId]);
 
             var dto = new InstrumentAttributeValueUpdateDto
             {
@@ -534,7 +534,7 @@ namespace Musify.Tests.ControllerUnitTests
             const int instrumentId = 1;
             const int attributeValueId = 1;
 
-            await SeedAttributeDefinitionsAndValuesForInstrument(instrumentId);
+            await SeedAttributeDefinitionsAndValuesForInstruments([instrumentId]);
 
             var dto = new InstrumentAttributeValueUpdateDto
             {
@@ -561,7 +561,7 @@ namespace Musify.Tests.ControllerUnitTests
             const int instrumentId = 999; // Does not exist
             const int attributeValueId = 1;
 
-            await SeedAttributeDefinitionsAndValuesForInstrument(instrumentId);
+            await SeedAttributeDefinitionsAndValuesForInstruments([instrumentId]);
 
             var dto = new InstrumentAttributeValueUpdateDto
             {
@@ -588,7 +588,7 @@ namespace Musify.Tests.ControllerUnitTests
             const int instrumentId = 1;
             const int attributeValueId = 999; // Does not exist
 
-            await SeedAttributeDefinitionsAndValuesForInstrument(instrumentId);
+            await SeedAttributeDefinitionsAndValuesForInstruments([instrumentId]);
 
             var dto = new InstrumentAttributeValueUpdateDto
             {
@@ -615,7 +615,7 @@ namespace Musify.Tests.ControllerUnitTests
             const int instrumentId = 1;
             const int attributeValueId = 1;
 
-            await SeedAttributeDefinitionsAndValuesForInstrument(instrumentId);
+            await SeedAttributeDefinitionsAndValuesForInstruments([instrumentId]);
 
             var dto = new InstrumentAttributeValueUpdateDto
             {
@@ -642,7 +642,7 @@ namespace Musify.Tests.ControllerUnitTests
             const int instrumentId = 1;
             const int attributeValueId = 1;
 
-            await SeedAttributeDefinitionsAndValuesForInstrument(instrumentId);
+            await SeedAttributeDefinitionsAndValuesForInstruments([instrumentId]);
 
             // Act
             var result = await _instrumentController.DeleteAttributeOfInstrument(instrumentId, attributeValueId);
@@ -658,7 +658,7 @@ namespace Musify.Tests.ControllerUnitTests
             const int instrumentId = 999; // Does not exist
             const int attributeValueId = 1;
 
-            await SeedAttributeDefinitionsAndValuesForInstrument(instrumentId);
+            await SeedAttributeDefinitionsAndValuesForInstruments([instrumentId]);
 
             // Act
             var result = await _instrumentController.DeleteAttributeOfInstrument(instrumentId, attributeValueId);
@@ -677,7 +677,7 @@ namespace Musify.Tests.ControllerUnitTests
             const int instrumentId = 1;
             const int attributeValueId = 999; // Does not exist
 
-            await SeedAttributeDefinitionsAndValuesForInstrument(instrumentId);
+            await SeedAttributeDefinitionsAndValuesForInstruments([instrumentId]);
 
             // Act
             var result = await _instrumentController.DeleteAttributeOfInstrument(instrumentId, attributeValueId);
@@ -695,7 +695,7 @@ namespace Musify.Tests.ControllerUnitTests
             // Arrange
             const int instrumentId = 1;
 
-            await SeedAttributeDefinitionsAndValuesForInstrument(instrumentId);
+            await SeedAttributeDefinitionsAndValuesForInstruments([instrumentId]);
 
             // Act
             var result = await _instrumentController.DeleteInstrument(instrumentId);
@@ -709,7 +709,32 @@ namespace Musify.Tests.ControllerUnitTests
             orphanedAttributeValues.Count().Should().Be(0);
         }
 
-        private async Task SeedAttributeDefinitionsAndValuesForInstrument(int instrumentId)
+        [Test]
+        public async Task DeleteInstrument_WhenProvidedAttributeValueIdIsNotInCollectionOfProvidedInstrument_ShouldReturnBadRequest()
+        {
+            // Arrange
+            const int instrumentId = 1;
+            const int attributeValueId = 3;
+
+            // Seed IAVs to all instruments provided by the SeedDatabase() method, but try to delete the 2nd's IAV with the 1st instrument Id
+            await SeedAttributeDefinitionsAndValuesForInstruments([1, 2, 3]);
+
+            // Act
+            var result = await _instrumentController.DeleteAttributeOfInstrument(instrumentId, attributeValueId);
+
+            // Assert
+            var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
+            var payload = badRequest.Value.Should().BeOfType<DeleteAttributeValueBadRequestResponseDto>().Subject;
+
+            payload.Message.Should().Be("The provided attribute value is not associated with the provided instrument.");
+        }
+
+        /// <summary>
+        ///     Insert 2 instrument attribute values for each provided instrumentId. Also insert 2 attribute definitions for correct entity relations.
+        /// </summary>
+        /// <param name="instrumentIds">The instrument Ids with which the attribute values shall be associated.</param>
+        /// <returns>An awaitable task performing the seeding operation.</returns>
+        private async Task SeedAttributeDefinitionsAndValuesForInstruments(IEnumerable<int> instrumentIds)
         {
 
             // Add attribute definitions to the database
@@ -732,28 +757,33 @@ namespace Musify.Tests.ControllerUnitTests
                 }
             );
 
-            // Add attribute values to db context
-            var iav1 = new InstrumentAttributeValue
-            {
-                Id = 1,
-                InstrumentId = instrumentId,
-                Instrument = (await _dbContext.Instruments.FindAsync(instrumentId))!,
-                AttributeDefinitionId = 1,
-                AttributeDefinition = (await _dbContext.AttributeDefinitions.FindAsync(1))!,
-                Value = "14.0"
-            };
+            int id = 1;
 
-            var iav2 = new InstrumentAttributeValue
+            foreach (var instrumentId in instrumentIds)
             {
-                Id = 2,
-                InstrumentId = instrumentId,
-                Instrument = (await _dbContext.Instruments.FindAsync(instrumentId))!,
-                AttributeDefinitionId = 2,
-                AttributeDefinition = (await _dbContext.AttributeDefinitions.FindAsync(2))!,
-                Value = "Black Nickel Brass"
-            };
+                // Add attribute values to db context - 2 for each instrument
+                var iav1 = new InstrumentAttributeValue
+                {
+                    Id = id++,
+                    InstrumentId = instrumentId,
+                    Instrument = (await _dbContext.Instruments.FindAsync(instrumentId))!,
+                    AttributeDefinitionId = 1,
+                    AttributeDefinition = (await _dbContext.AttributeDefinitions.FindAsync(1))!,
+                    Value = "14.0"
+                };
 
-            _dbContext.InstrumentAttributeValues.AddRange(iav1, iav2);
+                var iav2 = new InstrumentAttributeValue
+                {
+                    Id = id++,
+                    InstrumentId = instrumentId,
+                    Instrument = (await _dbContext.Instruments.FindAsync(instrumentId))!,
+                    AttributeDefinitionId = 2,
+                    AttributeDefinition = (await _dbContext.AttributeDefinitions.FindAsync(2))!,
+                    Value = "Black Nickel Brass"
+                };
+
+                _dbContext.InstrumentAttributeValues.AddRange(iav1, iav2);
+            }
 
             await _dbContext.SaveChangesAsync();
         }
