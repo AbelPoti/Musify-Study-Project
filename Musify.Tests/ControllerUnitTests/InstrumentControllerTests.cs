@@ -636,6 +636,35 @@ namespace Musify.Tests.ControllerUnitTests
         }
 
         [Test]
+        public async Task UpdateAttributeOfInstrument_WhenProvidedAttributeValueIdIsNotInCollectionOfProvidedInstrument_ShouldReturnBadRequest()
+        {
+            // Arrange
+            const int instrumentId = 1;
+            const int attributeValueId = 3;
+
+            // Seed IAVs to all instruments provided by the SeedDatabase() method, but try to update the 3rd IAV with the 1st instrument
+            // (which has IAVs no. 1 and 2, but not 3)
+            await SeedAttributeDefinitionsAndValuesForInstruments([1, 2, 3]);
+
+            var dto = new InstrumentAttributeValueUpdateDto
+            {
+                Id = attributeValueId,
+                AttributeDefinitionId = 1,
+                InstrumentId = instrumentId,
+                Value = "Updated Diameter Value"
+            };
+
+            // Act
+            var result = await _instrumentController.UpdateAttributeOfInstrument(instrumentId, attributeValueId, dto);
+
+            // Assert
+            var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
+            var payload = badRequest.Value.Should().BeOfType<UpdateAttributeValueBadRequestResponseDto>().Subject;
+
+            payload.Message.Should().Be("The provided attribute value is not associated with the provided instrument.");
+        }
+
+        [Test]
         public async Task DeleteAttributeOfInstrument_WhenProvidedDataIsValid_ShouldReturnNoContent()
         {
             // Arrange
