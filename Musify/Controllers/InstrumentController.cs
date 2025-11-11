@@ -109,7 +109,7 @@ namespace Musify.Controllers
             var category = await _dbContext.Categories.FindAsync(instrumentDto.CategoryId);
             if (category == null)
             {
-                return BadRequest(new { Message = "Associated category does not exist." });
+                return BadRequest(new InstrumentCreateBadRequestResponseDto { Message = "Associated category does not exist." });
             }
 
             var newInstrument = new Instrument
@@ -123,7 +123,6 @@ namespace Musify.Controllers
 
             var returnedInstrumentDto = new InstrumentReadMinimalDto
             {
-                Id = newInstrument.Id,
                 Name = newInstrument.Name,
                 Brand = newInstrument.Brand,
                 CategoryId = newInstrument.CategoryId,
@@ -133,6 +132,10 @@ namespace Musify.Controllers
 
             _dbContext.Instruments.Add(newInstrument);
             await _dbContext.SaveChangesAsync();
+
+            // Set the id in the returned DTO after saving to get the generated id
+            returnedInstrumentDto.Id = newInstrument.Id;
+
             return CreatedAtAction(nameof(GetInstrumentById), new { id = newInstrument.Id }, returnedInstrumentDto);
         }
 
@@ -157,19 +160,19 @@ namespace Musify.Controllers
         {
             if (instrumentDto.Id != id)
             {
-                return BadRequest(new { Message = "Instrument id is invalid." });
+                return BadRequest(new InstrumentUpdateBadRequestResponseDto { Message = "Instrument Id mismatch between path and body." });
             }
 
             var category = await _dbContext.Categories.FindAsync(instrumentDto.CategoryId);
             if (category == null)
             {
-                return BadRequest(new { Message = "Associated category does not exist." });
+                return BadRequest(new InstrumentUpdateBadRequestResponseDto { Message = "Associated category does not exist." });
             }
 
             var existingInstrument = await _dbContext.Instruments.FindAsync(id);
             if (existingInstrument == null)
             {
-                return NotFound();
+                return NotFound(new InstrumentUpdateNotFoundResponseDto { Message = "No instrument with provided Id exists." });
             }
 
             existingInstrument.Name = instrumentDto.Name;
@@ -179,7 +182,7 @@ namespace Musify.Controllers
 
             _dbContext.Instruments.Update(existingInstrument);
             await _dbContext.SaveChangesAsync();
-            return Ok(existingInstrument);
+            return NoContent();
         }
 
         /// <summary>
@@ -195,7 +198,7 @@ namespace Musify.Controllers
         ///     otherwise a <see cref="NotFoundResult"/> if no instrument exists with the specified identifier.
         /// </returns>
         [HttpGet("{id}/attributes")]
-        public async Task<IActionResult> GetAttributesForInstrument(int id)
+        public async Task<IActionResult> GetAttributesOfInstrument(int id)
         {
             var instrument = await _dbContext.Instruments
                 .Include(i => i.Attributes)
@@ -204,7 +207,7 @@ namespace Musify.Controllers
 
             if (instrument == null)
             {
-                return NotFound(); 
+                return NotFound();
             }
 
             List<InstrumentAttributeValueReadDetailedDto> attributeDtos = [];
@@ -279,14 +282,13 @@ namespace Musify.Controllers
                 Value = attribute.Value
             };
 
-
-            instrument.Attributes.Add(attributeValue);
+            _dbContext.InstrumentAttributeValues.Add(attributeValue);
 
             _dbContext.Instruments.Update(instrument);
             await _dbContext.SaveChangesAsync();
             return CreatedAtAction(
                 nameof(GetInstrumentById),
-                new { id = instrument.Id },
+                new { id = attributeValue.Id },
                 new InstrumentAttributeValueReadMinimalDto
                 {
                     Id = attributeValue.Id,
