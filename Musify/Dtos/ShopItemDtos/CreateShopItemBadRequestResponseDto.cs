@@ -1,0 +1,10 @@
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Musify.Dtos.ShopItemDtos
+{
+    public class CreateShopItemBadRequestResponseDto
+    {
+        [Required]
+        public required string Message { get; set; }
+    }
+}

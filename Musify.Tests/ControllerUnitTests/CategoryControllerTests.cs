@@ -29,7 +29,7 @@ namespace Musify.Tests.ControllerUnitTests
             _categoryController = new CategoryController(_dbContext);
         }
 
-        public void SeedDatabase()
+        private void SeedDatabase()
         {
             _dbContext.Database.EnsureCreated();
 

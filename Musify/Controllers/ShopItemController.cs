@@ -31,7 +31,7 @@ namespace Musify.Controllers
             var shopItem = await _dbContext.ShopItems.FindAsync(id);
             if (shopItem == null)
             {
-                return NotFound();
+                return NotFound(new GetShopItemByIdNotFoundResponseDto { Message = "No shop item with the specified Id exists." });
             }
             return Ok(shopItem);
         }
@@ -44,7 +44,7 @@ namespace Musify.Controllers
             var instrument = await _dbContext.Instruments.FindAsync(shopItemDto.InstrumentId);
             if (instrument == null)
             {
-                return BadRequest(new { Message = "Associated instrument does not exist." });
+                return BadRequest(new CreateShopItemBadRequestResponseDto { Message = "Associated instrument does not exist." });
             }
 
             var createdShopItem = new ShopItem

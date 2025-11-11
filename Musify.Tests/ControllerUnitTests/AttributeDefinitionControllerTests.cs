@@ -29,7 +29,7 @@ namespace Musify.Tests.ControllerUnitTests
             _attributeDefinitionController = new AttributeDefinitionController(_dbContext);
         }
 
-        public void SeedDatabase()
+        private void SeedDatabase()
         {
             _dbContext.Database.EnsureCreated();
 

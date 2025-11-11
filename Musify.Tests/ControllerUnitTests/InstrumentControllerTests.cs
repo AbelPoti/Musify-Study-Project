@@ -30,7 +30,7 @@ namespace Musify.Tests.ControllerUnitTests
             _instrumentController = new InstrumentController(_dbContext);
         }
 
-        public void SeedDatabase()
+        private void SeedDatabase()
         {
             _dbContext.Database.EnsureCreated();
 
