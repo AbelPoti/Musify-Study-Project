@@ -404,6 +404,311 @@ namespace Musify.Tests.ControllerUnitTests
             payload.Value.Should().Be(dto.Value);
         }
 
+        [Test]
+        public async Task AddAttributeToInstrument_WhenInstrumentIdsInPathAndBodyDoNotMatch_ShouldReturnBadRequest()
+        {
+            // Arrange
+            const int instrumentId = 1;
+            await SeedAttributeDefinitionsAndValuesForInstrument(instrumentId);
+
+            var dto = new InstrumentAttributeValueCreateDto
+            {
+                InstrumentId = instrumentId + 1, // Mismatch
+                AttributeDefinitionId = 2, // Material
+                Value = "Another Material Attribute Value"
+            };
+
+            // Act
+            var result = await _instrumentController.AddAttributeToInstrument(instrumentId, dto);
+
+            // Assert
+            var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
+            var payload = badRequest.Value.Should().BeOfType<AddAttributeValueToInstrumentBadRequestResponseDto>().Subject;
+
+            payload.Message.Should().Be("Instrument id mismatch between URL and body.");
+        }
+
+        [Test]
+        public async Task AddAttributeToInstrument_WhenNoInstrumentWithProvidedInstrumentIdExists_ShouldReturnNotFound()
+        {
+            // Arrange
+            const int nonexistentInstrumentId = 999;
+
+            var dto = new InstrumentAttributeValueCreateDto
+            {
+                InstrumentId = nonexistentInstrumentId,
+                AttributeDefinitionId = 2, // Material
+                Value = "Another Material Attribute Value"
+            };
+
+            // Act
+            var result = await _instrumentController.AddAttributeToInstrument(nonexistentInstrumentId, dto);
+
+            // Assert
+            var notFound = result.Should().BeOfType<NotFoundObjectResult>().Subject;
+            var payload = notFound.Value.Should().BeOfType<AddAttributeValueToInstrumentNotFoundResponseDto>().Subject;
+
+            payload.Message.Should().Be("The specified instrument does not exist.");
+        }
+
+        [Test]
+        public async Task
+            AddAttributeToInstrument_WhenNoAttributeDefinitionWithProvidedIdExists_ShouldReturnBadRequest()
+        {
+            // Arrange
+            const int instrumentId = 1; // Exists
+            await SeedAttributeDefinitionsAndValuesForInstrument(instrumentId);
+            
+            var dto = new InstrumentAttributeValueCreateDto
+            {
+                InstrumentId = instrumentId,
+                AttributeDefinitionId = 999, // Does not exist
+                Value = "Another Material Attribute Value"
+            };
+
+            // Act
+            var result = await _instrumentController.AddAttributeToInstrument(instrumentId, dto);
+
+            // Assert
+            var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
+            var payload = badRequest.Value.Should().BeOfType<AddAttributeValueToInstrumentBadRequestResponseDto>().Subject;
+
+            payload.Message.Should().Be("Associated attribute definition does not exist.");
+        }
+
+        [Test]
+        public async Task UpdateAttributeOfInstrument_WhenProvidingValidData_ShouldReturnNoContent()
+        {
+            // Arrange
+            const int instrumentId = 1;
+            const int attributeValueId = 1;
+
+            await SeedAttributeDefinitionsAndValuesForInstrument(instrumentId);
+
+            var dto = new InstrumentAttributeValueUpdateDto
+            {
+                Id = attributeValueId,
+                AttributeDefinitionId = 1, // Change to Material
+                InstrumentId = instrumentId,
+                Value = "Updated Diameter Value"
+            };
+
+            // Act
+            var result = await _instrumentController.UpdateAttributeOfInstrument(instrumentId, attributeValueId, dto);
+
+            // Assert
+            result.Should().BeOfType<NoContentResult>();
+        }
+
+        [Test]
+        public async Task UpdateAttributeOfInstrument_WhenProvidedInstrumentIdsInPathAndBodyDoNotMatch_ShouldReturnBadRequest()
+        {
+            // Arrange
+            const int instrumentId = 1;
+            const int attributeValueId = 1;
+
+            await SeedAttributeDefinitionsAndValuesForInstrument(instrumentId);
+
+            var dto = new InstrumentAttributeValueUpdateDto
+            {
+                Id = attributeValueId,
+                AttributeDefinitionId = 1,
+                InstrumentId = instrumentId + 1, // Mismatch
+                Value = "Updated Diameter Value"
+            };
+
+            // Act
+            var result = await _instrumentController.UpdateAttributeOfInstrument(instrumentId, attributeValueId, dto);
+
+            // Assert
+            var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
+            var payload = badRequest.Value.Should().BeOfType<UpdateAttributeValueBadRequestResponseDto>().Subject;
+
+            payload.Message.Should().Be("Instrument id mismatch between URL and body.");
+        }
+
+        [Test]
+        public async Task UpdateAttributeOfInstrument_WhenProvidedAttributeValueIdsInPathAndBodyDoNotMatch_ShouldReturnBadRequest()
+        {
+            // Arrange
+            const int instrumentId = 1;
+            const int attributeValueId = 1;
+
+            await SeedAttributeDefinitionsAndValuesForInstrument(instrumentId);
+
+            var dto = new InstrumentAttributeValueUpdateDto
+            {
+                Id = attributeValueId + 1, // Mismatch
+                AttributeDefinitionId = 1,
+                InstrumentId = instrumentId,
+                Value = "Updated Diameter Value"
+            };
+
+            // Act
+            var result = await _instrumentController.UpdateAttributeOfInstrument(instrumentId, attributeValueId, dto);
+
+            // Assert
+            var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
+            var payload = badRequest.Value.Should().BeOfType<UpdateAttributeValueBadRequestResponseDto>().Subject;
+
+            payload.Message.Should().Be("Attribute id mismatch between URL and body.");
+        }
+
+        [Test]
+        public async Task UpdateAttributeOfInstrument_WhenNoInstrumentWithProvidedIdExists_ShouldReturnNotFound()
+        {
+            // Arrange
+            const int instrumentId = 999; // Does not exist
+            const int attributeValueId = 1;
+
+            await SeedAttributeDefinitionsAndValuesForInstrument(instrumentId);
+
+            var dto = new InstrumentAttributeValueUpdateDto
+            {
+                Id = attributeValueId,
+                AttributeDefinitionId = 1,
+                InstrumentId = instrumentId,
+                Value = "Updated Diameter Value"
+            };
+
+            // Act
+            var result = await _instrumentController.UpdateAttributeOfInstrument(instrumentId, attributeValueId, dto);
+
+            // Assert
+            var badRequest = result.Should().BeOfType<NotFoundObjectResult>().Subject;
+            var payload = badRequest.Value.Should().BeOfType<UpdateAttributeValueNotFoundResponseDto>().Subject;
+
+            payload.Message.Should().Be("The specified instrument does not exist.");
+        }
+
+        [Test]
+        public async Task UpdateAttributeOfInstrument_WhenNoAttributeWithProvidedIdExists_ShouldReturnNotFound()
+        {
+            // Arrange
+            const int instrumentId = 1;
+            const int attributeValueId = 999; // Does not exist
+
+            await SeedAttributeDefinitionsAndValuesForInstrument(instrumentId);
+
+            var dto = new InstrumentAttributeValueUpdateDto
+            {
+                Id = attributeValueId,
+                AttributeDefinitionId = 1,
+                InstrumentId = instrumentId,
+                Value = "Updated Diameter Value"
+            };
+
+            // Act
+            var result = await _instrumentController.UpdateAttributeOfInstrument(instrumentId, attributeValueId, dto);
+
+            // Assert
+            var badRequest = result.Should().BeOfType<NotFoundObjectResult>().Subject;
+            var payload = badRequest.Value.Should().BeOfType<UpdateAttributeValueNotFoundResponseDto>().Subject;
+
+            payload.Message.Should().Be("The specified attribute does not exist.");
+        }
+
+        [Test]
+        public async Task UpdateAttributeOfInstrument_WhenNoAttributeDefinitionWithProvidedIdExists_ShouldReturnBadRequest()
+        {
+            // Arrange
+            const int instrumentId = 1;
+            const int attributeValueId = 1;
+
+            await SeedAttributeDefinitionsAndValuesForInstrument(instrumentId);
+
+            var dto = new InstrumentAttributeValueUpdateDto
+            {
+                Id = attributeValueId,
+                AttributeDefinitionId = 999, // Does not exist
+                InstrumentId = instrumentId,
+                Value = "Updated Diameter Value"
+            };
+
+            // Act
+            var result = await _instrumentController.UpdateAttributeOfInstrument(instrumentId, attributeValueId, dto);
+
+            // Assert
+            var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
+            var payload = badRequest.Value.Should().BeOfType<UpdateAttributeValueBadRequestResponseDto>().Subject;
+
+            payload.Message.Should().Be("The newly associated attribute definition does not exist.");
+        }
+
+        [Test]
+        public async Task DeleteAttributeOfInstrument_WhenProvidedDataIsValid_ShouldReturnNoContent()
+        {
+            // Arrange
+            const int instrumentId = 1;
+            const int attributeValueId = 1;
+
+            await SeedAttributeDefinitionsAndValuesForInstrument(instrumentId);
+
+            // Act
+            var result = await _instrumentController.DeleteAttributeOfInstrument(instrumentId, attributeValueId);
+
+            // Assert
+            result.Should().BeOfType<NoContentResult>();
+        }
+
+        [Test]
+        public async Task DeleteAttributeOfInstrument_WhenNoInstrumentWithProvidedIdExists_ShouldReturnNotFound()
+        {
+            // Arrange
+            const int instrumentId = 999; // Does not exist
+            const int attributeValueId = 1;
+
+            await SeedAttributeDefinitionsAndValuesForInstrument(instrumentId);
+
+            // Act
+            var result = await _instrumentController.DeleteAttributeOfInstrument(instrumentId, attributeValueId);
+
+            // Assert
+            var notFound = result.Should().BeOfType<NotFoundObjectResult>().Subject;
+            var payload = notFound.Value.Should().BeOfType<DeleteAttributeValueNotFoundResponseDto>().Subject;
+
+            payload.Message.Should().Be("The specified instrument does not exist.");
+        }
+
+        [Test]
+        public async Task DeleteAttributeOfInstrument_WhenNoAttributeValueWithProvidedIdExists_ShouldReturnNotFound()
+        {
+            // Arrange
+            const int instrumentId = 1;
+            const int attributeValueId = 999; // Does not exist
+
+            await SeedAttributeDefinitionsAndValuesForInstrument(instrumentId);
+
+            // Act
+            var result = await _instrumentController.DeleteAttributeOfInstrument(instrumentId, attributeValueId);
+
+            // Assert
+            var notFound = result.Should().BeOfType<NotFoundObjectResult>().Subject;
+            var payload = notFound.Value.Should().BeOfType<DeleteAttributeValueNotFoundResponseDto>().Subject;
+
+            payload.Message.Should().Be("The specified attribute value does not exist.");
+        }
+
+        [Test]
+        public async Task DeleteInstrument_WhenProvidedDataIsValid_ShouldReturnNoContent()
+        {
+            // Arrange
+            const int instrumentId = 1;
+
+            await SeedAttributeDefinitionsAndValuesForInstrument(instrumentId);
+
+            // Act
+            var result = await _instrumentController.DeleteInstrument(instrumentId);
+
+            // Assert
+            result.Should().BeOfType<NoContentResult>();
+
+            // Check whether the associated attribute values have been deleted
+            var orphanedAttributeValues = await _dbContext.InstrumentAttributeValues.Select(iav => iav.InstrumentId == instrumentId).ToListAsync();
+            orphanedAttributeValues.Should().NotBeNull();
+            orphanedAttributeValues.Count().Should().Be(0);
+        }
+
         private async Task SeedAttributeDefinitionsAndValuesForInstrument(int instrumentId)
         {
 

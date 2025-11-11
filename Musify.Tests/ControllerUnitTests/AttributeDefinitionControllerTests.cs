@@ -90,8 +90,8 @@ namespace Musify.Tests.ControllerUnitTests
             list.Select(ad => ad.CategoryId).Should().Contain([2, 3]);
             list.Select(ad => ad.Category).Should().Contain(
             [
-                await _dbContext.Categories.FindAsync(2),
-                await _dbContext.Categories.FindAsync(3)
+                (await _dbContext.Categories.FindAsync(2))!,
+                (await _dbContext.Categories.FindAsync(3))!
             ]);
         }
 
