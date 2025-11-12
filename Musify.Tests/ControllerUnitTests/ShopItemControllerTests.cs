@@ -179,7 +179,7 @@ namespace Musify.Tests.ControllerUnitTests
 
             // Assert
             var notFound = result.Should().BeOfType<NotFoundObjectResult>().Subject;
-            var payload = notFound.Value.Should().BeOfType<GetShopItemByIdNotFoundResponseDto>().Subject;
+            var payload = notFound.Value.Should().BeOfType<ShopItemGetByIdNotFoundResponseDto>().Subject;
 
             payload.Message.Should().Be("No shop item with the specified Id exists.");
         }
@@ -232,12 +232,367 @@ namespace Musify.Tests.ControllerUnitTests
 
             // Assert
             var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
-            var payload = badRequest.Should().BeOfType<CreateShopItemBadRequestResponseDto>().Subject;
+            var payload = badRequest.Value.Should().BeOfType<ShopItemCreateBadRequestResponseDto>().Subject;
 
             payload.Message.Should().Be("Associated instrument does not exist.");
         }
 
+        [Test]
+        public async Task UpdateShopItem_WhenProvidedDataIsValid_ShouldReturnNoContent()
+        {
+            // Arrange
+            const int shopItemId = 1;
+            var dto = new ShopItemUpdateDto
+            {
+                Id = shopItemId,
+                InstrumentId = 1,
+                Price = 10000.0M,
+                Stock = 2,
+                Condition = ShopItemCondition.Used
+            };
 
+            // Act
+            var result = await _shopItemController.UpdateShopItem(shopItemId, dto);
+
+            // Assert
+            result.Should().BeOfType<NoContentResult>();
+        }
+
+        [Test]
+        public async Task UpdateShopItem_WhenIdsProvidedInPathAndBodyDoNotMatch_ShouldReturnBadRequest()
+        {
+            // Arrange
+            const int shopItemId = 1;
+            var dto = new ShopItemUpdateDto
+            {
+                Id = shopItemId + 1, // Mismatch
+                InstrumentId = 1,
+                Price = 10000.0M,
+                Stock = 2,
+                Condition = ShopItemCondition.Used
+            };
+
+            // Act
+            var result = await _shopItemController.UpdateShopItem(shopItemId, dto);
+
+            // Assert
+            var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
+            var payload = badRequest.Value.Should().BeOfType<ShopItemUpdateBadRequestResponseDto>().Subject;
+
+            payload.Message.Should().Be("Shop item id mismatch between URL and body.");
+        }
+
+        [Test]
+        public async Task UpdateShopItem_WhenNoShopItemWithProvidedIdExists_ShouldReturnNotFound()
+        {
+            // Arrange
+            const int shopItemId = 999; // Does not exist
+            var dto = new ShopItemUpdateDto
+            {
+                Id = shopItemId,
+                InstrumentId = 1,
+                Price = 10000.0M,
+                Stock = 2,
+                Condition = ShopItemCondition.Used
+            };
+
+            // Act
+            var result = await _shopItemController.UpdateShopItem(shopItemId, dto);
+
+            // Assert
+            var notFound = result.Should().BeOfType<NotFoundObjectResult>().Subject;
+            var payload = notFound.Value.Should().BeOfType<ShopItemUpdateNotFoundResponseDto>().Subject;
+
+            payload.Message.Should().Be("No shop item with specified id exists.");
+        }
+
+        [Test]
+        public async Task UpdateShopItem_WhenNoInstrumentWithProvidedNewInstrumentIdExists_ShouldReturnBadRequest()
+        {
+            // Arrange
+            const int shopItemId = 1;
+            var dto = new ShopItemUpdateDto
+            {
+                Id = shopItemId,
+                InstrumentId = 999, // Does not exist
+                Price = 10000.0M,
+                Stock = 2,
+                Condition = ShopItemCondition.Used
+            };
+
+            // Act
+            var result = await _shopItemController.UpdateShopItem(shopItemId, dto);
+
+            // Assert
+            var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
+            var payload = badRequest.Value.Should().BeOfType<ShopItemUpdateBadRequestResponseDto>().Subject;
+
+            payload.Message.Should().Be("No instrument with newly provided instrumentId exists.");
+        }
+
+        [Test]
+        public async Task PatchShopItemPrice_WhenProvidedDataIsValid_ShouldReturnOk()
+        {
+            // Arrange
+            const int shopItemId = 1;
+            const decimal newPrice = 2000.0M;
+
+            // Act
+            var result = await _shopItemController.PatchShopItemPrice(shopItemId, newPrice);
+
+            // Assert
+            var ok = result.Should().BeOfType<OkObjectResult>().Subject;
+            var payload = ok.Value.Should().BeOfType<ShopItem>().Subject;
+
+            payload.Id.Should().Be(shopItemId);
+            payload.Price.Should().Be(newPrice);
+        }
+
+        [Test]
+        public async Task PatchShopItemPrice_WhenNoShopItemWithProvidedIdExists_ShouldReturnNotFound()
+        {
+            // Arrange
+            const int shopItemId = 999; // Does not exist
+            const decimal newPrice = 2000.0M;
+
+            // Act
+            var result = await _shopItemController.PatchShopItemPrice(shopItemId, newPrice);
+
+            // Assert
+            var ok = result.Should().BeOfType<NotFoundObjectResult>().Subject;
+            var payload = ok.Value.Should().BeOfType<ShopItemPatchPropertyNotFoundResponseDto>().Subject;
+
+            payload.Message.Should().Be("No shop item with the specified Id exists.");
+        }
+
+        [Test]
+        [TestCase(0.0d)]
+        [TestCase(-1.0d)]
+        public async Task PatchShopItemPrice_WhenProvidedPriceIsLEThanZero_ShouldReturnBadRequest(decimal newPrice)
+        {
+            // Arrange
+            const int shopItemId = 1;
+
+            // Act
+            var result = await _shopItemController.PatchShopItemPrice(shopItemId, newPrice);
+
+            // Assert
+            var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
+            var payload = badRequest.Value.Should().BeOfType<ShopItemPatchPropertyBadRequestResponseDto>().Subject;
+
+            payload.Message.Should().Be("Price must be strictly positive.");
+        }
+
+        [Test]
+        public async Task PatchSopItemStock_WhenProvidedDataIsValid_ShouldReturnOk()
+        {
+            // Arrange
+            const int shopItemId = 1;
+            const int newStock = 5;
+
+            // Act
+            var result = await _shopItemController.PatchShopItemStock(shopItemId, newStock);
+
+            // Assert
+            var ok = result.Should().BeOfType<OkObjectResult>().Subject;
+            var payload = ok.Value.Should().BeOfType<ShopItem>().Subject;
+
+            payload.Id.Should().Be(shopItemId);
+            payload.Stock.Should().Be(newStock);
+        }
+
+        [Test]
+        public async Task PatchShopItemStock_WhenNoShopItemWithProvidedIdExists_ShouldReturnNotFound()
+        {
+            // Arrange
+            const int shopItemId = 999; // Does not exist
+            const int newStock = 5;
+
+            // Act
+            var result = await _shopItemController.PatchShopItemStock(shopItemId, newStock);
+
+            // Assert
+            var notFound = result.Should().BeOfType<NotFoundObjectResult>().Subject;
+            var payload = notFound.Value.Should().BeOfType<ShopItemPatchPropertyNotFoundResponseDto>().Subject;
+
+            payload.Message.Should().Be("No shop item with the specified Id exists.");
+        }
+
+        [Test]
+        [TestCase(0)]
+        [TestCase(-1)]
+        public async Task PatchShopItemStock_WhenProvidedStockIsLEThanZero_ShouldReturnBadRequest(int newStock)
+        {
+            // Arrange
+            const int shopItemId = 1;
+
+            // Act
+            var result = await _shopItemController.PatchShopItemStock(shopItemId, newStock);
+
+            // Assert
+            var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
+            var payload = badRequest.Value.Should().BeOfType<ShopItemPatchPropertyBadRequestResponseDto>().Subject;
+
+            payload.Message.Should().Be("Stock value must be strictly positive.");
+        }
+
+        [Test]
+        public async Task IncrementShopItemStock_WhenProvidedDataIsValid_ShouldReturnOk()
+        {
+            // Arrange
+            const int shopItemId = 1;
+            const int increment = 5;
+
+            var shopItemPatched = await _dbContext.ShopItems.FindAsync(shopItemId);
+            int currentStock = shopItemPatched!.Stock;
+
+            // Act
+            var result = await _shopItemController.IncrementShopItemStock(shopItemId, increment);
+
+            // Assert
+            var ok = result.Should().BeOfType<OkObjectResult>().Subject;
+            var payload = ok.Value.Should().BeOfType<ShopItem>().Subject;
+
+            payload.Id.Should().Be(shopItemId);
+            payload.Stock.Should().Be(currentStock + increment);
+        }
+
+        [Test]
+        public async Task IncrementShopItemStock_WhenNoShopItemWithProvidedIdExists_ShouldReturnNotFound()
+        {
+            // Arrange
+            const int shopItemId = 999; // Does not exist
+            const int increment = 5;
+
+            // Act
+            var result = await _shopItemController.IncrementShopItemStock(shopItemId, increment);
+
+            // Assert
+            var notFound = result.Should().BeOfType<NotFoundObjectResult>().Subject;
+            var payload = notFound.Value.Should().BeOfType<ShopItemPatchPropertyNotFoundResponseDto>().Subject;
+
+            payload.Message.Should().Be("No shop item with specified Id exists.");
+        }
+
+        [Test]
+        [TestCase(0)]
+        [TestCase(-1)]
+        public async Task IncrementShopItemStock_WhenProvidedIncrementIsLEThanZero_ShouldReturnBadRequest(int increment)
+        {
+            // Arrange
+            const int shopItemId = 1;
+
+            // Act
+            var result = await _shopItemController.IncrementShopItemStock(shopItemId, increment);
+
+            // Assert
+            var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
+            var payload = badRequest.Value.Should().BeOfType<ShopItemPatchPropertyBadRequestResponseDto>().Subject;
+
+            payload.Message.Should().Be("Increment value must be strictly positive.");
+        }
+
+        [Test]
+        public async Task DecrementShopItemStock_WhenProvidedDataIsValid_ShouldReturnOk()
+        {
+            // Arrange
+            const int shopItemId = 1; // Its stock is 5
+            const int decrement = 4;
+
+            var patchedShopItem = await _dbContext.ShopItems.FindAsync(shopItemId);
+            int currentStock = patchedShopItem!.Stock;
+
+            // Act
+            var result = await _shopItemController.DecrementShopItemStock(shopItemId, decrement);
+
+            // Assert
+            var ok = result.Should().BeOfType<OkObjectResult>().Subject;
+            var payload = ok.Value.Should().BeOfType<ShopItem>().Subject;
+
+            payload.Id.Should().Be(shopItemId);
+            payload.Stock.Should().Be(currentStock - decrement);
+        }
+
+        [Test]
+        public async Task DecrementShopItemStock_WhenNoShopItemWithProvidedIdExists_ShouldReturnNotFound()
+        {
+            // Arrange
+            const int shopItemId = 999; // Does not exist
+            const int decrement = 4;
+
+            // Act
+            var result = await _shopItemController.DecrementShopItemStock(shopItemId, decrement);
+
+            // Assert
+            var notFound = result.Should().BeOfType<NotFoundObjectResult>().Subject;
+            var payload = notFound.Value.Should().BeOfType<ShopItemPatchPropertyNotFoundResponseDto>().Subject;
+
+            payload.Message.Should().Be("No shop item with specified Id exists.");
+        }
+
+        [Test]
+        [TestCase(0)]
+        [TestCase(-1)]
+        public async Task DecrementShopItemStock_WhenProvidedDecrementValueIsLEThanZero_ShouldReturnBadRequest(int decrement)
+        {
+            // Arrange
+            const int shopItemId = 1;
+
+            // Act
+            var result = await _shopItemController.DecrementShopItemStock(shopItemId, decrement);
+
+            // Assert
+            var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
+            var payload = badRequest.Value.Should().BeOfType<ShopItemPatchPropertyBadRequestResponseDto>().Subject;
+
+            payload.Message.Should().Be("Decrement value must be strictly positive.");
+        }
+
+        [Test]
+        public async Task DecrementShopItemStock_WhenProvidedDecrementValueExceedsCurrentStock_ShouldReturnBadRequest()
+        {
+            // Arrange
+            const int shopItemId = 1; // Current stock is 5
+            const int decrement = 6;
+
+            // Act
+            var result = await _shopItemController.DecrementShopItemStock(shopItemId, decrement);
+
+            // Assert
+            var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
+            var payload = badRequest.Value.Should().BeOfType<ShopItemPatchPropertyBadRequestResponseDto>().Subject;
+
+            payload.Message.Should().Be("Decrement value exceeds current stock.");
+        }
+
+        [Test]
+        public async Task Delete_WhenProvidedIdIsValid_ShouldReturnNoContent()
+        {
+            // Arrange
+            const int shopItemId = 1;
+
+            // Act
+            var result = await _shopItemController.DeleteShopItem(shopItemId);
+
+            // Assert
+            result.Should().BeOfType<NoContentResult>();
+        }
+
+        [Test]
+        public async Task Delete_WhenNoShopItemWithProvidedIdExists_ShouldReturnNotFound()
+        {
+            // Arrange
+            const int shopItemId = 999; // Does not exist
+
+            // Act
+            var result = await _shopItemController.DeleteShopItem(shopItemId);
+
+            // Assert
+            var notFound = result.Should().BeOfType<NotFoundObjectResult>().Subject;
+            var payload = notFound.Value.Should().BeOfType<ShopItemDeleteNotFoundResponseDto>().Subject;
+
+            payload.Message.Should().Be("No shop item with specified Id exists.");
+        }
 
         [TearDown]
         public void TearDown()

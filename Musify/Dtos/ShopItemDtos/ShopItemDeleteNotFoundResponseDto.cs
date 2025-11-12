@@ -2,7 +2,7 @@
 
 namespace Musify.Dtos.ShopItemDtos
 {
-    public class GetShopItemByIdNotFoundResponseDto
+    public class ShopItemDeleteNotFoundResponseDto
     {
         [Required]
         public required string Message { get; set; }
