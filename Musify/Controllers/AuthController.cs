@@ -25,6 +25,7 @@ namespace Musify.Controllers
         private readonly ITokenService _tokenService;
         private readonly IEmailConfirmTokenService _emailConfirmTokenService;
         private readonly IEmailSender _emailSender;
+        private readonly IDateTimeProvider _dateTimeProvider;
 
         private const int RateLimitMinutes = 2;
 
@@ -36,18 +37,21 @@ namespace Musify.Controllers
         /// <param name="tokenService">The token service used to generate JWT tokens for user authentication.</param>
         /// <param name="emailConfirmTokenService">The token service used to generate email confirmation tokens.</param>
         /// <param name="emailSender">The email sender service used to send authentication related emails to users.</param>
+        /// <param name="dateTimeProvider">The DateTime provider user to check timestamps</param>
         public AuthController(
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
             ITokenService tokenService,
             IEmailConfirmTokenService emailConfirmTokenService,
-            IEmailSender emailSender)
+            IEmailSender emailSender,
+            IDateTimeProvider dateTimeProvider)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _tokenService = tokenService;
             _emailConfirmTokenService = emailConfirmTokenService;
             _emailSender = emailSender;
+            _dateTimeProvider = dateTimeProvider;
         }
 
         /// <summary>
@@ -65,15 +69,15 @@ namespace Musify.Controllers
         ///     otherwise, a <see cref="BadRequestObjectResult"/> with error details.
         /// </returns>
         [HttpPost("register")]
-        public async Task<ActionResult> Register([FromBody] RegisterDto dto)
+        public async Task<IActionResult> Register([FromBody] RegisterDto dto)
         {
             var user = await _userManager.FindByNameAsync(dto.Username);
             if (user != null)
             {
-                return BadRequest(new { Message = "Username already taken" });
+                return BadRequest(new RegisterUsernameAlreadyTakenDto{Message = "Username already taken" });
             }
 
-            user = new ApplicationUser { UserName = dto.Username, Email = dto.Email, RegistrationTime = DateTimeOffset.UtcNow };
+            user = new ApplicationUser { UserName = dto.Username, Email = dto.Email, RegistrationTime = _dateTimeProvider.UtcNow };
             var result = await _userManager.CreateAsync(user, dto.Password);
 
             // Assign role and generate token, as well as send confirmation email
@@ -85,7 +89,7 @@ namespace Musify.Controllers
                 // Refetch user to get the Id
                 user = await _userManager.FindByNameAsync(dto.Username);
                 // Generate email confirmation token
-                string emailConfirmToken = await _emailConfirmTokenService.GenerateEmailConfirmationToken(user!);
+                string emailConfirmToken = await _emailConfirmTokenService.GenerateEmailConfirmationTokenAsync(user!);
 
                 var request = HttpContext.Request;
                 var baseUrl = $"{request.Scheme}://{request.Host}";
@@ -96,10 +100,10 @@ namespace Musify.Controllers
                     "Musify email confirmation",
                     $"Please confirm your account by <a href='{confirmationLink}'>Clicking here</a>.");
 
-                user.LastConfirmEmailSent = DateTimeOffset.UtcNow;
+                user.LastConfirmEmailSent = _dateTimeProvider.UtcNow;
                 await _userManager.UpdateAsync(user);
 
-                return Ok(new { Message = "User registered successfully", jwtToken });
+                return Ok(new RegisterOkResponseDto{ Message = "User registered successfully", JwtToken = jwtToken});
             }
 
             foreach (var error in result.Errors)
@@ -122,29 +126,29 @@ namespace Musify.Controllers
         ///     othewise an <see cref="UnauthorizedObjectResult"/> with error details.
         /// </returns>
         [HttpPost("login")]
-        public async Task<ActionResult> Login([FromBody] LoginDto dto)
+        public async Task<IActionResult> Login([FromBody] LoginDto dto)
         {
             var user = await _userManager.FindByNameAsync(dto.Username);
 
             if (user == null)
             {
-                return Unauthorized(new { Message = "Invalid username or password" });
+                return Unauthorized(new LoginUnauthorizedResponseDto{ Message = "Invalid username or password" });
             }
 
-            if (user.EmailConfirmed == false)
+            if (!user.EmailConfirmed)
             {
-                return Unauthorized(new { Message = "Email not confirmed. Please confirm your email before logging in." });
+                return Unauthorized(new LoginUnauthorizedResponseDto { Message = "Email not confirmed. Please confirm your email before logging in." });
             }
 
             var result = await _signInManager.CheckPasswordSignInAsync(user, dto.Password, false);
             if (!result.Succeeded)
             {
-                return Unauthorized(new { Message = "Invalid username or password" });
+                return Unauthorized(new LoginUnauthorizedResponseDto { Message = "Invalid username or password" });
             }
 
             var roles = await _userManager.GetRolesAsync(user);
             var token = _tokenService.GenerateToken(user, roles);
-            return Ok(new { Message = "Login successful", token });
+            return Ok(new LoginOkResponseDto{Message = "Login successful", JwtToken = token});
         }
 
         /// <summary>
@@ -162,29 +166,42 @@ namespace Musify.Controllers
         ///     otherwise, a <see cref="NotFoundObjectResult"/> if the user is not found, or a <see cref="BadRequestObjectResult"/> if the confirmation fails.
         /// </returns>
         [HttpGet("confirmemail")]
-        public async Task<ActionResult> ConfirmEmail(string userId, string token)
+        public async Task<IActionResult> ConfirmEmail(string userId, string token)
         {
             if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(token))
             {
-                return BadRequest(new { Message = "UserId and Token are required" });
+                return BadRequest(new EmailConfirmBadRequestResponseDto
+                {
+                    Message = "UserId and Token are required" ,
+                    Errors = new List<string> { "UserId and Token cannot be null or empty" }
+                });
             }
 
-            var user = await _userManager.FindByIdAsync(userId);
+            ApplicationUser? user = await _userManager.FindByIdAsync(userId);
             if (user == null)
             {
-                return NotFound(new { Message = "User not found" });
+                return NotFound(new EmailConfirmNotFoundResponseDto { Message = "User not found" });
+            }
+
+            if (user.EmailConfirmed)
+            {
+                return Ok(new EmailConfirmOkResponseDto { Message = "Email confirmed successfully" });
             }
 
             // Decode the token
-            var decodedTokenBytes = WebEncoders.Base64UrlDecode(token);
-            var decodedToken = Encoding.UTF8.GetString(decodedTokenBytes);
-            var result = await _userManager.ConfirmEmailAsync(user, decodedToken);
+            byte[] decodedTokenBytes = WebEncoders.Base64UrlDecode(token);
+            string decodedToken = Encoding.UTF8.GetString(decodedTokenBytes);
+            IdentityResult result = await _userManager.ConfirmEmailAsync(user, decodedToken);
 
             if (result.Succeeded)
             {
-                return Ok(new { Message = "Email confirmed successfully" });
+                return Ok(new EmailConfirmOkResponseDto { Message = "Email confirmed successfully" });
             }
-            return BadRequest(new { Message = "Email confirmation failed", Errors = result.Errors.Select(e => e.Description) });
+            return BadRequest(new EmailConfirmBadRequestResponseDto
+            {
+                Message = "Email confirmation failed",
+                Errors = result.Errors.Select(e => e.Description)
+            });
         }
 
         /// <summary>
@@ -200,32 +217,32 @@ namespace Musify.Controllers
         ///     An <see cref="OkObjectResult"/> response regardless of the outcome to prevent email enumeration.
         /// </returns>
         [HttpPost("resend-confirmation-email")]
-        public async Task<ActionResult> ResendConfirmationEmail([FromBody] ResendConfirmationEmailDto dto)
+        public async Task<IActionResult> ResendConfirmationEmail([FromBody] ResendConfirmationEmailDto dto)
         {
             var user = await _userManager.FindByEmailAsync(dto.Email);
             if (user == null)
             {
                 // To prevent email enumeration, always return OK
-                return Ok(new { Message = "Confirmation email resent successfully" });
+                return Ok(new ResendConfirmationEmailOkResponseDto{ Message = "Confirmation email resent successfully" });
             }
 
             if (user.EmailConfirmed)
             {
-                return Ok(new { Message = "Email is already confirmed" });
+                return Ok(new ResendConfirmationEmailOkResponseDto { Message = "Confirmation email resent successfully" });
             }
 
             // Rate limiting: Allow resending only if last sent was more than n minutes ago
             if (user.LastConfirmEmailSent.HasValue)
             {
-                var diff = RateLimitMinutes - (DateTimeOffset.UtcNow - user.LastConfirmEmailSent.Value).TotalMinutes;
+                var diff = RateLimitMinutes - (_dateTimeProvider.UtcNow - user.LastConfirmEmailSent.Value).TotalMinutes;
 
                 if (diff > 0)
                 {
-                    return Ok(new { Message = "Confirmation email resent successfully" });
+                    return Ok(new ResendConfirmationEmailOkResponseDto { Message = "Confirmation email resent successfully" });
                 }
             }
 
-            string emailConfirmToken = await _emailConfirmTokenService.GenerateEmailConfirmationToken(user);
+            string emailConfirmToken = await _emailConfirmTokenService.GenerateEmailConfirmationTokenAsync(user);
 
             var request = HttpContext.Request;
             var baseUrl = $"{request.Scheme}://{request.Host}";
@@ -237,10 +254,10 @@ namespace Musify.Controllers
                 "Musify email confirmation",
                 $"Please confirm your account by <a href='{confirmationLink}'>Clicking here</a>.");
 
-            user.LastConfirmEmailSent = DateTimeOffset.UtcNow;
+            user.LastConfirmEmailSent = _dateTimeProvider.UtcNow;
             await _userManager.UpdateAsync(user);
 
-            return Ok(new { Message = "Confirmation email resent successfully" });
+            return Ok(new ResendConfirmationEmailOkResponseDto { Message = "Confirmation email resent successfully" });
         }
 
         /// <summary>
@@ -262,17 +279,17 @@ namespace Musify.Controllers
             if (user == null || !(await _userManager.IsEmailConfirmedAsync(user)))
             {
                 // To prevent email enumeration, always return OK
-                return Ok(new { Message = "If a user was registered with the provided email, a password reset link has been sent." });
+                return Ok(new ForgotPasswordOkResponseDto { Message = "If a user was registered with the provided email, a password reset link has been sent." });
             }
 
             // Rate limiting: Allow sending only if last sent was more than n minutes ago
             if (user.LastPasswordResetSent.HasValue)
             {
-                var diff = RateLimitMinutes - (DateTimeOffset.UtcNow - user.LastPasswordResetSent.Value).TotalMinutes;
+                var diff = RateLimitMinutes - (_dateTimeProvider.UtcNow - user.LastPasswordResetSent.Value).TotalMinutes;
 
                 if (diff > 0)
                 {
-                    return Ok(new { Message = "If a user was registered with the provided email, a password reset link has been sent." });
+                    return Ok(new ForgotPasswordOkResponseDto { Message = "If a user was registered with the provided email, a password reset link has been sent." });
                 }
             }
 
@@ -288,10 +305,10 @@ namespace Musify.Controllers
                 "Musify Password Reset",
                 $"You can reset your password by <a href='{resetLink}'>Clicking here</a>. If you did not request a password reset, please ignore this email.");
 
-            user.LastPasswordResetSent = DateTimeOffset.UtcNow;
+            user.LastPasswordResetSent = _dateTimeProvider.UtcNow;
             await _userManager.UpdateAsync(user);
 
-            return Ok(new { Message = "If a user was registered with the provided email, a password reset link has been sent." });
+            return Ok(new ForgotPasswordOkResponseDto { Message = "If a user was registered with the provided email, a password reset link has been sent." });
         }
 
         /// <summary>
@@ -319,7 +336,7 @@ namespace Musify.Controllers
             if (user == null)
             {
                 // To prevent user enumeration, always return OK
-                return Ok(new { Message = "Password has been reset successfully." });
+                return Ok(new ResetPasswordOkResponseDto { Message = "Password has been reset successfully." });
             }
 
             var decodedTokenBytes = WebEncoders.Base64UrlDecode(dto.Token);
@@ -328,7 +345,7 @@ namespace Musify.Controllers
 
             if (result.Succeeded)
             {
-                return Ok(new { Message = "Password has been reset successfully." });
+                return Ok(new ResetPasswordOkResponseDto { Message = "Password has been reset successfully." });
             }
 
             foreach (var error in result.Errors)

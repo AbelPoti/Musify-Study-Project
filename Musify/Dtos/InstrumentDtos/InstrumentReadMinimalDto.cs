@@ -17,6 +17,8 @@ namespace Musify.Dtos.InstrumentDtos
 
         public string? Description { get; set; }
 
+        // This property is here to mark the shape of the DTO, so it is fine even though it is never mutated 
+        // ReSharper disable once CollectionNeverUpdated.Global
         public ICollection<InstrumentAttributeValue> Attributes { get; set; } = [];
     }
 }

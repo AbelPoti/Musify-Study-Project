@@ -17,17 +17,17 @@ namespace Musify.Controllers
     /// </remarks>
     [Route("api/[controller]")]
     [ApiController]
-    public class AttributeDefinitionsController : ControllerBase
+    public class AttributeDefinitionController : ControllerBase
     {
         private readonly MusifyDbContext _musifyDbContext;
 
         /// <summary>
-        ///     Initializes a new instance of the <see cref="AttributeDefinitionsController"/> class.
+        ///     Initializes a new instance of the <see cref="AttributeDefinitionController"/> class.
         /// </summary>
         /// <param
         ///     name="musifyDbContext">The database context used to interact with the Musify database./>.
         /// </param>
-        public AttributeDefinitionsController(MusifyDbContext musifyDbContext)
+        public AttributeDefinitionController(MusifyDbContext musifyDbContext)
         {
             _musifyDbContext = musifyDbContext;
         }
@@ -43,7 +43,7 @@ namespace Musify.Controllers
         /// </returns>
         [HttpGet]
         [Authorize(Roles = $"{UserRole.StoreManager}, {UserRole.WarehouseManager}, {UserRole.Admin}")]
-        public async Task<ActionResult> GetAllAttributeDefinitions()
+        public async Task<IActionResult> GetAllAttributeDefinitions()
         {
             var attributeDefinitions = await _musifyDbContext.AttributeDefinitions.ToListAsync();
             return Ok(attributeDefinitions);
@@ -91,7 +91,8 @@ namespace Musify.Controllers
             var category = await _musifyDbContext.Categories.FindAsync(categoryId);
             if (category == null)
             {
-                return NotFound(new { Message = "Category not found." });
+                return NotFound(new AttributeDefinitionGetByCategoryIdNotFoundResponseDto
+                    { Message = "Category not found." });
             }
 
             var attributeDefinitions = await _musifyDbContext.AttributeDefinitions
@@ -137,7 +138,7 @@ namespace Musify.Controllers
             var category = await _musifyDbContext.Categories.FindAsync(attributeDto.CategoryId);
             if (category == null)
             {
-                return BadRequest(new { Message = "Associated category does not exist." });
+                return BadRequest(new AttributeDefinitionCreateBadRequestResponseDto { Message = "Associated category does not exist." });
             }
 
             var newAttributeDefinition = new AttributeDefinition
@@ -175,20 +176,20 @@ namespace Musify.Controllers
         {
             if (id != attributeDto.Id)
             {
-                return BadRequest("ID in URL does not match ID in body.");
+                return BadRequest(new AttributeDefinitionUpdateBadRequestResponseDto { Message = "ID in URL does not match ID in body." });
             }
 
             var existingAttributeDefinition = await _musifyDbContext.AttributeDefinitions.FindAsync(attributeDto.Id);
             if (existingAttributeDefinition == null)
             {
-                return NotFound("Attribute definition not found.");
+                return NotFound(new AttributeDefinitionUpdateNotFoundResponseDto { Message = "Attribute definition not found." });
             }
 
             // Check if the associated Category exists
             var category = await _musifyDbContext.Categories.FindAsync(attributeDto.CategoryId);
             if (category == null)
             {
-                return BadRequest(new { Message = "Associated category does not exist." });
+                return BadRequest(new AttributeDefinitionUpdateBadRequestResponseDto { Message = "Associated category does not exist." });
             }
 
             existingAttributeDefinition.Name = attributeDto.Name;
@@ -220,7 +221,7 @@ namespace Musify.Controllers
             var attributeDefinition = await _musifyDbContext.AttributeDefinitions.FindAsync(id);
             if (attributeDefinition == null)
             {
-                return NotFound("Attribute definition not found.");
+                return NotFound(new AttributeDefinitionDeleteNotFoundResponseDto { Message = "Attribute definition not found." });
             }
 
             _musifyDbContext.AttributeDefinitions.Remove(attributeDefinition);

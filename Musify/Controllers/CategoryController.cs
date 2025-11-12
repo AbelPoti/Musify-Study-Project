@@ -15,15 +15,15 @@ namespace Musify.Controllers
     /// </remarks>
     [Route("api/[controller]")]
     [ApiController]
-    public class CategoriesController : ControllerBase
+    public class CategoryController : ControllerBase
     {
         private MusifyDbContext _dbContext;
 
         /// <summary>
-        ///     Initializes a new instance of the <see cref="CategoriesController"/> class.
+        ///     Initializes a new instance of the <see cref="CategoryController"/> class.
         /// </summary>
         /// <param name="dbContext">The database context used to interact with the Musify database.</param>
-        public CategoriesController(MusifyDbContext dbContext)
+        public CategoryController(MusifyDbContext dbContext)
         {
             _dbContext = dbContext;
         }
@@ -35,7 +35,7 @@ namespace Musify.Controllers
         ///     An <see cref="OkObjectResult"/> response containing the list of categories.
         /// </returns>
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Category>>> GetAllCategories()
+        public async Task<IActionResult> GetAllCategories()
         {
             var categories = await _dbContext.Categories.ToListAsync();
             return Ok(categories);
@@ -54,7 +54,7 @@ namespace Musify.Controllers
         ///     otherwise a <see cref="NotFoundResult"/> if no category exists with the specified identifier.
         /// </returns>
         [HttpGet("{id}")]
-        public async Task<ActionResult<Category>> GetCategoryById(int id)
+        public async Task<IActionResult> GetCategoryById(int id)
         {
             var category = await _dbContext.Categories.FindAsync(id);
             if (category == null)
@@ -79,7 +79,7 @@ namespace Musify.Controllers
         /// </returns>
         [Authorize(Roles = UserRole.Admin)]
         [HttpPost]
-        public async Task<ActionResult<Category>> CreateCategory([FromBody] CategoryCreateDto categoryDto)
+        public async Task<IActionResult> CreateCategory([FromBody] CategoryCreateDto categoryDto)
         {
             // Check if parent category exists if ParentId is set
             if (categoryDto.ParentId.HasValue)
@@ -87,7 +87,8 @@ namespace Musify.Controllers
                 var parentCategory = await _dbContext.Categories.FindAsync(categoryDto.ParentId.Value);
                 if (parentCategory == null)
                 {
-                    return BadRequest(new { Message = "Parent category does not exist." });
+                    return BadRequest(new CategoryCreateBadRequestResponseDto
+                        { Message = "Parent category does not exist." });
                 }
             }
 
@@ -99,7 +100,7 @@ namespace Musify.Controllers
 
             _dbContext.Categories.Add(newCategory);
             await _dbContext.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetCategoryById), new { id = newCategory.Id }, categoryDto);
+            return CreatedAtAction(nameof(GetCategoryById), new { id = newCategory.Id }, newCategory);
         }
 
         /// <summary>
@@ -120,17 +121,18 @@ namespace Musify.Controllers
         /// </returns>
         [Authorize(Roles = UserRole.Admin)]
         [HttpPut("{id}")]
-        public async Task<ActionResult<Category>> UpdateCategory(int id, [FromBody] Category category)
+        public async Task<IActionResult> UpdateCategory(int id, [FromBody] CategoryUpdateDto category)
         {
             if (id != category.Id)
             {
-                return BadRequest(new { Message = "Category id is invalid." });
+                return BadRequest(new CategoryUpdateBadRequestResponseDto
+                    { Message = "Category Id mismatch between path and body." });
             }
 
             var existingCategory = await _dbContext.Categories.FindAsync(id);
             if (existingCategory == null)
             {
-                return NotFound();
+                return NotFound(new CategoryUpdateNotFoundResponseDto { Message = "Category Id is invalid."});
             }
 
             // Check if parent category exists if ParentId is set
@@ -139,7 +141,8 @@ namespace Musify.Controllers
                 var parentCategory = await _dbContext.Categories.FindAsync(category.ParentId.Value);
                 if (parentCategory == null)
                 {
-                    return BadRequest(new { Message = "Parent category does not exist." });
+                    return BadRequest(new CategoryUpdateBadRequestResponseDto
+                        { Message = "Parent category does not exist." });
                 }
             }
 
@@ -166,19 +169,24 @@ namespace Musify.Controllers
         /// </returns>
         [Authorize(Roles = UserRole.Admin)]
         [HttpDelete("{id}")]
-        public async Task<ActionResult<Category>> DeleteCategory(int id)
+        public async Task<IActionResult> DeleteCategory(int id)
         {
             var category = await _dbContext.Categories.FindAsync(id);
             if (category == null)
             {
-                return NotFound();
+                return NotFound(new CategoryDeleteNotFoundResponseDto
+                    { Message = "No category with the specified Id was found." });
             }
 
             // Check if the category has any child categories
-            var childCategories = await _dbContext.Categories.Where(c => c.ParentId == id).ToListAsync();
+            List<Category> childCategories = await _dbContext.Categories.Where(c => c.ParentId == id).ToListAsync();
             if (childCategories.Any())
             {
-                return BadRequest(new { Message = "Cannot delete category with child categories." });
+                return BadRequest(new CategoryDeleteBadRequestResponseDto
+                {
+                    Message = "Cannot delete category with child categories.",
+                    ChildCategoryIds = childCategories.Select(cc => cc.Id)
+                });
             }
 
             _dbContext.Categories.Remove(category);

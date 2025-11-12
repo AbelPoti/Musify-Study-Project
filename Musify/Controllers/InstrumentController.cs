@@ -17,15 +17,15 @@ namespace Musify.Controllers
     /// </remarks>
     [Route("api/[controller]")]
     [ApiController]
-    public class InstrumentsController : ControllerBase
+    public class InstrumentController : ControllerBase
     {
         private MusifyDbContext _dbContext;
 
         /// <summary>
-        ///     Initializes a new instance of the <see cref="InstrumentsController"/> class.
+        ///     Initializes a new instance of the <see cref="InstrumentController"/> class.
         /// </summary>
         /// <param name="dbContext">The database context used to interact with the Musify database.</param>
-        public InstrumentsController(MusifyDbContext dbContext)
+        public InstrumentController(MusifyDbContext dbContext)
         {
             _dbContext = dbContext;
         }
@@ -37,23 +37,20 @@ namespace Musify.Controllers
         ///     An <see cref="OkObjectResult"/> response containing the list of categories.
         /// </returns>
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<InstrumentReadMinimalDto>>> GetAllInstruments()
+        public async Task<IActionResult> GetAllInstruments()
         {
             var instruments = await _dbContext.Instruments.ToListAsync();
 
             List<InstrumentReadMinimalDto> instrumentDtos = [];
-            foreach (var instrument in instruments)
+            instrumentDtos.AddRange(instruments.Select(instrument => new InstrumentReadMinimalDto
             {
-                instrumentDtos.Add(new InstrumentReadMinimalDto
-                {
-                    Id = instrument.Id,
-                    Name = instrument.Name,
-                    Brand = instrument.Brand,
-                    CategoryId = instrument.CategoryId,
-                    Description = instrument.Description,
-                    Attributes = []
-                });
-            }
+                Id = instrument.Id,
+                Name = instrument.Name,
+                Brand = instrument.Brand,
+                CategoryId = instrument.CategoryId,
+                Description = instrument.Description,
+                Attributes = []
+            }));
 
             return Ok(instrumentDtos);
         }
@@ -71,7 +68,7 @@ namespace Musify.Controllers
         ///     otherwise a <see cref="NotFoundResult"/> if no instrument exists with the specified identifier.
         /// </returns>
         [HttpGet("{id}")]
-        public async Task<ActionResult<InstrumentReadMinimalDto>> GetInstrumentById(int id)
+        public async Task<IActionResult> GetInstrumentById(int id)
         {
             var instrument = await _dbContext.Instruments.FindAsync(id);
             if (instrument == null)
@@ -107,12 +104,12 @@ namespace Musify.Controllers
         /// </returns>
         [HttpPost]
         [Authorize(Roles = UserRole.Admin)]
-        public async Task<ActionResult<InstrumentReadMinimalDto>> CreateInstrument([FromBody] InstrumentCreateDto instrumentDto)
+        public async Task<IActionResult> CreateInstrument([FromBody] InstrumentCreateDto instrumentDto)
         {
             var category = await _dbContext.Categories.FindAsync(instrumentDto.CategoryId);
             if (category == null)
             {
-                return BadRequest(new { Message = "Associated category does not exist." });
+                return BadRequest(new InstrumentCreateBadRequestResponseDto { Message = "Associated category does not exist." });
             }
 
             var newInstrument = new Instrument
@@ -126,7 +123,6 @@ namespace Musify.Controllers
 
             var returnedInstrumentDto = new InstrumentReadMinimalDto
             {
-                Id = newInstrument.Id,
                 Name = newInstrument.Name,
                 Brand = newInstrument.Brand,
                 CategoryId = newInstrument.CategoryId,
@@ -136,6 +132,10 @@ namespace Musify.Controllers
 
             _dbContext.Instruments.Add(newInstrument);
             await _dbContext.SaveChangesAsync();
+
+            // Set the id in the returned DTO after saving to get the generated id
+            returnedInstrumentDto.Id = newInstrument.Id;
+
             return CreatedAtAction(nameof(GetInstrumentById), new { id = newInstrument.Id }, returnedInstrumentDto);
         }
 
@@ -156,23 +156,23 @@ namespace Musify.Controllers
         /// </returns>
         [HttpPut("{id}")]
         [Authorize(Roles = UserRole.Admin)]
-        public async Task<ActionResult<Instrument>> UpdateInstrument(int id, [FromBody] InstrumentUpdateDto instrumentDto)
+        public async Task<IActionResult> UpdateInstrument(int id, [FromBody] InstrumentUpdateDto instrumentDto)
         {
             if (instrumentDto.Id != id)
             {
-                return BadRequest(new { Message = "Instrument id is invalid." });
+                return BadRequest(new InstrumentUpdateBadRequestResponseDto { Message = "Instrument Id mismatch between path and body." });
             }
 
             var category = await _dbContext.Categories.FindAsync(instrumentDto.CategoryId);
             if (category == null)
             {
-                return BadRequest(new { Message = "Associated category does not exist." });
+                return BadRequest(new InstrumentUpdateBadRequestResponseDto { Message = "Associated category does not exist." });
             }
 
             var existingInstrument = await _dbContext.Instruments.FindAsync(id);
             if (existingInstrument == null)
             {
-                return NotFound();
+                return NotFound(new InstrumentUpdateNotFoundResponseDto { Message = "No instrument with provided Id exists." });
             }
 
             existingInstrument.Name = instrumentDto.Name;
@@ -182,7 +182,7 @@ namespace Musify.Controllers
 
             _dbContext.Instruments.Update(existingInstrument);
             await _dbContext.SaveChangesAsync();
-            return Ok(existingInstrument);
+            return NoContent();
         }
 
         /// <summary>
@@ -198,7 +198,7 @@ namespace Musify.Controllers
         ///     otherwise a <see cref="NotFoundResult"/> if no instrument exists with the specified identifier.
         /// </returns>
         [HttpGet("{id}/attributes")]
-        public async Task<ActionResult<IEnumerable<InstrumentAttributeValueReadDetailedDto>>> GetAttributesForInstrument(int id)
+        public async Task<IActionResult> GetAttributesOfInstrument(int id)
         {
             var instrument = await _dbContext.Instruments
                 .Include(i => i.Attributes)
@@ -207,7 +207,7 @@ namespace Musify.Controllers
 
             if (instrument == null)
             {
-                return NotFound(); 
+                return NotFound();
             }
 
             List<InstrumentAttributeValueReadDetailedDto> attributeDtos = [];
@@ -252,11 +252,11 @@ namespace Musify.Controllers
         /// </returns>
         [HttpPost("{id}/attributes")]
         [Authorize(Roles = UserRole.Admin)]
-        public async Task<ActionResult<Instrument>> AddAttributeToInstrument(int id, [FromBody] InstrumentAttributeValueCreateDto attribute)
+        public async Task<IActionResult> AddAttributeToInstrument(int id, [FromBody] InstrumentAttributeValueCreateDto attribute)
         {
             if (id != attribute.InstrumentId)
             {
-                return BadRequest(new { Message = "Instrument id is invalid." });
+                return BadRequest(new AddAttributeValueToInstrumentBadRequestResponseDto { Message = "Instrument id mismatch between URL and body." });
             }
 
             var instrument = await _dbContext.Instruments
@@ -264,13 +264,13 @@ namespace Musify.Controllers
                 .FirstOrDefaultAsync(i => i.Id == id);
             if (instrument == null)
             {
-                return NotFound(new { Message = "The specified instrument does not exist." });
+                return NotFound(new AddAttributeValueToInstrumentNotFoundResponseDto { Message = "The specified instrument does not exist." });
             }
 
             var attributeDefinition = await _dbContext.AttributeDefinitions.FindAsync(attribute.AttributeDefinitionId);
             if (attributeDefinition == null)
             {
-                return BadRequest(new { Message = "Associated attribute definition does not exist." });
+                return BadRequest(new AddAttributeValueToInstrumentBadRequestResponseDto { Message = "Associated attribute definition does not exist." });
             }
 
             var attributeValue = new InstrumentAttributeValue
@@ -282,14 +282,13 @@ namespace Musify.Controllers
                 Value = attribute.Value
             };
 
-
-            instrument.Attributes.Add(attributeValue);
+            _dbContext.InstrumentAttributeValues.Add(attributeValue);
 
             _dbContext.Instruments.Update(instrument);
             await _dbContext.SaveChangesAsync();
             return CreatedAtAction(
                 nameof(GetInstrumentById),
-                new { id = instrument.Id },
+                new { id = attributeValue.Id },
                 new InstrumentAttributeValueReadMinimalDto
                 {
                     Id = attributeValue.Id,
@@ -320,7 +319,7 @@ namespace Musify.Controllers
         /// </returns>
         [HttpPut("{instrumentId}/attributes/{attributeId}")]
         [Authorize(Roles = UserRole.Admin)]
-        public async Task<ActionResult<InstrumentAttributeValue>> UpdateAttributeOfInstrument(
+        public async Task<IActionResult> UpdateAttributeOfInstrument(
             int instrumentId,
             int attributeId,
             [FromBody] InstrumentAttributeValueUpdateDto attribute
@@ -328,12 +327,12 @@ namespace Musify.Controllers
         {
             if (attribute.Id != attributeId)
             {
-                return BadRequest(new { Message = "Attribute id is invalid." });
+                return BadRequest(new UpdateAttributeValueBadRequestResponseDto { Message = "Attribute id mismatch between URL and body." });
             }
 
             if (attribute.InstrumentId != instrumentId)
             {
-                return BadRequest(new { Message = "Instrument id is invalid." });
+                return BadRequest(new UpdateAttributeValueBadRequestResponseDto { Message = "Instrument id mismatch between URL and body." });
             }
 
             var instrument = await _dbContext.Instruments.
@@ -343,20 +342,28 @@ namespace Musify.Controllers
 
             if (instrument == null)
             {
-                return NotFound(new { Message = "The specified instrument does not exist." });
+                return NotFound(new UpdateAttributeValueNotFoundResponseDto { Message = "The specified instrument does not exist." });
             }
 
-            var existingAttribute = instrument.Attributes.FirstOrDefault(a => a.Id == attributeId);
+            var existingAttribute = await _dbContext.InstrumentAttributeValues.FindAsync(attributeId);
             if (existingAttribute == null)
             {
-                return NotFound(new { Message = "The specified attribute does not exist." });
+                return NotFound(new UpdateAttributeValueNotFoundResponseDto { Message = "The specified attribute does not exist." });
+            }
+
+            if (existingAttribute.InstrumentId != instrumentId)
+            {
+                return BadRequest(new UpdateAttributeValueBadRequestResponseDto
+                {
+                    Message = "The provided attribute value is not associated with the provided instrument."
+                });
             }
 
             // Check if the new AttributeDefinitionId exists
             var attributeDefinition = await _dbContext.AttributeDefinitions.FindAsync(attribute.AttributeDefinitionId);
             if (attributeDefinition == null)
             {
-                return BadRequest(new { Message = "The newly associated attribute definition does not exist." });
+                return BadRequest(new UpdateAttributeValueBadRequestResponseDto { Message = "The newly associated attribute definition does not exist." });
             }
 
             existingAttribute.AttributeDefinitionId = attribute.AttributeDefinitionId;
@@ -365,27 +372,7 @@ namespace Musify.Controllers
             _dbContext.InstrumentAttributeValues.Update(existingAttribute);
             await _dbContext.SaveChangesAsync();
 
-            // Construct after SaveChanges to ensure that correct navigation properties are loaded
-            existingAttribute = await _dbContext.InstrumentAttributeValues
-                .Include(av => av.AttributeDefinition)
-                .FirstOrDefaultAsync(av => av.Id == attributeId);
-
-            var attributeValueReadDto = new InstrumentAttributeValueReadDetailedDto
-            {
-                Id = existingAttribute!.Id,
-                InstrumentId = existingAttribute.InstrumentId,
-                AttributeDefinitionId = existingAttribute.AttributeDefinitionId,
-                AttributeDefinition = new AttributeDefinitionReadMinimalDto
-                {
-                    Id = existingAttribute.AttributeDefinition.Id,
-                    Name = existingAttribute.AttributeDefinition.Name,
-                    DataType = existingAttribute.AttributeDefinition.DataType,
-                    CategoryId = existingAttribute.AttributeDefinition.CategoryId
-                },
-                Value = existingAttribute.Value
-            };
-
-            return Ok(attributeValueReadDto);
+            return NoContent();
         }
 
         /// <summary>
@@ -440,13 +427,21 @@ namespace Musify.Controllers
                 .FirstOrDefaultAsync(i => i.Id == instrumentId);
             if (instrument == null)
             {
-                return NotFound(new { Message = "The specified instrument does not exist." });
+                return NotFound(new DeleteAttributeValueNotFoundResponseDto { Message = "The specified instrument does not exist." });
             }
 
-            var attributeValue = instrument.Attributes.FirstOrDefault(a => a.Id == attributeId);
+            var attributeValue = await _dbContext.InstrumentAttributeValues.FindAsync(attributeId);
             if (attributeValue == null)
             {
-                return NotFound(new { Message = "The specified attribute does not exist." });
+                return NotFound(new DeleteAttributeValueNotFoundResponseDto { Message = "The specified attribute value does not exist." });
+            }
+
+            if (attributeValue.InstrumentId != instrumentId)
+            {
+                return BadRequest(new DeleteAttributeValueBadRequestResponseDto
+                {
+                    Message = "The provided attribute value is not associated with the provided instrument."
+                });
             }
 
             instrument.Attributes.Remove(attributeValue);
