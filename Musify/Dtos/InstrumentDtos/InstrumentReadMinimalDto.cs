@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Musify.Dtos.InstrumentDtos
 {
-    public class InstrumentReadMinimalDto
+    public record InstrumentReadMinimalDto
     {
         public int Id { get; set; }
 
