@@ -218,13 +218,11 @@ namespace Musify.Controllers
                     Id = attr.Id,
                     InstrumentId = attr.InstrumentId,
                     AttributeDefinitionId = attr.AttributeDefinitionId,
-                    AttributeDefinition = new AttributeDefinitionReadMinimalDto
-                    {
-                        Id = attr.AttributeDefinition.Id,
-                        Name = attr.AttributeDefinition.Name,
-                        DataType = attr.AttributeDefinition.DataType,
-                        CategoryId = attr.AttributeDefinition.CategoryId
-                    },
+                    AttributeDefinition = new AttributeDefinitionReadMinimalDto(
+                        attr.AttributeDefinitionId,
+                        attr.AttributeDefinition.Name,
+                        attr.AttributeDefinition.DataType,
+                        attr.AttributeDefinition.CategoryId),
                     Value = attr.Value
                 });
             }

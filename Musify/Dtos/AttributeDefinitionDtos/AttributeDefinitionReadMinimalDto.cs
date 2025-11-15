@@ -1,18 +1,10 @@
 ﻿using Musify.Models;
-using System.ComponentModel.DataAnnotations;
 
 namespace Musify.Dtos.AttributeDefinitionDtos
 {
-    public class AttributeDefinitionReadMinimalDto
-    {
-        public int Id { get; set; }
-
-        [Required]
-        public required string Name { get; set; }
-
-        [Required]
-        public required AttributeDefinitionDataType DataType { get; set; }
-
-        public int CategoryId { get; set; }
-    }
+    public record AttributeDefinitionReadMinimalDto(
+        int Id,
+        string Name,
+        AttributeDefinitionDataType DataType,
+        int CategoryId);
 }
