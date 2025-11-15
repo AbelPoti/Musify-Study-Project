@@ -2,7 +2,7 @@
 
 namespace Musify.Dtos.AttributeValueDtos
 {
-    public class InstrumentAttributeValueReadDetailedDto
+    public record InstrumentAttributeValueReadDetailedDto
     {
         public int Id { get; set; }
 

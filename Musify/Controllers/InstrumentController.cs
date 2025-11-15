@@ -287,13 +287,11 @@ namespace Musify.Controllers
             return CreatedAtAction(
                 nameof(GetInstrumentById),
                 new { id = attributeValue.Id },
-                new InstrumentAttributeValueReadMinimalDto
-                {
-                    Id = attributeValue.Id,
-                    InstrumentId = attributeValue.InstrumentId,
-                    AttributeDefinitionId = attributeValue.AttributeDefinitionId,
-                    Value = attributeValue.Value
-                });
+                new InstrumentAttributeValueReadMinimalDto(
+                    attributeValue.Id,
+                    attributeValue.InstrumentId,
+                    attributeValue.AttributeDefinitionId,
+                    attributeValue.Value));
         }
 
         /// <summary>
