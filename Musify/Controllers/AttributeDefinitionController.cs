@@ -45,8 +45,18 @@ namespace Musify.Controllers
         [Authorize(Roles = $"{UserRole.StoreManager}, {UserRole.WarehouseManager}, {UserRole.Admin}")]
         public async Task<IActionResult> GetAllAttributeDefinitions()
         {
-            var attributeDefinitions = await _musifyDbContext.AttributeDefinitions.ToListAsync();
-            return Ok(attributeDefinitions);
+            var attributeDefinitions = await _musifyDbContext.AttributeDefinitions.Include(aD => aD.Category).ToListAsync();
+
+            var attributeDefinitionDtos = attributeDefinitions.Select(aD =>
+                new AttributeDefinitionReadDetailedDto
+                {
+                    Id = aD.Id,
+                    Name = aD.Name,
+                    DataType = aD.DataType,
+                    CategoryId = aD.CategoryId,
+                    Category = aD.Category
+                }).ToList();
+            return Ok(attributeDefinitionDtos);
         }
 
         /// <summary>
@@ -64,12 +74,21 @@ namespace Musify.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetAttributeDefinitionById(int id)
         {
-            var attributeDefinition = await _musifyDbContext.AttributeDefinitions.FindAsync(id);
+            var attributeDefinition =
+                await _musifyDbContext.AttributeDefinitions.Include(aD => aD.Category)
+                    .FirstOrDefaultAsync(aD => aD.Id == id);
             if (attributeDefinition == null)
             {
                 return NotFound();
             }
-            return Ok(attributeDefinition);
+            return Ok(new AttributeDefinitionReadDetailedDto
+            {
+                Id = attributeDefinition.Id,
+                Name = attributeDefinition.Name,
+                DataType = attributeDefinition.DataType,
+                CategoryId = attributeDefinition.CategoryId,
+                Category = attributeDefinition.Category
+            });
         }
 
         /// <summary>
@@ -151,7 +170,16 @@ namespace Musify.Controllers
 
             _musifyDbContext.AttributeDefinitions.Add(newAttributeDefinition);
             await _musifyDbContext.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetAttributeDefinitionById), new { id = newAttributeDefinition.Id }, newAttributeDefinition);
+
+            var createdAttributeDefinitionDto = new AttributeDefinitionReadDetailedDto
+            {
+                Id = newAttributeDefinition.Id,
+                Name = newAttributeDefinition.Name,
+                DataType = newAttributeDefinition.DataType,
+                CategoryId = newAttributeDefinition.CategoryId,
+                Category = newAttributeDefinition.Category
+            };
+            return CreatedAtAction(nameof(GetAttributeDefinitionById), new { id = newAttributeDefinition.Id }, createdAttributeDefinitionDto);
         }
 
         /// <summary>
