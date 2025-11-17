@@ -2,7 +2,7 @@
 
 namespace Musify.Dtos.AuthDtos
 {
-    public class ResetPasswordOkResponseDto
+    public record ResetPasswordOkResponseDto
     {
         [Required]
         public required string Message { get; set; }

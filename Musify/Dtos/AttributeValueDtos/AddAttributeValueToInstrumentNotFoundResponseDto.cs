@@ -2,7 +2,7 @@
 
 namespace Musify.Dtos.AttributeValueDtos
 {
-    public class AddAttributeValueToInstrumentNotFoundResponseDto
+    public record AddAttributeValueToInstrumentNotFoundResponseDto
     {
         [Required]
         public required string Message { get; set; }
