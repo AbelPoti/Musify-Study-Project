@@ -24,7 +24,16 @@ namespace Musify.Controllers
             var shopItems = await _dbContext.ShopItems.ToListAsync();
 
             List<ShopItemReadMinimalDto> shopItemDtos =
-                shopItems.Select(sI => new ShopItemReadMinimalDto(sI.Id, sI.InstrumentId, sI.Price, sI.Stock, sI.Condition)).ToList();
+                shopItems.Select(sI =>
+                    new ShopItemReadMinimalDto
+                    {
+                        Id = sI.Id,
+                        InstrumentId = sI.InstrumentId,
+                        Price = sI.Price,
+                        Stock = sI.Stock,
+                        Condition = sI.Condition
+                    }
+                ).ToList();
 
             return Ok(shopItemDtos);
         }
@@ -37,7 +46,14 @@ namespace Musify.Controllers
             {
                 return NotFound(new ShopItemGetByIdNotFoundResponseDto { Message = "No shop item with the specified Id exists." });
             }
-            return Ok(new ShopItemReadMinimalDto(shopItem.Id, shopItem.InstrumentId, shopItem.Price, shopItem.Stock, shopItem.Condition));
+            return Ok(new ShopItemReadMinimalDto
+            {
+                Id = shopItem.Id,
+                InstrumentId = shopItem.InstrumentId,
+                Price = shopItem.Price,
+                Stock = shopItem.Stock,
+                Condition = shopItem.Condition
+            });
         }
 
         [HttpPost]
@@ -63,8 +79,14 @@ namespace Musify.Controllers
             _dbContext.ShopItems.Add(createdShopItem);
             await _dbContext.SaveChangesAsync();
 
-            var createdShopItemDto = new ShopItemReadMinimalDto(
-                createdShopItem.Id, createdShopItem.InstrumentId, createdShopItem.Price, createdShopItem.Stock, createdShopItem.Condition);
+            var createdShopItemDto = new ShopItemReadMinimalDto
+            {
+                Id = createdShopItem.Id,
+                InstrumentId = createdShopItem.InstrumentId,
+                Price = createdShopItem.Price,
+                Stock = createdShopItem.Stock,
+                Condition = createdShopItem.Condition
+            };
             return CreatedAtAction(nameof(GetShopItemById), new { id = createdShopItemDto.Id }, createdShopItemDto);
         }
 
@@ -119,8 +141,14 @@ namespace Musify.Controllers
             _dbContext.ShopItems.Update(existingShopItem);
             await _dbContext.SaveChangesAsync();
 
-            var patchedShopItemDto = new ShopItemReadMinimalDto(
-                existingShopItem.Id, existingShopItem.InstrumentId, existingShopItem.Price, existingShopItem.Stock, existingShopItem.Condition);
+            var patchedShopItemDto = new ShopItemReadMinimalDto
+            {
+                Id = existingShopItem.Id,
+                InstrumentId = existingShopItem.InstrumentId,
+                Price = existingShopItem.Price,
+                Stock = existingShopItem.Stock,
+                Condition = existingShopItem.Condition
+            };
             return Ok(patchedShopItemDto);
         }
 
@@ -144,8 +172,14 @@ namespace Musify.Controllers
             _dbContext.ShopItems.Update(existingShopItem);
             await _dbContext.SaveChangesAsync();
 
-            var patchedShopItemDto = new ShopItemReadMinimalDto(
-                existingShopItem.Id, existingShopItem.InstrumentId, existingShopItem.Price, existingShopItem.Stock, existingShopItem.Condition);
+            var patchedShopItemDto = new ShopItemReadMinimalDto
+            {
+                Id = existingShopItem.Id,
+                InstrumentId = existingShopItem.InstrumentId,
+                Price = existingShopItem.Price,
+                Stock = existingShopItem.Stock,
+                Condition = existingShopItem.Condition
+            };
             return Ok(patchedShopItemDto);
         }
 
@@ -174,8 +208,14 @@ namespace Musify.Controllers
             _dbContext.ShopItems.Update(existingShopItem);
             await _dbContext.SaveChangesAsync();
 
-            var patchedShopItemDto = new ShopItemReadMinimalDto(
-                existingShopItem.Id, existingShopItem.InstrumentId, existingShopItem.Price, existingShopItem.Stock, existingShopItem.Condition);
+            var patchedShopItemDto = new ShopItemReadMinimalDto
+            {
+                Id = existingShopItem.Id,
+                InstrumentId = existingShopItem.InstrumentId,
+                Price = existingShopItem.Price,
+                Stock = existingShopItem.Stock,
+                Condition = existingShopItem.Condition
+            };
             return Ok(patchedShopItemDto);
         }
 
@@ -199,8 +239,14 @@ namespace Musify.Controllers
             _dbContext.ShopItems.Update(existingShopItem);
             await _dbContext.SaveChangesAsync();
 
-            var patchedShopItemDto = new ShopItemReadMinimalDto(
-                existingShopItem.Id, existingShopItem.InstrumentId, existingShopItem.Price, existingShopItem.Stock, existingShopItem.Condition);
+            var patchedShopItemDto = new ShopItemReadMinimalDto
+            {
+                Id = existingShopItem.Id,
+                InstrumentId = existingShopItem.InstrumentId,
+                Price = existingShopItem.Price,
+                Stock = existingShopItem.Stock,
+                Condition = existingShopItem.Condition
+            };
             return Ok(patchedShopItemDto);
         }
 

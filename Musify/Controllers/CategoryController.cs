@@ -39,7 +39,13 @@ namespace Musify.Controllers
         {
             var categories = await _dbContext.Categories.ToListAsync();
             List<CategoryReadDto> categoryDtos =
-                categories.Select(c => new CategoryReadDto(c.Id, c.Name, c.ParentId)).ToList();
+                categories.Select(c =>
+                    new CategoryReadDto
+                    {
+                        Id = c.Id,
+                        Name = c.Name,
+                        ParentId = c.ParentId
+                    }).ToList();
 
             return Ok(categoryDtos);
         }
@@ -64,7 +70,12 @@ namespace Musify.Controllers
             {
                 return NotFound();
             }
-            return Ok(new CategoryReadDto(category.Id, category.Name, category.ParentId));
+            return Ok(new CategoryReadDto
+            {
+                Id = category.Id,
+                Name = category.Name,
+                ParentId = category.ParentId
+            });
         }
 
         /// <summary>
@@ -103,7 +114,13 @@ namespace Musify.Controllers
 
             _dbContext.Categories.Add(newCategory);
             await _dbContext.SaveChangesAsync();
-            var returnedCategoryDto = new CategoryReadDto(newCategory.Id, newCategory.Name, newCategory.ParentId);
+
+            var returnedCategoryDto = new CategoryReadDto
+            {
+                Id = newCategory.Id,
+                Name = newCategory.Name,
+                ParentId = newCategory.ParentId
+            };
             return CreatedAtAction(nameof(GetCategoryById), new { id = newCategory.Id }, returnedCategoryDto);
         }
 
