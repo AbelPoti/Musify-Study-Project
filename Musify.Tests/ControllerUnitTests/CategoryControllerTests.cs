@@ -62,8 +62,8 @@ namespace Musify.Tests.ControllerUnitTests
             var ok = result.Should().BeOfType<OkObjectResult>().Subject;
             ok.Should().NotBeNull();
 
-            var payload = ok.Value.Should().BeAssignableTo<IEnumerable<Category>>().Subject;
-            var list = payload as List<Category>;
+            var payload = ok.Value.Should().BeAssignableTo<IEnumerable<CategoryReadDto>>().Subject;
+            var list = payload as List<CategoryReadDto>;
 
             list.Should().NotBeNull();
             list.Should().HaveCount(5);
@@ -96,7 +96,7 @@ namespace Musify.Tests.ControllerUnitTests
             var ok = result.Should().BeOfType<OkObjectResult>().Subject;
             ok.Should().NotBeNull();
 
-            var category = ok.Value.Should().BeAssignableTo<Category>().Subject;
+            var category = ok.Value.Should().BeOfType<CategoryReadDto>().Subject;
 
             category.Id.Should().Be(3);
             category.Name.Should().Be("Acoustic Drumkits");
@@ -137,7 +137,7 @@ namespace Musify.Tests.ControllerUnitTests
             createdAt.RouteValues.Keys.Should().Contain("id");
             createdAt.RouteValues["id"].Should().Be(6);
 
-            var createdCategory = createdAt.Value.Should().BeAssignableTo<Category>().Subject;
+            var createdCategory = createdAt.Value.Should().BeOfType<CategoryReadDto>().Subject;
             createdCategory.Name.Should().Be("New Category");
             createdCategory.ParentId.Should().Be(1);
         }
@@ -164,7 +164,7 @@ namespace Musify.Tests.ControllerUnitTests
         }
 
         [Test]
-        public async Task Update_WhenProvidedDataIsValidWithValidParentCategoryId_ShouldReturnOk()
+        public async Task Update_WhenProvidedDataIsValidWithValidParentCategoryId_ShouldReturnNoContent()
         {
             // Arrange
             const int existingCategoryId = 5;
@@ -180,17 +180,11 @@ namespace Musify.Tests.ControllerUnitTests
             var result = await _categoryController.UpdateCategory(existingCategoryId, dto);
 
             // Assert
-            var ok = result.Should().BeOfType<OkObjectResult>().Subject;
-            ok.Should().NotBeNull();
-
-            var updatedCategory = ok.Value.Should().BeAssignableTo<Category>().Subject;
-            updatedCategory.Id.Should().Be(existingCategoryId);
-            updatedCategory.Name.Should().Be("Updated Brass Snare Drums");
-            updatedCategory.ParentId.Should().Be(4);
+            result.Should().BeOfType<NoContentResult>();
         }
 
         [Test]
-        public async Task Update_WhenProvidedDataIsValidWithNullParentCategoryId_ShouldReturnOk()
+        public async Task Update_WhenProvidedDataIsValidWithNullParentCategoryId_ShouldReturnNoContent()
         {
             // Arrange
             const int existingCategoryId = 5;
@@ -206,17 +200,11 @@ namespace Musify.Tests.ControllerUnitTests
             var result = await _categoryController.UpdateCategory(existingCategoryId, dto);
 
             // Assert
-            var ok = result.Should().BeOfType<OkObjectResult>().Subject;
-            ok.Should().NotBeNull();
-
-            var updatedCategory = ok.Value.Should().BeAssignableTo<Category>().Subject;
-            updatedCategory.Id.Should().Be(existingCategoryId);
-            updatedCategory.Name.Should().Be("Updated Brass Snare Drums");
-            updatedCategory.ParentId.Should().BeNull();
+            result.Should().BeOfType<NoContentResult>();
         }
 
         [Test]
-        public async Task Upate_WhenPathIdAndDtoIdDoNotMatch_ShouldReturnBadRequest()
+        public async Task Update_WhenPathIdAndDtoIdDoNotMatch_ShouldReturnBadRequest()
         {
             // Arrange
             const int existingCategoryId = 5;

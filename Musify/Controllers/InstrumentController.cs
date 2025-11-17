@@ -121,21 +121,18 @@ namespace Musify.Controllers
                 Description = instrumentDto.Description
             };
 
+            _dbContext.Instruments.Add(newInstrument);
+            await _dbContext.SaveChangesAsync();
+
             var returnedInstrumentDto = new InstrumentReadMinimalDto
             {
+                Id = newInstrument.Id,
                 Name = newInstrument.Name,
                 Brand = newInstrument.Brand,
                 CategoryId = newInstrument.CategoryId,
                 Description = newInstrument.Description,
                 Attributes = []
             };
-
-            _dbContext.Instruments.Add(newInstrument);
-            await _dbContext.SaveChangesAsync();
-
-            // Set the id in the returned DTO after saving to get the generated id
-            returnedInstrumentDto.Id = newInstrument.Id;
-
             return CreatedAtAction(nameof(GetInstrumentById), new { id = newInstrument.Id }, returnedInstrumentDto);
         }
 
@@ -220,7 +217,7 @@ namespace Musify.Controllers
                     AttributeDefinitionId = attr.AttributeDefinitionId,
                     AttributeDefinition = new AttributeDefinitionReadMinimalDto
                     {
-                        Id = attr.AttributeDefinition.Id,
+                        Id = attr.AttributeDefinitionId,
                         Name = attr.AttributeDefinition.Name,
                         DataType = attr.AttributeDefinition.DataType,
                         CategoryId = attr.AttributeDefinition.CategoryId

@@ -79,9 +79,9 @@ namespace Musify.Tests.ControllerUnitTests
 
             // Assert
             var ok = result.Should().BeOfType<OkObjectResult>().Subject;
-            var payload = ok.Value.Should().BeAssignableTo<IEnumerable<AttributeDefinition>>().Subject;
+            var payload = ok.Value.Should().BeAssignableTo<IEnumerable<AttributeDefinitionReadDetailedDto>>().Subject;
 
-            var list = payload as List<AttributeDefinition>;
+            var list = payload as List<AttributeDefinitionReadDetailedDto>;
 
             list.Should().NotBeNull();
             list.Count.Should().Be(2);
@@ -106,7 +106,7 @@ namespace Musify.Tests.ControllerUnitTests
 
             // Assert
             var ok = result.Should().BeOfType<OkObjectResult>().Subject;
-            var attributeDefinition = ok.Value.Should().BeAssignableTo<AttributeDefinition>().Subject;
+            var attributeDefinition = ok.Value.Should().BeAssignableTo<AttributeDefinitionReadDetailedDto>().Subject;
 
             attributeDefinition.Id.Should().Be(1);
             attributeDefinition.Name.Should().Be("Diameter");
@@ -192,7 +192,7 @@ namespace Musify.Tests.ControllerUnitTests
             createdAt.RouteValues.Keys.Should().Contain("id");
             createdAt.RouteValues["id"].Should().Be(3);
 
-            var createdAttributeDefinition = createdAt.Value.Should().BeAssignableTo<AttributeDefinition>().Subject;
+            var createdAttributeDefinition = createdAt.Value.Should().BeAssignableTo<AttributeDefinitionReadDetailedDto>().Subject;
             createdAttributeDefinition.Id.Should().Be(3);
             createdAttributeDefinition.Name.Should().Be("Material");
             createdAttributeDefinition.DataType.Should().Be(AttributeDefinitionDataType.String);

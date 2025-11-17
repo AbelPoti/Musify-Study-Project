@@ -2,7 +2,7 @@
 
 namespace Musify.Dtos.AuthDtos
 {
-    public class EmailConfirmBadRequestResponseDto
+    public record EmailConfirmBadRequestResponseDto
     {
         [Required]
         public required string Message { get; set; }

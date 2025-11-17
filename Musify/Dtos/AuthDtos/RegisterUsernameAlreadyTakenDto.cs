@@ -2,7 +2,7 @@
 
 namespace Musify.Dtos.AuthDtos
 {
-    public class RegisterUsernameAlreadyTakenDto
+    public record RegisterUsernameAlreadyTakenDto
     {
         [Required]
         public required string Message { get; set; }

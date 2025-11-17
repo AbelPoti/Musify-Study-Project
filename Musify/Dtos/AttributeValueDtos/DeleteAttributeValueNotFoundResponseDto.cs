@@ -2,7 +2,7 @@
 
 namespace Musify.Dtos.AttributeValueDtos
 {
-    public class DeleteAttributeValueNotFoundResponseDto
+    public record DeleteAttributeValueNotFoundResponseDto
     {
         [Required]
         public required string Message { get; set; }

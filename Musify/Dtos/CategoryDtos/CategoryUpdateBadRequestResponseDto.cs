@@ -2,7 +2,7 @@
 
 namespace Musify.Dtos.CategoryDtos
 {
-    public class CategoryUpdateBadRequestResponseDto
+    public record CategoryUpdateBadRequestResponseDto
     {
         [Required]
         public required string Message { get; set; }

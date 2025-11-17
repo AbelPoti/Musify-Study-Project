@@ -2,7 +2,7 @@
 
 namespace Musify.Dtos.ShopItemDtos
 {
-    public class ShopItemCreateBadRequestResponseDto
+    public record ShopItemCreateBadRequestResponseDto
     {
         [Required]
         public required string Message { get; set; }

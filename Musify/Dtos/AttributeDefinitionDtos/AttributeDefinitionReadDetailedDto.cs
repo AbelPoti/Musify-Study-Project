@@ -1,20 +1,17 @@
 ﻿using Musify.Models;
-using System.ComponentModel.DataAnnotations;
 
 namespace Musify.Dtos.AttributeDefinitionDtos
 {
-    public class AttributeDefinitionReadDetailedDto
+    public record AttributeDefinitionReadDetailedDto
     {
-        public int Id { get; set; }
+        public int Id { get; init; }
 
-        [Required]
-        public required string Name { get; set; }
+        public required string Name { get; init; }
 
-        [Required]
-        public required AttributeDefinitionDataType DataType { get; set; }
+        public required AttributeDefinitionDataType DataType { get; init; }
 
-        public int CategoryId { get; set; }
+        public int CategoryId { get; init; }
 
-        public required Category Category { get; set; }
+        public required Category Category { get; init; }
     }
 }

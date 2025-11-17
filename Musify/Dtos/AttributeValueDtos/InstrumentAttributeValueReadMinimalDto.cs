@@ -1,13 +1,13 @@
 ﻿namespace Musify.Dtos.AttributeValueDtos
 {
-    public class InstrumentAttributeValueReadMinimalDto
+    public record InstrumentAttributeValueReadMinimalDto
     {
-        public int Id { get; set; }
+        public required int Id { get; init; }
 
-        public int InstrumentId { get; set; }
+        public required int InstrumentId { get; init; }
 
-        public int AttributeDefinitionId { get; set; }
+        public required int AttributeDefinitionId { get; init; }
 
-        public required string Value { get; set; }
+        public required string Value { get; init; }
     }
 }

@@ -2,7 +2,7 @@
 
 namespace Musify.Dtos.InstrumentDtos
 {
-    public class InstrumentCreateBadRequestResponseDto
+    public record InstrumentCreateBadRequestResponseDto
     {
         [Required]
         public required string Message { get; set; }

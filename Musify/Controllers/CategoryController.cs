@@ -38,7 +38,16 @@ namespace Musify.Controllers
         public async Task<IActionResult> GetAllCategories()
         {
             var categories = await _dbContext.Categories.ToListAsync();
-            return Ok(categories);
+            List<CategoryReadDto> categoryDtos =
+                categories.Select(c =>
+                    new CategoryReadDto
+                    {
+                        Id = c.Id,
+                        Name = c.Name,
+                        ParentId = c.ParentId
+                    }).ToList();
+
+            return Ok(categoryDtos);
         }
 
         /// <summary>
@@ -61,7 +70,12 @@ namespace Musify.Controllers
             {
                 return NotFound();
             }
-            return Ok(category);
+            return Ok(new CategoryReadDto
+            {
+                Id = category.Id,
+                Name = category.Name,
+                ParentId = category.ParentId
+            });
         }
 
         /// <summary>
@@ -100,7 +114,14 @@ namespace Musify.Controllers
 
             _dbContext.Categories.Add(newCategory);
             await _dbContext.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetCategoryById), new { id = newCategory.Id }, newCategory);
+
+            var returnedCategoryDto = new CategoryReadDto
+            {
+                Id = newCategory.Id,
+                Name = newCategory.Name,
+                ParentId = newCategory.ParentId
+            };
+            return CreatedAtAction(nameof(GetCategoryById), new { id = newCategory.Id }, returnedCategoryDto);
         }
 
         /// <summary>
@@ -151,7 +172,7 @@ namespace Musify.Controllers
 
             _dbContext.Categories.Update(existingCategory);
             await _dbContext.SaveChangesAsync();
-            return Ok(existingCategory);
+            return NoContent();
         }
 
         /// <summary>

@@ -2,7 +2,7 @@
 
 namespace Musify.Dtos.AttributeValueDtos
 {
-    public class UpdateAttributeValueBadRequestResponseDto
+    public record UpdateAttributeValueBadRequestResponseDto
     {
         [Required]
         public required string Message { get; set; }
