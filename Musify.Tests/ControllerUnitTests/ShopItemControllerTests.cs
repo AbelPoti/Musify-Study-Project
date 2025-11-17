@@ -128,17 +128,15 @@ namespace Musify.Tests.ControllerUnitTests
 
             // Assert
             var ok = result.Should().BeOfType<OkObjectResult>().Subject;
-            var payload = ok.Value.Should().BeAssignableTo<IEnumerable<ShopItem>>().Subject;
+            var payload = ok.Value.Should().BeAssignableTo<IEnumerable<ShopItemReadMinimalDto>>().Subject;
 
-            var list = payload as List<ShopItem>;
+            var list = payload as List<ShopItemReadMinimalDto>;
 
             list.Should().NotBeNull();
             list.Count.Should().Be(4);
 
             list.Select(shI => shI.Id).Should().Contain([1, 2, 3, 4]);
             list.Select(shI => shI.InstrumentId).Should().Contain([1, 1, 3, 2]);
-            // Assert against a property of the instrument to ensure the relation was loaded and returned
-            list.Select(shI => shI.Instrument!.Brand).Should().Contain(["Dialtune", "Dialtune", "Yamaha", "Sonor"]);
             list.Select(shI => shI.Price).Should().Contain([1000.0M, 850.0M, 2200.0M, 600.0M]);
             list.Select(shI => shI.Stock).Should().Contain([5, 1, 3, 1]);
             list.Select(shI => shI.Condition).Should().Contain(
@@ -161,11 +159,10 @@ namespace Musify.Tests.ControllerUnitTests
 
             // Assert
             var ok = result.Should().BeOfType<OkObjectResult>().Subject;
-            var payload = ok.Value.Should().BeOfType<ShopItem>().Subject;
+            var payload = ok.Value.Should().BeOfType<ShopItemReadMinimalDto>().Subject;
 
             payload.Id.Should().Be(1);
             payload.InstrumentId.Should().Be(1);
-            payload.Instrument.Should().Be(await _dbContext.Instruments.FindAsync(1));
         }
 
         [Test]
@@ -206,10 +203,9 @@ namespace Musify.Tests.ControllerUnitTests
             createdAt.RouteValues.Keys.Should().Contain("id");
             createdAt.RouteValues["id"].Should().Be(5);
 
-            var payload = createdAt.Value.Should().BeOfType<ShopItem>().Subject;
+            var payload = createdAt.Value.Should().BeOfType<ShopItemReadMinimalDto>().Subject;
             payload.Id.Should().Be(5);
             payload.InstrumentId.Should().Be(dto.InstrumentId);
-            payload.Instrument.Should().Be(await _dbContext.Instruments.FindAsync(dto.InstrumentId));
             payload.Price.Should().Be(dto.Price);
             payload.Stock.Should().Be(dto.Stock);
             payload.Condition.Should().Be(dto.Condition);
@@ -342,7 +338,7 @@ namespace Musify.Tests.ControllerUnitTests
 
             // Assert
             var ok = result.Should().BeOfType<OkObjectResult>().Subject;
-            var payload = ok.Value.Should().BeOfType<ShopItem>().Subject;
+            var payload = ok.Value.Should().BeOfType<ShopItemReadMinimalDto>().Subject;
 
             payload.Id.Should().Be(shopItemId);
             payload.Price.Should().Be(newPrice);
@@ -395,7 +391,7 @@ namespace Musify.Tests.ControllerUnitTests
 
             // Assert
             var ok = result.Should().BeOfType<OkObjectResult>().Subject;
-            var payload = ok.Value.Should().BeOfType<ShopItem>().Subject;
+            var payload = ok.Value.Should().BeOfType<ShopItemReadMinimalDto>().Subject;
 
             payload.Id.Should().Be(shopItemId);
             payload.Stock.Should().Be(newStock);
@@ -451,7 +447,7 @@ namespace Musify.Tests.ControllerUnitTests
 
             // Assert
             var ok = result.Should().BeOfType<OkObjectResult>().Subject;
-            var payload = ok.Value.Should().BeOfType<ShopItem>().Subject;
+            var payload = ok.Value.Should().BeOfType<ShopItemReadMinimalDto>().Subject;
 
             payload.Id.Should().Be(shopItemId);
             payload.Stock.Should().Be(currentStock + increment);
@@ -507,7 +503,7 @@ namespace Musify.Tests.ControllerUnitTests
 
             // Assert
             var ok = result.Should().BeOfType<OkObjectResult>().Subject;
-            var payload = ok.Value.Should().BeOfType<ShopItem>().Subject;
+            var payload = ok.Value.Should().BeOfType<ShopItemReadMinimalDto>().Subject;
 
             payload.Id.Should().Be(shopItemId);
             payload.Stock.Should().Be(currentStock - decrement);

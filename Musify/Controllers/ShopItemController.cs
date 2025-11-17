@@ -22,7 +22,11 @@ namespace Musify.Controllers
         public async Task<IActionResult> GetAllShopItems()
         {
             var shopItems = await _dbContext.ShopItems.ToListAsync();
-            return Ok(shopItems);
+
+            List<ShopItemReadMinimalDto> shopItemDtos =
+                shopItems.Select(sI => new ShopItemReadMinimalDto(sI.Id, sI.InstrumentId, sI.Price, sI.Stock, sI.Condition)).ToList();
+
+            return Ok(shopItemDtos);
         }
 
         [HttpGet("{id}")]
@@ -33,7 +37,7 @@ namespace Musify.Controllers
             {
                 return NotFound(new ShopItemGetByIdNotFoundResponseDto { Message = "No shop item with the specified Id exists." });
             }
-            return Ok(shopItem);
+            return Ok(new ShopItemReadMinimalDto(shopItem.Id, shopItem.InstrumentId, shopItem.Price, shopItem.Stock, shopItem.Condition));
         }
 
         [HttpPost]
@@ -58,7 +62,10 @@ namespace Musify.Controllers
 
             _dbContext.ShopItems.Add(createdShopItem);
             await _dbContext.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetShopItemById), new { id = createdShopItem.Id }, createdShopItem);
+
+            var createdShopItemDto = new ShopItemReadMinimalDto(
+                createdShopItem.Id, createdShopItem.InstrumentId, createdShopItem.Price, createdShopItem.Stock, createdShopItem.Condition);
+            return CreatedAtAction(nameof(GetShopItemById), new { id = createdShopItemDto.Id }, createdShopItemDto);
         }
 
         [HttpPut("{id}")]
@@ -111,7 +118,10 @@ namespace Musify.Controllers
 
             _dbContext.ShopItems.Update(existingShopItem);
             await _dbContext.SaveChangesAsync();
-            return Ok(existingShopItem);
+
+            var patchedShopItemDto = new ShopItemReadMinimalDto(
+                existingShopItem.Id, existingShopItem.InstrumentId, existingShopItem.Price, existingShopItem.Stock, existingShopItem.Condition);
+            return Ok(patchedShopItemDto);
         }
 
         [HttpPatch("{id}/stock/increment")]
@@ -133,7 +143,10 @@ namespace Musify.Controllers
 
             _dbContext.ShopItems.Update(existingShopItem);
             await _dbContext.SaveChangesAsync();
-            return Ok(existingShopItem);
+
+            var patchedShopItemDto = new ShopItemReadMinimalDto(
+                existingShopItem.Id, existingShopItem.InstrumentId, existingShopItem.Price, existingShopItem.Stock, existingShopItem.Condition);
+            return Ok(patchedShopItemDto);
         }
 
         [HttpPatch("{id}/stock/decrement")]
@@ -160,7 +173,10 @@ namespace Musify.Controllers
 
             _dbContext.ShopItems.Update(existingShopItem);
             await _dbContext.SaveChangesAsync();
-            return Ok(existingShopItem);
+
+            var patchedShopItemDto = new ShopItemReadMinimalDto(
+                existingShopItem.Id, existingShopItem.InstrumentId, existingShopItem.Price, existingShopItem.Stock, existingShopItem.Condition);
+            return Ok(patchedShopItemDto);
         }
 
         [HttpPatch("{id}/price")]
@@ -182,7 +198,10 @@ namespace Musify.Controllers
 
             _dbContext.ShopItems.Update(existingShopItem);
             await _dbContext.SaveChangesAsync();
-            return Ok(existingShopItem);
+
+            var patchedShopItemDto = new ShopItemReadMinimalDto(
+                existingShopItem.Id, existingShopItem.InstrumentId, existingShopItem.Price, existingShopItem.Stock, existingShopItem.Condition);
+            return Ok(patchedShopItemDto);
         }
 
         [HttpDelete("{id}")]
