@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Musify.Controllers;
+using Musify.Dtos;
 using Musify.Dtos.AuthDtos;
 using Musify.Models;
 using Musify.Services;
@@ -163,7 +164,7 @@ namespace Musify.Tests.ControllerUnitTests
 
             // Assert
             var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
-            var payload = badRequest.Value.Should().BeOfType<RegisterUsernameAlreadyTakenDto>().Subject;
+            var payload = badRequest.Value.Should().BeOfType<SimpleMessageDto>().Subject;
 
             payload.Message.Should().Be("Username already taken");
 
@@ -303,7 +304,7 @@ namespace Musify.Tests.ControllerUnitTests
 
             // Assert
             var unauthorized = result.Should().BeOfType<UnauthorizedObjectResult>().Subject;
-            var payload = unauthorized.Value.Should().BeOfType<LoginUnauthorizedResponseDto>().Subject;
+            var payload = unauthorized.Value.Should().BeOfType<SimpleMessageDto>().Subject;
 
             payload.Message.Should().Be("Invalid username or password");
 
@@ -344,7 +345,7 @@ namespace Musify.Tests.ControllerUnitTests
 
             // Assert
             var unauthorized = result.Should().BeOfType<UnauthorizedObjectResult>().Subject;
-            var payload = unauthorized.Value.Should().BeOfType<LoginUnauthorizedResponseDto>().Subject;
+            var payload = unauthorized.Value.Should().BeOfType<SimpleMessageDto>().Subject;
 
             payload.Message.Should().Be("Email not confirmed. Please confirm your email before logging in.");
 
@@ -390,7 +391,7 @@ namespace Musify.Tests.ControllerUnitTests
 
             // Assert
             var unauthorized = result.Should().BeOfType<UnauthorizedObjectResult>().Subject;
-            var payload = unauthorized.Value.Should().BeOfType<LoginUnauthorizedResponseDto>().Subject;
+            var payload = unauthorized.Value.Should().BeOfType<SimpleMessageDto>().Subject;
 
             payload.Message.Should().Be("Invalid username or password");
 
@@ -435,7 +436,7 @@ namespace Musify.Tests.ControllerUnitTests
 
             // Assert
             var ok = result.Should().BeOfType<OkObjectResult>().Subject;
-            var payload = ok.Value.Should().BeOfType<EmailConfirmOkResponseDto>().Subject;
+            var payload = ok.Value.Should().BeOfType<SimpleMessageDto>().Subject;
 
             payload.Message.Should().Be("Email confirmed successfully");
 
@@ -472,7 +473,7 @@ namespace Musify.Tests.ControllerUnitTests
 
             // Assert
             var ok = result.Should().BeOfType<OkObjectResult>().Subject;
-            var payload = ok.Value.Should().BeOfType<EmailConfirmOkResponseDto>().Subject;
+            var payload = ok.Value.Should().BeOfType<SimpleMessageDto>().Subject;
 
             payload.Message.Should().Be("Email confirmed successfully");
 
@@ -521,7 +522,7 @@ namespace Musify.Tests.ControllerUnitTests
 
             // Assert
             var notFound = result.Should().BeOfType<NotFoundObjectResult>().Subject;
-            var payload = notFound.Value.Should().BeOfType<EmailConfirmNotFoundResponseDto>().Subject;
+            var payload = notFound.Value.Should().BeOfType<SimpleMessageDto>().Subject;
             payload.Message.Should().Be("User not found");
 
             // Verify dependency calls
@@ -628,7 +629,7 @@ namespace Musify.Tests.ControllerUnitTests
 
             // Assert
             var ok = result.Should().BeOfType<OkObjectResult>().Subject;
-            var payload = ok.Value.Should().BeOfType<ResendConfirmationEmailOkResponseDto>().Subject;
+            var payload = ok.Value.Should().BeOfType<SimpleMessageDto>().Subject;
 
             payload.Message.Should().Be("Confirmation email resent successfully");
 
@@ -664,7 +665,7 @@ namespace Musify.Tests.ControllerUnitTests
 
             // Assert
             var ok = result.Should().BeOfType<OkObjectResult>().Subject;
-            var payload = ok.Value.Should().BeOfType<ResendConfirmationEmailOkResponseDto>().Subject;
+            var payload = ok.Value.Should().BeOfType<SimpleMessageDto>().Subject;
 
             payload.Message.Should().Be("Confirmation email resent successfully");
 
@@ -698,7 +699,7 @@ namespace Musify.Tests.ControllerUnitTests
 
             // Assert
             var ok = result.Should().BeOfType<OkObjectResult>().Subject;
-            var payload = ok.Value.Should().BeOfType<ResendConfirmationEmailOkResponseDto>().Subject;
+            var payload = ok.Value.Should().BeOfType<SimpleMessageDto>().Subject;
 
             payload.Message.Should().Be("Confirmation email resent successfully");
 
@@ -737,7 +738,7 @@ namespace Musify.Tests.ControllerUnitTests
 
             // Assert
             var ok = result.Should().BeOfType<OkObjectResult>().Subject;
-            var payload = ok.Value.Should().BeOfType<ResendConfirmationEmailOkResponseDto>().Subject;
+            var payload = ok.Value.Should().BeOfType<SimpleMessageDto>().Subject;
 
             payload.Message.Should().Be("Confirmation email resent successfully");
 
@@ -797,7 +798,7 @@ namespace Musify.Tests.ControllerUnitTests
 
             // Assert
             var ok = result.Should().BeOfType<OkObjectResult>().Subject;
-            var payload = ok.Value.Should().BeOfType<ForgotPasswordOkResponseDto>().Subject;
+            var payload = ok.Value.Should().BeOfType<SimpleMessageDto>().Subject;
 
             payload.Message.Should().Be(
                 "If a user was registered with the provided email, a password reset link has been sent.");
@@ -848,7 +849,7 @@ namespace Musify.Tests.ControllerUnitTests
 
             // Assert
             var ok = result.Should().BeOfType<OkObjectResult>().Subject;
-            var payload = ok.Value.Should().BeOfType<ForgotPasswordOkResponseDto>().Subject;
+            var payload = ok.Value.Should().BeOfType<SimpleMessageDto>().Subject;
 
             payload.Message.Should().Be(
                 "If a user was registered with the provided email, a password reset link has been sent.");
@@ -877,7 +878,7 @@ namespace Musify.Tests.ControllerUnitTests
 
             // Assert
             var ok = result.Should().BeOfType<OkObjectResult>().Subject;
-            var payload = ok.Value.Should().BeOfType<ForgotPasswordOkResponseDto>().Subject;
+            var payload = ok.Value.Should().BeOfType<SimpleMessageDto>().Subject;
 
             payload.Message.Should().Be(
                 "If a user was registered with the provided email, a password reset link has been sent.");
@@ -919,7 +920,7 @@ namespace Musify.Tests.ControllerUnitTests
 
             // Assert
             var ok = result.Should().BeOfType<OkObjectResult>().Subject;
-            var payload = ok.Value.Should().BeOfType<ForgotPasswordOkResponseDto>().Subject;
+            var payload = ok.Value.Should().BeOfType<SimpleMessageDto>().Subject;
             payload.Message.Should().Be(
                 "If a user was registered with the provided email, a password reset link has been sent.");
 
@@ -972,7 +973,7 @@ namespace Musify.Tests.ControllerUnitTests
 
             // Assert
             var ok = result.Should().BeOfType<OkObjectResult>().Subject;
-            var payload = ok.Value.Should().BeOfType<ResetPasswordOkResponseDto>().Subject;
+            var payload = ok.Value.Should().BeOfType<SimpleMessageDto>().Subject;
 
             payload.Message.Should().Be("Password has been reset successfully.");
 
@@ -1032,7 +1033,7 @@ namespace Musify.Tests.ControllerUnitTests
 
             // Assert
             var notFound = result.Should().BeOfType<OkObjectResult>().Subject;
-            var payload = notFound.Value.Should().BeOfType<ResetPasswordOkResponseDto>().Subject;
+            var payload = notFound.Value.Should().BeOfType<SimpleMessageDto>().Subject;
 
             payload.Message.Should().Be("Password has been reset successfully.");
 

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Musify.Controllers;
 using Musify.Data.DatabaseContext;
+using Musify.Dtos;
 using Musify.Dtos.AttributeValueDtos;
 using Musify.Dtos.InstrumentDtos;
 using Musify.Models;
@@ -208,7 +209,7 @@ namespace Musify.Tests.ControllerUnitTests
 
             // Assert
             var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
-            var payload = badRequest.Value.Should().BeOfType<InstrumentCreateBadRequestResponseDto>().Subject;
+            var payload = badRequest.Value.Should().BeOfType<SimpleMessageDto>().Subject;
 
             payload.Message.Should().Be("Associated category does not exist.");
         }
@@ -255,7 +256,7 @@ namespace Musify.Tests.ControllerUnitTests
 
             // Assert
             var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
-            var payload = badRequest.Value.Should().BeOfType<InstrumentUpdateBadRequestResponseDto>().Subject;
+            var payload = badRequest.Value.Should().BeOfType<SimpleMessageDto>().Subject;
 
             payload.Message.Should().Be("Instrument Id mismatch between path and body.");
         }
@@ -280,7 +281,7 @@ namespace Musify.Tests.ControllerUnitTests
 
             // Assert
             var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
-            var payload = badRequest.Value.Should().BeOfType<InstrumentUpdateBadRequestResponseDto>().Subject;
+            var payload = badRequest.Value.Should().BeOfType<SimpleMessageDto>().Subject;
 
             payload.Message.Should().Be("Associated category does not exist.");
         }
@@ -305,7 +306,7 @@ namespace Musify.Tests.ControllerUnitTests
 
             // Assert
             var badRequest = result.Should().BeOfType<NotFoundObjectResult>().Subject;
-            var payload = badRequest.Value.Should().BeOfType<InstrumentUpdateNotFoundResponseDto>().Subject;
+            var payload = badRequest.Value.Should().BeOfType<SimpleMessageDto>().Subject;
 
             payload.Message.Should().Be("No instrument with provided Id exists.");
         }
@@ -423,7 +424,7 @@ namespace Musify.Tests.ControllerUnitTests
 
             // Assert
             var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
-            var payload = badRequest.Value.Should().BeOfType<AddAttributeValueToInstrumentBadRequestResponseDto>().Subject;
+            var payload = badRequest.Value.Should().BeOfType<SimpleMessageDto>().Subject;
 
             payload.Message.Should().Be("Instrument id mismatch between URL and body.");
         }
@@ -446,7 +447,7 @@ namespace Musify.Tests.ControllerUnitTests
 
             // Assert
             var notFound = result.Should().BeOfType<NotFoundObjectResult>().Subject;
-            var payload = notFound.Value.Should().BeOfType<AddAttributeValueToInstrumentNotFoundResponseDto>().Subject;
+            var payload = notFound.Value.Should().BeOfType<SimpleMessageDto>().Subject;
 
             payload.Message.Should().Be("The specified instrument does not exist.");
         }
@@ -471,7 +472,7 @@ namespace Musify.Tests.ControllerUnitTests
 
             // Assert
             var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
-            var payload = badRequest.Value.Should().BeOfType<AddAttributeValueToInstrumentBadRequestResponseDto>().Subject;
+            var payload = badRequest.Value.Should().BeOfType<SimpleMessageDto>().Subject;
 
             payload.Message.Should().Be("Associated attribute definition does not exist.");
         }
@@ -522,7 +523,7 @@ namespace Musify.Tests.ControllerUnitTests
 
             // Assert
             var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
-            var payload = badRequest.Value.Should().BeOfType<UpdateAttributeValueBadRequestResponseDto>().Subject;
+            var payload = badRequest.Value.Should().BeOfType<SimpleMessageDto>().Subject;
 
             payload.Message.Should().Be("Instrument id mismatch between URL and body.");
         }
@@ -549,7 +550,7 @@ namespace Musify.Tests.ControllerUnitTests
 
             // Assert
             var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
-            var payload = badRequest.Value.Should().BeOfType<UpdateAttributeValueBadRequestResponseDto>().Subject;
+            var payload = badRequest.Value.Should().BeOfType<SimpleMessageDto>().Subject;
 
             payload.Message.Should().Be("Attribute id mismatch between URL and body.");
         }
@@ -576,7 +577,7 @@ namespace Musify.Tests.ControllerUnitTests
 
             // Assert
             var badRequest = result.Should().BeOfType<NotFoundObjectResult>().Subject;
-            var payload = badRequest.Value.Should().BeOfType<UpdateAttributeValueNotFoundResponseDto>().Subject;
+            var payload = badRequest.Value.Should().BeOfType<SimpleMessageDto>().Subject;
 
             payload.Message.Should().Be("The specified instrument does not exist.");
         }
@@ -603,7 +604,7 @@ namespace Musify.Tests.ControllerUnitTests
 
             // Assert
             var badRequest = result.Should().BeOfType<NotFoundObjectResult>().Subject;
-            var payload = badRequest.Value.Should().BeOfType<UpdateAttributeValueNotFoundResponseDto>().Subject;
+            var payload = badRequest.Value.Should().BeOfType<SimpleMessageDto>().Subject;
 
             payload.Message.Should().Be("The specified attribute does not exist.");
         }
@@ -630,7 +631,7 @@ namespace Musify.Tests.ControllerUnitTests
 
             // Assert
             var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
-            var payload = badRequest.Value.Should().BeOfType<UpdateAttributeValueBadRequestResponseDto>().Subject;
+            var payload = badRequest.Value.Should().BeOfType<SimpleMessageDto>().Subject;
 
             payload.Message.Should().Be("The newly associated attribute definition does not exist.");
         }
@@ -659,7 +660,7 @@ namespace Musify.Tests.ControllerUnitTests
 
             // Assert
             var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
-            var payload = badRequest.Value.Should().BeOfType<UpdateAttributeValueBadRequestResponseDto>().Subject;
+            var payload = badRequest.Value.Should().BeOfType<SimpleMessageDto>().Subject;
 
             payload.Message.Should().Be("The provided attribute value is not associated with the provided instrument.");
         }
@@ -694,7 +695,7 @@ namespace Musify.Tests.ControllerUnitTests
 
             // Assert
             var notFound = result.Should().BeOfType<NotFoundObjectResult>().Subject;
-            var payload = notFound.Value.Should().BeOfType<DeleteAttributeValueNotFoundResponseDto>().Subject;
+            var payload = notFound.Value.Should().BeOfType<SimpleMessageDto>().Subject;
 
             payload.Message.Should().Be("The specified instrument does not exist.");
         }
@@ -713,7 +714,7 @@ namespace Musify.Tests.ControllerUnitTests
 
             // Assert
             var notFound = result.Should().BeOfType<NotFoundObjectResult>().Subject;
-            var payload = notFound.Value.Should().BeOfType<DeleteAttributeValueNotFoundResponseDto>().Subject;
+            var payload = notFound.Value.Should().BeOfType<SimpleMessageDto>().Subject;
 
             payload.Message.Should().Be("The specified attribute value does not exist.");
         }
@@ -753,7 +754,7 @@ namespace Musify.Tests.ControllerUnitTests
 
             // Assert
             var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
-            var payload = badRequest.Value.Should().BeOfType<DeleteAttributeValueBadRequestResponseDto>().Subject;
+            var payload = badRequest.Value.Should().BeOfType<SimpleMessageDto>().Subject;
 
             payload.Message.Should().Be("The provided attribute value is not associated with the provided instrument.");
         }

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Musify.Controllers;
 using Musify.Data.DatabaseContext;
+using Musify.Dtos;
 using Musify.Dtos.ShopItemDtos;
 using Musify.Models;
 
@@ -176,7 +177,7 @@ namespace Musify.Tests.ControllerUnitTests
 
             // Assert
             var notFound = result.Should().BeOfType<NotFoundObjectResult>().Subject;
-            var payload = notFound.Value.Should().BeOfType<ShopItemGetByIdNotFoundResponseDto>().Subject;
+            var payload = notFound.Value.Should().BeOfType<SimpleMessageDto>().Subject;
 
             payload.Message.Should().Be("No shop item with the specified Id exists.");
         }
@@ -228,7 +229,7 @@ namespace Musify.Tests.ControllerUnitTests
 
             // Assert
             var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
-            var payload = badRequest.Value.Should().BeOfType<ShopItemCreateBadRequestResponseDto>().Subject;
+            var payload = badRequest.Value.Should().BeOfType<SimpleMessageDto>().Subject;
 
             payload.Message.Should().Be("Associated instrument does not exist.");
         }
@@ -273,7 +274,7 @@ namespace Musify.Tests.ControllerUnitTests
 
             // Assert
             var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
-            var payload = badRequest.Value.Should().BeOfType<ShopItemUpdateBadRequestResponseDto>().Subject;
+            var payload = badRequest.Value.Should().BeOfType<SimpleMessageDto>().Subject;
 
             payload.Message.Should().Be("Shop item id mismatch between URL and body.");
         }
@@ -297,7 +298,7 @@ namespace Musify.Tests.ControllerUnitTests
 
             // Assert
             var notFound = result.Should().BeOfType<NotFoundObjectResult>().Subject;
-            var payload = notFound.Value.Should().BeOfType<ShopItemUpdateNotFoundResponseDto>().Subject;
+            var payload = notFound.Value.Should().BeOfType<SimpleMessageDto>().Subject;
 
             payload.Message.Should().Be("No shop item with specified id exists.");
         }
@@ -321,7 +322,7 @@ namespace Musify.Tests.ControllerUnitTests
 
             // Assert
             var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
-            var payload = badRequest.Value.Should().BeOfType<ShopItemUpdateBadRequestResponseDto>().Subject;
+            var payload = badRequest.Value.Should().BeOfType<SimpleMessageDto>().Subject;
 
             payload.Message.Should().Be("No instrument with newly provided instrumentId exists.");
         }
@@ -356,7 +357,7 @@ namespace Musify.Tests.ControllerUnitTests
 
             // Assert
             var ok = result.Should().BeOfType<NotFoundObjectResult>().Subject;
-            var payload = ok.Value.Should().BeOfType<ShopItemPatchPropertyNotFoundResponseDto>().Subject;
+            var payload = ok.Value.Should().BeOfType<SimpleMessageDto>().Subject;
 
             payload.Message.Should().Be("No shop item with the specified Id exists.");
         }
@@ -374,7 +375,7 @@ namespace Musify.Tests.ControllerUnitTests
 
             // Assert
             var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
-            var payload = badRequest.Value.Should().BeOfType<ShopItemPatchPropertyBadRequestResponseDto>().Subject;
+            var payload = badRequest.Value.Should().BeOfType<SimpleMessageDto>().Subject;
 
             payload.Message.Should().Be("Price must be strictly positive.");
         }
@@ -409,7 +410,7 @@ namespace Musify.Tests.ControllerUnitTests
 
             // Assert
             var notFound = result.Should().BeOfType<NotFoundObjectResult>().Subject;
-            var payload = notFound.Value.Should().BeOfType<ShopItemPatchPropertyNotFoundResponseDto>().Subject;
+            var payload = notFound.Value.Should().BeOfType<SimpleMessageDto>().Subject;
 
             payload.Message.Should().Be("No shop item with the specified Id exists.");
         }
@@ -427,7 +428,7 @@ namespace Musify.Tests.ControllerUnitTests
 
             // Assert
             var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
-            var payload = badRequest.Value.Should().BeOfType<ShopItemPatchPropertyBadRequestResponseDto>().Subject;
+            var payload = badRequest.Value.Should().BeOfType<SimpleMessageDto>().Subject;
 
             payload.Message.Should().Be("Stock value must be strictly positive.");
         }
@@ -465,7 +466,7 @@ namespace Musify.Tests.ControllerUnitTests
 
             // Assert
             var notFound = result.Should().BeOfType<NotFoundObjectResult>().Subject;
-            var payload = notFound.Value.Should().BeOfType<ShopItemPatchPropertyNotFoundResponseDto>().Subject;
+            var payload = notFound.Value.Should().BeOfType<SimpleMessageDto>().Subject;
 
             payload.Message.Should().Be("No shop item with specified Id exists.");
         }
@@ -483,7 +484,7 @@ namespace Musify.Tests.ControllerUnitTests
 
             // Assert
             var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
-            var payload = badRequest.Value.Should().BeOfType<ShopItemPatchPropertyBadRequestResponseDto>().Subject;
+            var payload = badRequest.Value.Should().BeOfType<SimpleMessageDto>().Subject;
 
             payload.Message.Should().Be("Increment value must be strictly positive.");
         }
@@ -521,7 +522,7 @@ namespace Musify.Tests.ControllerUnitTests
 
             // Assert
             var notFound = result.Should().BeOfType<NotFoundObjectResult>().Subject;
-            var payload = notFound.Value.Should().BeOfType<ShopItemPatchPropertyNotFoundResponseDto>().Subject;
+            var payload = notFound.Value.Should().BeOfType<SimpleMessageDto>().Subject;
 
             payload.Message.Should().Be("No shop item with specified Id exists.");
         }
@@ -539,7 +540,7 @@ namespace Musify.Tests.ControllerUnitTests
 
             // Assert
             var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
-            var payload = badRequest.Value.Should().BeOfType<ShopItemPatchPropertyBadRequestResponseDto>().Subject;
+            var payload = badRequest.Value.Should().BeOfType<SimpleMessageDto>().Subject;
 
             payload.Message.Should().Be("Decrement value must be strictly positive.");
         }
@@ -556,7 +557,7 @@ namespace Musify.Tests.ControllerUnitTests
 
             // Assert
             var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
-            var payload = badRequest.Value.Should().BeOfType<ShopItemPatchPropertyBadRequestResponseDto>().Subject;
+            var payload = badRequest.Value.Should().BeOfType<SimpleMessageDto>().Subject;
 
             payload.Message.Should().Be("Decrement value exceeds current stock.");
         }
@@ -585,7 +586,7 @@ namespace Musify.Tests.ControllerUnitTests
 
             // Assert
             var notFound = result.Should().BeOfType<NotFoundObjectResult>().Subject;
-            var payload = notFound.Value.Should().BeOfType<ShopItemDeleteNotFoundResponseDto>().Subject;
+            var payload = notFound.Value.Should().BeOfType<SimpleMessageDto>().Subject;
 
             payload.Message.Should().Be("No shop item with specified Id exists.");
         }

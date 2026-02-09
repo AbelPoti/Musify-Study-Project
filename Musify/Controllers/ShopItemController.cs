@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Musify.Data.DatabaseContext;
+using Musify.Dtos;
 using Musify.Dtos.ShopItemDtos;
 using Musify.Models;
 
@@ -44,7 +45,7 @@ namespace Musify.Controllers
             var shopItem = await _dbContext.ShopItems.FindAsync(id);
             if (shopItem == null)
             {
-                return NotFound(new ShopItemGetByIdNotFoundResponseDto { Message = "No shop item with the specified Id exists." });
+                return NotFound(new SimpleMessageDto { Message = "No shop item with the specified Id exists." });
             }
             return Ok(new ShopItemReadMinimalDto
             {
@@ -64,7 +65,7 @@ namespace Musify.Controllers
             var instrument = await _dbContext.Instruments.FindAsync(shopItemDto.InstrumentId);
             if (instrument == null)
             {
-                return BadRequest(new ShopItemCreateBadRequestResponseDto { Message = "Associated instrument does not exist." });
+                return BadRequest(new SimpleMessageDto { Message = "Associated instrument does not exist." });
             }
 
             var createdShopItem = new ShopItem
@@ -96,19 +97,19 @@ namespace Musify.Controllers
         {
             if (shopItemDto.Id != id)
             {
-                return BadRequest(new ShopItemUpdateBadRequestResponseDto { Message = "Shop item id mismatch between URL and body." });
+                return BadRequest(new SimpleMessageDto { Message = "Shop item id mismatch between URL and body." });
             }
 
             var existingShopItem = await _dbContext.ShopItems.FindAsync(id);
             if (existingShopItem == null)
             {
-                return NotFound(new ShopItemUpdateNotFoundResponseDto { Message = "No shop item with specified id exists." });
+                return NotFound(new SimpleMessageDto { Message = "No shop item with specified id exists." });
             }
 
             var referencedInstrument = await _dbContext.Instruments.FindAsync(shopItemDto.InstrumentId);
             if (referencedInstrument == null)
             {
-                return BadRequest(new ShopItemUpdateBadRequestResponseDto { Message = "No instrument with newly provided instrumentId exists." });
+                return BadRequest(new SimpleMessageDto { Message = "No instrument with newly provided instrumentId exists." });
             }
 
             existingShopItem.InstrumentId = shopItemDto.InstrumentId;
@@ -127,13 +128,13 @@ namespace Musify.Controllers
         {
             if (newStock <= 0)
             {
-                return BadRequest(new ShopItemPatchPropertyBadRequestResponseDto { Message = "Stock value must be strictly positive." });
+                return BadRequest(new SimpleMessageDto { Message = "Stock value must be strictly positive." });
             }
 
             var existingShopItem = await _dbContext.ShopItems.FindAsync(id);
             if (existingShopItem == null)
             {
-                return NotFound(new ShopItemPatchPropertyNotFoundResponseDto { Message = "No shop item with the specified Id exists." });
+                return NotFound(new SimpleMessageDto { Message = "No shop item with the specified Id exists." });
             }
 
             existingShopItem.Stock = newStock;
@@ -158,13 +159,13 @@ namespace Musify.Controllers
         {
             if (incrementBy <= 0)
             {
-                return BadRequest(new ShopItemPatchPropertyBadRequestResponseDto { Message = "Increment value must be strictly positive." });
+                return BadRequest(new SimpleMessageDto { Message = "Increment value must be strictly positive." });
             }
 
             var existingShopItem = await _dbContext.ShopItems.FindAsync(id);
             if (existingShopItem == null)
             {
-                return NotFound(new ShopItemPatchPropertyNotFoundResponseDto { Message = "No shop item with specified Id exists." });
+                return NotFound(new SimpleMessageDto { Message = "No shop item with specified Id exists." });
             }
 
             existingShopItem.Stock += incrementBy;
@@ -189,18 +190,18 @@ namespace Musify.Controllers
         {
             if (decrementBy <= 0)
             {
-                return BadRequest(new ShopItemPatchPropertyBadRequestResponseDto { Message = "Decrement value must be strictly positive." });
+                return BadRequest(new SimpleMessageDto { Message = "Decrement value must be strictly positive." });
             }
 
             var existingShopItem = await _dbContext.ShopItems.FindAsync(id);
             if (existingShopItem == null)
             {
-                return NotFound(new ShopItemPatchPropertyNotFoundResponseDto { Message = "No shop item with specified Id exists." });
+                return NotFound(new SimpleMessageDto { Message = "No shop item with specified Id exists." });
             }
 
             if (decrementBy > existingShopItem.Stock)
             {
-                return BadRequest(new ShopItemPatchPropertyBadRequestResponseDto { Message = "Decrement value exceeds current stock." });
+                return BadRequest(new SimpleMessageDto { Message = "Decrement value exceeds current stock." });
             }
 
             existingShopItem.Stock -= decrementBy;
@@ -225,13 +226,13 @@ namespace Musify.Controllers
         {
             if (newPrice <= 0)
             {
-                return BadRequest(new ShopItemPatchPropertyBadRequestResponseDto { Message = "Price must be strictly positive." });
+                return BadRequest(new SimpleMessageDto { Message = "Price must be strictly positive." });
             }
 
             var existingShopItem = await _dbContext.ShopItems.FindAsync(id);
             if (existingShopItem == null)
             {
-                return NotFound(new ShopItemPatchPropertyNotFoundResponseDto { Message = "No shop item with the specified Id exists." });
+                return NotFound(new SimpleMessageDto { Message = "No shop item with the specified Id exists." });
             }
 
             existingShopItem.Price = newPrice;
@@ -257,7 +258,7 @@ namespace Musify.Controllers
             var shopItem = await _dbContext.ShopItems.FindAsync(id);
             if (shopItem == null)
             {
-                return NotFound(new ShopItemDeleteNotFoundResponseDto { Message = "No shop item with specified Id exists." });
+                return NotFound(new SimpleMessageDto { Message = "No shop item with specified Id exists." });
             }
 
             _dbContext.ShopItems.Remove(shopItem);

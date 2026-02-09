@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
+using Musify.Dtos;
 using Musify.Dtos.AuthDtos;
 using Musify.Models;
 using Musify.Services;
@@ -74,7 +75,7 @@ namespace Musify.Controllers
             var user = await _userManager.FindByNameAsync(dto.Username);
             if (user != null)
             {
-                return BadRequest(new RegisterUsernameAlreadyTakenDto{Message = "Username already taken" });
+                return BadRequest(new SimpleMessageDto{Message = "Username already taken" });
             }
 
             user = new ApplicationUser { UserName = dto.Username, Email = dto.Email, RegistrationTime = _dateTimeProvider.UtcNow };
@@ -132,18 +133,18 @@ namespace Musify.Controllers
 
             if (user == null)
             {
-                return Unauthorized(new LoginUnauthorizedResponseDto{ Message = "Invalid username or password" });
+                return Unauthorized(new SimpleMessageDto{ Message = "Invalid username or password" });
             }
 
             if (!user.EmailConfirmed)
             {
-                return Unauthorized(new LoginUnauthorizedResponseDto { Message = "Email not confirmed. Please confirm your email before logging in." });
+                return Unauthorized(new SimpleMessageDto { Message = "Email not confirmed. Please confirm your email before logging in." });
             }
 
             var result = await _signInManager.CheckPasswordSignInAsync(user, dto.Password, false);
             if (!result.Succeeded)
             {
-                return Unauthorized(new LoginUnauthorizedResponseDto { Message = "Invalid username or password" });
+                return Unauthorized(new SimpleMessageDto { Message = "Invalid username or password" });
             }
 
             var roles = await _userManager.GetRolesAsync(user);
@@ -180,12 +181,12 @@ namespace Musify.Controllers
             ApplicationUser? user = await _userManager.FindByIdAsync(userId);
             if (user == null)
             {
-                return NotFound(new EmailConfirmNotFoundResponseDto { Message = "User not found" });
+                return NotFound(new SimpleMessageDto { Message = "User not found" });
             }
 
             if (user.EmailConfirmed)
             {
-                return Ok(new EmailConfirmOkResponseDto { Message = "Email confirmed successfully" });
+                return Ok(new SimpleMessageDto { Message = "Email confirmed successfully" });
             }
 
             // Decode the token
@@ -195,7 +196,7 @@ namespace Musify.Controllers
 
             if (result.Succeeded)
             {
-                return Ok(new EmailConfirmOkResponseDto { Message = "Email confirmed successfully" });
+                return Ok(new SimpleMessageDto { Message = "Email confirmed successfully" });
             }
             return BadRequest(new EmailConfirmBadRequestResponseDto
             {
@@ -223,12 +224,12 @@ namespace Musify.Controllers
             if (user == null)
             {
                 // To prevent email enumeration, always return OK
-                return Ok(new ResendConfirmationEmailOkResponseDto{ Message = "Confirmation email resent successfully" });
+                return Ok(new SimpleMessageDto{ Message = "Confirmation email resent successfully" });
             }
 
             if (user.EmailConfirmed)
             {
-                return Ok(new ResendConfirmationEmailOkResponseDto { Message = "Confirmation email resent successfully" });
+                return Ok(new SimpleMessageDto { Message = "Confirmation email resent successfully" });
             }
 
             // Rate limiting: Allow resending only if last sent was more than n minutes ago
@@ -238,7 +239,7 @@ namespace Musify.Controllers
 
                 if (diff > 0)
                 {
-                    return Ok(new ResendConfirmationEmailOkResponseDto { Message = "Confirmation email resent successfully" });
+                    return Ok(new SimpleMessageDto { Message = "Confirmation email resent successfully" });
                 }
             }
 
@@ -257,7 +258,7 @@ namespace Musify.Controllers
             user.LastConfirmEmailSent = _dateTimeProvider.UtcNow;
             await _userManager.UpdateAsync(user);
 
-            return Ok(new ResendConfirmationEmailOkResponseDto { Message = "Confirmation email resent successfully" });
+            return Ok(new SimpleMessageDto { Message = "Confirmation email resent successfully" });
         }
 
         /// <summary>
@@ -279,7 +280,7 @@ namespace Musify.Controllers
             if (user == null || !(await _userManager.IsEmailConfirmedAsync(user)))
             {
                 // To prevent email enumeration, always return OK
-                return Ok(new ForgotPasswordOkResponseDto { Message = "If a user was registered with the provided email, a password reset link has been sent." });
+                return Ok(new SimpleMessageDto { Message = "If a user was registered with the provided email, a password reset link has been sent." });
             }
 
             // Rate limiting: Allow sending only if last sent was more than n minutes ago
@@ -289,7 +290,7 @@ namespace Musify.Controllers
 
                 if (diff > 0)
                 {
-                    return Ok(new ForgotPasswordOkResponseDto { Message = "If a user was registered with the provided email, a password reset link has been sent." });
+                    return Ok(new SimpleMessageDto { Message = "If a user was registered with the provided email, a password reset link has been sent." });
                 }
             }
 
@@ -308,7 +309,7 @@ namespace Musify.Controllers
             user.LastPasswordResetSent = _dateTimeProvider.UtcNow;
             await _userManager.UpdateAsync(user);
 
-            return Ok(new ForgotPasswordOkResponseDto { Message = "If a user was registered with the provided email, a password reset link has been sent." });
+            return Ok(new SimpleMessageDto { Message = "If a user was registered with the provided email, a password reset link has been sent." });
         }
 
         /// <summary>
@@ -336,7 +337,7 @@ namespace Musify.Controllers
             if (user == null)
             {
                 // To prevent user enumeration, always return OK
-                return Ok(new ResetPasswordOkResponseDto { Message = "Password has been reset successfully." });
+                return Ok(new SimpleMessageDto { Message = "Password has been reset successfully." });
             }
 
             var decodedTokenBytes = WebEncoders.Base64UrlDecode(dto.Token);
@@ -345,7 +346,7 @@ namespace Musify.Controllers
 
             if (result.Succeeded)
             {
-                return Ok(new ResetPasswordOkResponseDto { Message = "Password has been reset successfully." });
+                return Ok(new SimpleMessageDto { Message = "Password has been reset successfully." });
             }
 
             foreach (var error in result.Errors)

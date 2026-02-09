@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Musify.Data.DatabaseContext;
+using Musify.Dtos;
 using Musify.Dtos.AttributeDefinitionDtos;
 using Musify.Models;
 
@@ -110,7 +111,7 @@ namespace Musify.Controllers
             var category = await _musifyDbContext.Categories.FindAsync(categoryId);
             if (category == null)
             {
-                return NotFound(new AttributeDefinitionGetByCategoryIdNotFoundResponseDto
+                return NotFound(new SimpleMessageDto
                     { Message = "Category not found." });
             }
 
@@ -157,7 +158,7 @@ namespace Musify.Controllers
             var category = await _musifyDbContext.Categories.FindAsync(attributeDto.CategoryId);
             if (category == null)
             {
-                return BadRequest(new AttributeDefinitionCreateBadRequestResponseDto { Message = "Associated category does not exist." });
+                return BadRequest(new SimpleMessageDto { Message = "Associated category does not exist." });
             }
 
             var newAttributeDefinition = new AttributeDefinition
@@ -204,20 +205,20 @@ namespace Musify.Controllers
         {
             if (id != attributeDto.Id)
             {
-                return BadRequest(new AttributeDefinitionUpdateBadRequestResponseDto { Message = "ID in URL does not match ID in body." });
+                return BadRequest(new SimpleMessageDto { Message = "ID in URL does not match ID in body." });
             }
 
             var existingAttributeDefinition = await _musifyDbContext.AttributeDefinitions.FindAsync(attributeDto.Id);
             if (existingAttributeDefinition == null)
             {
-                return NotFound(new AttributeDefinitionUpdateNotFoundResponseDto { Message = "Attribute definition not found." });
+                return NotFound(new SimpleMessageDto { Message = "Attribute definition not found." });
             }
 
             // Check if the associated Category exists
             var category = await _musifyDbContext.Categories.FindAsync(attributeDto.CategoryId);
             if (category == null)
             {
-                return BadRequest(new AttributeDefinitionUpdateBadRequestResponseDto { Message = "Associated category does not exist." });
+                return BadRequest(new SimpleMessageDto { Message = "Associated category does not exist." });
             }
 
             existingAttributeDefinition.Name = attributeDto.Name;
@@ -249,7 +250,7 @@ namespace Musify.Controllers
             var attributeDefinition = await _musifyDbContext.AttributeDefinitions.FindAsync(id);
             if (attributeDefinition == null)
             {
-                return NotFound(new AttributeDefinitionDeleteNotFoundResponseDto { Message = "Attribute definition not found." });
+                return NotFound(new SimpleMessageDto { Message = "Attribute definition not found." });
             }
 
             _musifyDbContext.AttributeDefinitions.Remove(attributeDefinition);

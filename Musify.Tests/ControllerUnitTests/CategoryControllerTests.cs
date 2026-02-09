@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Musify.Controllers;
 using Musify.Models;
 using Musify.Data.DatabaseContext;
+using Musify.Dtos;
 using Musify.Dtos.CategoryDtos;
 
 namespace Musify.Tests.ControllerUnitTests
@@ -159,7 +160,7 @@ namespace Musify.Tests.ControllerUnitTests
             var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
             badRequest.Should().NotBeNull();
 
-            var payload = badRequest.Value.Should().BeOfType<CategoryCreateBadRequestResponseDto>().Subject;
+            var payload = badRequest.Value.Should().BeOfType<SimpleMessageDto>().Subject;
             payload.Message.Should().Be("Parent category does not exist.");
         }
 
@@ -223,7 +224,7 @@ namespace Musify.Tests.ControllerUnitTests
             var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
             badRequest.Should().NotBeNull();
 
-            var payload = badRequest.Value.Should().BeOfType<CategoryUpdateBadRequestResponseDto>().Subject;
+            var payload = badRequest.Value.Should().BeOfType<SimpleMessageDto>().Subject;
             payload.Message.Should().Be("Category Id mismatch between path and body.");
         }
 
@@ -247,7 +248,7 @@ namespace Musify.Tests.ControllerUnitTests
             var notFound = result.Should().BeOfType<NotFoundObjectResult>().Subject;
             notFound.Should().NotBeNull();
 
-            var payload = notFound.Value.Should().BeOfType<CategoryUpdateNotFoundResponseDto>().Subject;
+            var payload = notFound.Value.Should().BeOfType<SimpleMessageDto>().Subject;
             payload.Message.Should().Be("Category Id is invalid.");
         }
 
@@ -270,7 +271,7 @@ namespace Musify.Tests.ControllerUnitTests
             var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
             badRequest.Should().NotBeNull();
 
-            var payload = badRequest.Value.Should().BeOfType<CategoryUpdateBadRequestResponseDto>().Subject;
+            var payload = badRequest.Value.Should().BeOfType<SimpleMessageDto>().Subject;
             payload.Message.Should().Be("Parent category does not exist.");
         }
 
@@ -287,7 +288,7 @@ namespace Musify.Tests.ControllerUnitTests
             var notFound = result.Should().BeOfType<NotFoundObjectResult>().Subject;
             notFound.Should().NotBeNull();
 
-            var payload = notFound.Value.Should().BeOfType<CategoryDeleteNotFoundResponseDto>().Subject;
+            var payload = notFound.Value.Should().BeOfType<SimpleMessageDto>().Subject;
             payload.Message.Should().Be("No category with the specified Id was found.");
         }
 
