@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Musify.Controllers;
 using Musify.Data.DatabaseContext;
+using Musify.Dtos;
 using Musify.Dtos.AttributeDefinitionDtos;
 using Musify.Models;
 
@@ -165,7 +166,7 @@ namespace Musify.Tests.ControllerUnitTests
 
             // Assert
             var notFound = result.Should().BeOfType<NotFoundObjectResult>().Subject;
-            var payload = notFound.Value.Should().BeOfType<AttributeDefinitionGetByCategoryIdNotFoundResponseDto>().Subject;
+            var payload = notFound.Value.Should().BeOfType<SimpleMessageDto>().Subject;
             payload.Message.Should().Be("Category not found.");
 
         }
@@ -215,7 +216,7 @@ namespace Musify.Tests.ControllerUnitTests
 
             // Assert
             var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
-            var payload = badRequest.Value.Should().BeOfType<AttributeDefinitionCreateBadRequestResponseDto>().Subject;
+            var payload = badRequest.Value.Should().BeOfType<SimpleMessageDto>().Subject;
 
             payload.Message.Should().Be("Associated category does not exist.");
         }
@@ -260,7 +261,7 @@ namespace Musify.Tests.ControllerUnitTests
 
             // Assert
             var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
-            var payload = badRequest.Value.Should().BeOfType<AttributeDefinitionUpdateBadRequestResponseDto>().Subject;
+            var payload = badRequest.Value.Should().BeOfType<SimpleMessageDto>().Subject;
 
             payload.Message.Should().Be("ID in URL does not match ID in body.");
         }
@@ -283,7 +284,7 @@ namespace Musify.Tests.ControllerUnitTests
 
             // Assert
             var notFound = result.Should().BeOfType<NotFoundObjectResult>().Subject;
-            var payload = notFound.Value.Should().BeOfType<AttributeDefinitionUpdateNotFoundResponseDto>().Subject;
+            var payload = notFound.Value.Should().BeOfType<SimpleMessageDto>().Subject;
             payload.Message.Should().Be("Attribute definition not found.");
         }
 
@@ -305,7 +306,7 @@ namespace Musify.Tests.ControllerUnitTests
 
             // Assert
             var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
-            var payload = badRequest.Value.Should().BeOfType<AttributeDefinitionUpdateBadRequestResponseDto>().Subject;
+            var payload = badRequest.Value.Should().BeOfType<SimpleMessageDto>().Subject;
             payload.Message.Should().Be("Associated category does not exist.");
         }
 
@@ -333,7 +334,7 @@ namespace Musify.Tests.ControllerUnitTests
 
             // Assert
             var notFound = result.Should().BeOfType<NotFoundObjectResult>().Subject;
-            var payload = notFound.Value.Should().BeOfType<AttributeDefinitionDeleteNotFoundResponseDto>().Subject;
+            var payload = notFound.Value.Should().BeOfType<SimpleMessageDto>().Subject;
             payload.Message.Should().Be("Attribute definition not found.");
         }
     }

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Musify.Data.DatabaseContext;
+using Musify.Dtos;
 using Musify.Dtos.CategoryDtos;
 using Musify.Models;
 
@@ -101,7 +102,7 @@ namespace Musify.Controllers
                 var parentCategory = await _dbContext.Categories.FindAsync(categoryDto.ParentId.Value);
                 if (parentCategory == null)
                 {
-                    return BadRequest(new CategoryCreateBadRequestResponseDto
+                    return BadRequest(new SimpleMessageDto
                         { Message = "Parent category does not exist." });
                 }
             }
@@ -146,14 +147,14 @@ namespace Musify.Controllers
         {
             if (id != category.Id)
             {
-                return BadRequest(new CategoryUpdateBadRequestResponseDto
+                return BadRequest(new SimpleMessageDto
                     { Message = "Category Id mismatch between path and body." });
             }
 
             var existingCategory = await _dbContext.Categories.FindAsync(id);
             if (existingCategory == null)
             {
-                return NotFound(new CategoryUpdateNotFoundResponseDto { Message = "Category Id is invalid."});
+                return NotFound(new SimpleMessageDto { Message = "Category Id is invalid."});
             }
 
             // Check if parent category exists if ParentId is set
@@ -162,7 +163,7 @@ namespace Musify.Controllers
                 var parentCategory = await _dbContext.Categories.FindAsync(category.ParentId.Value);
                 if (parentCategory == null)
                 {
-                    return BadRequest(new CategoryUpdateBadRequestResponseDto
+                    return BadRequest(new SimpleMessageDto
                         { Message = "Parent category does not exist." });
                 }
             }
@@ -195,7 +196,7 @@ namespace Musify.Controllers
             var category = await _dbContext.Categories.FindAsync(id);
             if (category == null)
             {
-                return NotFound(new CategoryDeleteNotFoundResponseDto
+                return NotFound(new SimpleMessageDto
                     { Message = "No category with the specified Id was found." });
             }
 
