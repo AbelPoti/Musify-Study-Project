@@ -7,7 +7,7 @@ namespace Musify.Models
     {
         public int InstrumentId { get; set; }
 
-        public Instrument? Instrument { get; set; }
+        public required Instrument Instrument { get; set; }
 
         [Precision(18, 2)]
         public decimal Price { get; set; }
