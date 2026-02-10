@@ -22,28 +22,34 @@ namespace Musify.Data.Query.QueryObjects
         
         public async Task<PagedResult<Instrument>> GetItemsAsync(
             PageRequest pageRequest,
-            SortRequest sortRequest,
-            InstrumentFiterDto instrumentFiterDto,
+            SortRequest? sortRequest,
+            InstrumentFiterDto? instrumentFiterDto,
             CancellationToken cancellationToken)
         {
             IQueryable<Instrument> query = _dbContext.Instruments.AsNoTracking();
             
             // Sorting - explicit mapping with fallback
-            query = sortRequest.SortBy switch
+            if (sortRequest != null)
             {
-                "name" => sortRequest.Descending
-                    ? query.OrderByDescending(sI => sI.Name)
-                    :  query.OrderBy(sI => sI.Name),
+                query = sortRequest.SortBy switch
+                {
+                    "name" => sortRequest.Descending
+                        ? query.OrderByDescending(sI => sI.Name)
+                        :  query.OrderBy(sI => sI.Name),
                 
-                "brand" => sortRequest.Descending
-                    ? query.OrderByDescending(sI => sI.Brand)
-                    : query.OrderBy(sI => sI.Brand),
+                    "brand" => sortRequest.Descending
+                        ? query.OrderByDescending(sI => sI.Brand)
+                        : query.OrderBy(sI => sI.Brand),
                 
-                _ => query.OrderBy(i => i.Id)
-            };
+                    _ => query.OrderBy(i => i.Id)
+                };
+            }
             
             // Apply filtering
-            query = _instrumentFiltering.Apply(query, instrumentFiterDto);
+            if (instrumentFiterDto != null)
+            {
+                query = _instrumentFiltering.Apply(query, instrumentFiterDto);
+            }
             
             int totalCount = await query.CountAsync(cancellationToken);
             
@@ -52,10 +58,7 @@ namespace Musify.Data.Query.QueryObjects
                 .Take(pageRequest.PageSize)
                 .ToListAsync(cancellationToken);
 
-            return new PagedResult<Instrument>
-            {
-                Items = items, TotalCount = totalCount, Page = pageRequest.Page, PageSize = pageRequest.PageSize
-            };
+            return new PagedResult<Instrument>(items, totalCount, pageRequest.Page, pageRequest.PageSize);
         }
     }
 }

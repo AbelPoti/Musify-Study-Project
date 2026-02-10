@@ -3,9 +3,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Musify.Controllers;
 using Musify.Data.DatabaseContext;
+using Musify.Data.Query.QueryObjects;
+using Musify.Data.Query.QueryUtils.QueryFilters;
 using Musify.Dtos;
 using Musify.Dtos.AttributeValueDtos;
 using Musify.Dtos.InstrumentDtos;
+using Musify.Dtos.RequestDtos;
+using Musify.Dtos.RequestDtos.FilterDtos;
 using Musify.Models;
 
 namespace Musify.Tests.ControllerUnitTests
@@ -14,6 +18,7 @@ namespace Musify.Tests.ControllerUnitTests
     internal class InstrumentControllerTests
     {
         private MusifyDbContext _dbContext;
+        private InstrumentQueries _instrumentQueries;
         private InstrumentController _instrumentController;
 
         [SetUp]
@@ -25,10 +30,11 @@ namespace Musify.Tests.ControllerUnitTests
                 .Options;
 
             _dbContext = new MusifyDbContext(options);
+            _instrumentQueries = new InstrumentQueries(_dbContext, new InstrumentFiltering());
 
             SeedDatabase();
 
-            _instrumentController = new InstrumentController(_dbContext);
+            _instrumentController = new InstrumentController(_dbContext, _instrumentQueries);
         }
 
         private void SeedDatabase()
@@ -91,8 +97,17 @@ namespace Musify.Tests.ControllerUnitTests
         public async Task GetAll_ShouldReturnOkWithList()
         {
             // Arrange done in Setup
+            PageRequest pageRequest = new PageRequest();
+            SortRequest sortRequest = new SortRequest();
+            InstrumentFiterDto instrumentFiterDto = new InstrumentFiterDto();
+            CancellationToken cancellationToken = CancellationToken.None;
+            
             // Act
-            var result = await _instrumentController.GetAllInstruments();
+            var result = await _instrumentController.GetAllInstruments(
+                pageRequest,
+                sortRequest,
+                instrumentFiterDto,
+                cancellationToken);
 
             // Assert
             var ok = result.Should().BeOfType<OkObjectResult>().Subject;
@@ -746,7 +761,7 @@ namespace Musify.Tests.ControllerUnitTests
             const int instrumentId = 1;
             const int attributeValueId = 3;
 
-            // Seed IAVs to all instruments provided by the SeedDatabase() method, but try to delete the 2nd's IAV with the 1st instrument Id
+            // Seed IAVs to all instruments provided by the SeedDatabase() method, but try to delete the 2nd's IAV with the 1st instrumentId
             await SeedAttributeDefinitionsAndValuesForInstruments([1, 2, 3]);
 
             // Act

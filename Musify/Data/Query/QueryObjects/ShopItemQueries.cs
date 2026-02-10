@@ -22,31 +22,37 @@ namespace Musify.Data.Query.QueryObjects
         
         public async Task<PagedResult<ShopItem>> GetItemsAsync(
             PageRequest pageRequest,
-            SortRequest sortRequest,
-            ShopItemFilterDto filter,
+            SortRequest? sortRequest,
+            ShopItemFilterDto? filter,
             CancellationToken cancellationToken)
         {
             IQueryable<ShopItem> query = _dbContext.ShopItems.AsNoTracking();
             
             // Sorting - explicit mapping with fallback
-            query = sortRequest.SortBy switch
+            if (sortRequest != null)
             {
-                "instrumentId" => sortRequest.Descending
-                    ? query.OrderByDescending(sI => sI.InstrumentId)
-                    : query.OrderBy(sI => sI.InstrumentId),
+                query = sortRequest.SortBy switch
+                {
+                    "instrumentId" => sortRequest.Descending
+                        ? query.OrderByDescending(sI => sI.InstrumentId)
+                        : query.OrderBy(sI => sI.InstrumentId),
                 
-                "price" => sortRequest.Descending
-                    ? query.OrderByDescending(sI => sI.Price)
-                    : query.OrderBy(sI => sI.Price),
+                    "price" => sortRequest.Descending
+                        ? query.OrderByDescending(sI => sI.Price)
+                        : query.OrderBy(sI => sI.Price),
                 
-                "condition" => sortRequest.Descending
-                    ? query.OrderByDescending(sI => sI.Condition)
-                    : query.OrderBy(sI => sI.Condition),
+                    "condition" => sortRequest.Descending
+                        ? query.OrderByDescending(sI => sI.Condition)
+                        : query.OrderBy(sI => sI.Condition),
                 
-                _ => query.OrderBy(sI => sI.Id)
-            };
-            
-            query = _shopItemFiltering.Apply(query, filter);
+                    _ => query.OrderBy(sI => sI.Id)
+                };
+            }
+
+            if (filter != null)
+            {
+                query = _shopItemFiltering.Apply(query, filter);
+            }
             
             int totalCount = await query.CountAsync(cancellationToken);
             
@@ -55,10 +61,7 @@ namespace Musify.Data.Query.QueryObjects
                 .Take(pageRequest.PageSize)
                 .ToListAsync(cancellationToken);
 
-            return new PagedResult<ShopItem>
-            {
-                Items = items, TotalCount = totalCount, Page = pageRequest.Page, PageSize = pageRequest.PageSize
-            };
+            return new PagedResult<ShopItem>(items, totalCount, pageRequest.Page, pageRequest.PageSize);
         }
     }
 }
