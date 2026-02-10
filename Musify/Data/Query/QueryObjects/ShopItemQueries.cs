@@ -1,23 +1,29 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Musify.Data.DatabaseContext;
 using Musify.Data.Query.QueryUtils;
+using Musify.Data.Query.QueryUtils.QueryFilters;
 using Musify.Dtos.RequestDtos;
+using Musify.Dtos.RequestDtos.FilterDtos;
 using Musify.Models;
 
 namespace Musify.Data.Query.QueryObjects
 {
-    public class ShopItemQueries : IQueries<ShopItem>
+    public class ShopItemQueries : IQueries<ShopItem, ShopItemFilterDto>
     {
         private readonly MusifyDbContext _dbContext;
         
-        public ShopItemQueries(MusifyDbContext dbContext)
+        private readonly ShopItemFiltering _shopItemFiltering;
+        
+        public ShopItemQueries(MusifyDbContext dbContext, ShopItemFiltering shopItemFiltering)
         {
             _dbContext = dbContext;
+            _shopItemFiltering = shopItemFiltering;
         }
         
         public async Task<PagedResult<ShopItem>> GetItemsAsync(
             PageRequest pageRequest,
             SortRequest sortRequest,
+            ShopItemFilterDto filter,
             CancellationToken cancellationToken)
         {
             IQueryable<ShopItem> query = _dbContext.ShopItems.AsNoTracking();
@@ -39,6 +45,8 @@ namespace Musify.Data.Query.QueryObjects
                 
                 _ => query.OrderBy(sI => sI.Id)
             };
+            
+            query = _shopItemFiltering.Apply(query, filter);
             
             int totalCount = await query.CountAsync(cancellationToken);
             

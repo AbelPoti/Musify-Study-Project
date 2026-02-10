@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Musify.Data.DatabaseContext;
+using Musify.Data.Query.QueryObjects;
 using Musify.Data.Query.QueryUtils.QueryFilters;
 using Musify.Dtos.RequestDtos.FilterDtos;
 using Musify.Models;
@@ -58,6 +59,10 @@ builder.Services.AddTransient<IEmailSender, EmailSender>();
 // Register filtering classes
 builder.Services.AddScoped<IEntityFiltering<Instrument, InstrumentFiterDto>, InstrumentFiltering>();
 builder.Services.AddScoped<IEntityFiltering<ShopItem, ShopItemFilterDto>, ShopItemFiltering>();
+
+// Register custom queries classes
+builder.Services.AddScoped<IQueries<Instrument, InstrumentFiterDto>, InstrumentQueries>();
+builder.Services.AddScoped<IQueries<ShopItem, ShopItemFilterDto>, ShopItemQueries>();
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>

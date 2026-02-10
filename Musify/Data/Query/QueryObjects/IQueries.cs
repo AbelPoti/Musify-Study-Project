@@ -3,11 +3,12 @@ using Musify.Dtos.RequestDtos;
 
 namespace Musify.Data.Query.QueryObjects
 {
-    public interface IQueries<T>
+    public interface IQueries<TEntity, in TFilter>
     {
-        Task<PagedResult<T>> GetItemsAsync(
+        Task<PagedResult<TEntity>> GetItemsAsync(
             PageRequest pageRequest,
             SortRequest sortRequest,
+            TFilter filter,
             CancellationToken cancellationToken);
     }
 }
