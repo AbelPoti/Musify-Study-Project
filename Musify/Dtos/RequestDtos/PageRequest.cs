@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Musify.Dtos
+namespace Musify.Dtos.RequestDtos
 {
     public record PageRequest
     {

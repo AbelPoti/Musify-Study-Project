@@ -1,5 +1,5 @@
 ﻿using Musify.Data.Query.QueryUtils;
-using Musify.Dtos;
+using Musify.Dtos.RequestDtos;
 
 namespace Musify.Data.Query.QueryObjects
 {

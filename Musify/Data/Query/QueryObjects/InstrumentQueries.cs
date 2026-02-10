@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Musify.Data.DatabaseContext;
 using Musify.Data.Query.QueryUtils;
-using Musify.Dtos;
+using Musify.Dtos.RequestDtos;
 using Musify.Models;
 
 namespace Musify.Data.Query.QueryObjects
