@@ -7,8 +7,8 @@ namespace Musify.Data.Query.QueryObjects
     {
         Task<PagedResult<TEntity>> GetItemsAsync(
             PageRequest pageRequest,
-            SortRequest sortRequest,
-            TFilter filter,
+            SortRequest? sortRequest,
+            TFilter? filter,
             CancellationToken cancellationToken);
     }
 }
