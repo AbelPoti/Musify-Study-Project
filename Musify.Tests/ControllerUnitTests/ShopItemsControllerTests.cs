@@ -3,7 +3,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Musify.Controllers;
 using Musify.Data.DatabaseContext;
+using Musify.Data.Query.QueryObjects;
+using Musify.Data.Query.QueryUtils.QueryFilters;
 using Musify.Dtos;
+using Musify.Dtos.RequestDtos;
+using Musify.Dtos.RequestDtos.FilterDtos;
 using Musify.Dtos.ShopItemDtos;
 using Musify.Models;
 
@@ -13,9 +17,9 @@ namespace Musify.Tests.ControllerUnitTests
     internal class ShopItemsControllerTests
     {
         private MusifyDbContext _dbContext;
+        private ShopItemQueries _shopItemQueries;
         private ShopItemsController _shopItemsController;
-
-
+        
         [SetUp]
         public void Setup()
         {
@@ -25,10 +29,11 @@ namespace Musify.Tests.ControllerUnitTests
                 .Options;
 
             _dbContext = new MusifyDbContext(options);
+            _shopItemQueries = new ShopItemQueries(_dbContext, new ShopItemFiltering());
 
             SeedDatabase();
 
-            _shopItemsController = new ShopItemsController(_dbContext);
+            _shopItemsController = new ShopItemsController(_dbContext, _shopItemQueries);
         }
 
         private void SeedDatabase()
@@ -83,7 +88,7 @@ namespace Musify.Tests.ControllerUnitTests
                 {
                     Id = 1,
                     InstrumentId = 1,
-                    Instrument = _dbContext.Instruments.Find(1),
+                    Instrument = _dbContext.Instruments.Find(1)!,
                     Price = 1000.0M,
                     Stock = 5,
                     Condition = ShopItemCondition.New
@@ -92,7 +97,7 @@ namespace Musify.Tests.ControllerUnitTests
                 {
                     Id = 2,
                     InstrumentId = 1,
-                    Instrument = _dbContext.Instruments.Find(1),
+                    Instrument = _dbContext.Instruments.Find(1)!,
                     Price = 850.0M,
                     Stock = 1,
                     Condition = ShopItemCondition.BStock
@@ -101,7 +106,7 @@ namespace Musify.Tests.ControllerUnitTests
                 {
                     Id = 3,
                     InstrumentId = 3,
-                    Instrument = _dbContext.Instruments.Find(3),
+                    Instrument = _dbContext.Instruments.Find(3)!,
                     Price = 2200.0M,
                     Stock = 3,
                     Condition = ShopItemCondition.New
@@ -110,7 +115,7 @@ namespace Musify.Tests.ControllerUnitTests
                 {
                     Id = 4,
                     InstrumentId = 2,
-                    Instrument = _dbContext.Instruments.Find(2),
+                    Instrument = _dbContext.Instruments.Find(2)!,
                     Price = 600.0M,
                     Stock = 1,
                     Condition = ShopItemCondition.Used
@@ -123,9 +128,18 @@ namespace Musify.Tests.ControllerUnitTests
         [Test]
         public async Task GetAll_ShouldReturnOkWithList()
         {
-            // Arrange done in Setup
+            // Arrange
+            PageRequest pageRequest = new PageRequest();
+            SortRequest sortRequest = new SortRequest();
+            ShopItemFilterDto shopItemFilterDto = new ShopItemFilterDto();
+            CancellationToken cancellationToken = CancellationToken.None;
+            
             // Act
-            var result = await _shopItemsController.GetAllShopItems();
+            var result = await _shopItemsController.GetAllShopItems(
+                pageRequest,
+                sortRequest,
+                shopItemFilterDto,
+                cancellationToken);
 
             // Assert
             var ok = result.Should().BeOfType<OkObjectResult>().Subject;

@@ -96,7 +96,7 @@ namespace Musify.Tests.ControllerUnitTests
         [Test]
         public async Task GetAll_ShouldReturnOkWithList()
         {
-            // Arrange done in Setup
+            // Arrange
             PageRequest pageRequest = new PageRequest();
             SortRequest sortRequest = new SortRequest();
             InstrumentFiterDto instrumentFiterDto = new InstrumentFiterDto();
