@@ -26,7 +26,7 @@ namespace Musify.Controllers
         private MusifyDbContext _dbContext;
         
         // Custom queries class for specific queries and page returning ones
-        private readonly InstrumentQueries _instrumentQueries;
+        private readonly IQueries<Instrument, InstrumentFiterDto> _instrumentQueries;
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="InstrumentsController"/> class.
@@ -35,7 +35,9 @@ namespace Musify.Controllers
         /// <param name="instrumentQueries">
         ///     The query object for specific queries not provided by <paramref name="dbContext"/>
         /// </param>
-        public InstrumentsController(MusifyDbContext dbContext, InstrumentQueries instrumentQueries)
+        public InstrumentsController(
+            MusifyDbContext dbContext,
+            IQueries<Instrument, InstrumentFiterDto> instrumentQueries)
         {
             _dbContext = dbContext;
             _instrumentQueries = instrumentQueries;
