@@ -10,11 +10,11 @@ namespace Musify.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ShopItemController : ControllerBase
+    public class ShopItemsController : ControllerBase
     {
         private MusifyDbContext _dbContext;
 
-        public ShopItemController(MusifyDbContext dbContext)
+        public ShopItemsController(MusifyDbContext dbContext)
         {
             _dbContext = dbContext;
         }

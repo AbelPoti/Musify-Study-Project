@@ -18,17 +18,17 @@ namespace Musify.Controllers
     /// </remarks>
     [Route("api/[controller]")]
     [ApiController]
-    public class AttributeDefinitionController : ControllerBase
+    public class AttributeDefinitionsController : ControllerBase
     {
         private readonly MusifyDbContext _musifyDbContext;
 
         /// <summary>
-        ///     Initializes a new instance of the <see cref="AttributeDefinitionController"/> class.
+        ///     Initializes a new instance of the <see cref="AttributeDefinitionsController"/> class.
         /// </summary>
         /// <param
         ///     name="musifyDbContext">The database context used to interact with the Musify database./>.
         /// </param>
-        public AttributeDefinitionController(MusifyDbContext musifyDbContext)
+        public AttributeDefinitionsController(MusifyDbContext musifyDbContext)
         {
             _musifyDbContext = musifyDbContext;
         }

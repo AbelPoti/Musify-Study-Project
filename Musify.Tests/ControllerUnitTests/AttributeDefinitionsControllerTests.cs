@@ -10,10 +10,10 @@ using Musify.Models;
 namespace Musify.Tests.ControllerUnitTests
 {
     [TestFixture]
-    internal class AttributeDefinitionControllerTests
+    internal class AttributeDefinitionsControllerTests
     {
         private MusifyDbContext _dbContext;
-        private AttributeDefinitionController _attributeDefinitionController;
+        private AttributeDefinitionsController _attributeDefinitionsController;
 
         [SetUp]
         public void Setup()
@@ -27,7 +27,7 @@ namespace Musify.Tests.ControllerUnitTests
 
             SeedDatabase();
 
-            _attributeDefinitionController = new AttributeDefinitionController(_dbContext);
+            _attributeDefinitionsController = new AttributeDefinitionsController(_dbContext);
         }
 
         private void SeedDatabase()
@@ -76,7 +76,7 @@ namespace Musify.Tests.ControllerUnitTests
         {
             // Arrange done in Setup
             // Act
-            var result = await _attributeDefinitionController.GetAllAttributeDefinitions();
+            var result = await _attributeDefinitionsController.GetAllAttributeDefinitions();
 
             // Assert
             var ok = result.Should().BeOfType<OkObjectResult>().Subject;
@@ -103,7 +103,7 @@ namespace Musify.Tests.ControllerUnitTests
             const int existingId = 1;
 
             // Act
-            var result = await _attributeDefinitionController.GetAttributeDefinitionById(existingId);
+            var result = await _attributeDefinitionsController.GetAttributeDefinitionById(existingId);
 
             // Assert
             var ok = result.Should().BeOfType<OkObjectResult>().Subject;
@@ -123,7 +123,7 @@ namespace Musify.Tests.ControllerUnitTests
             const int nonexistentId = 999;
 
             // Act
-            var result = await _attributeDefinitionController.GetAttributeDefinitionById(nonexistentId);
+            var result = await _attributeDefinitionsController.GetAttributeDefinitionById(nonexistentId);
 
             // Assert
             result.Should().BeOfType<NotFoundResult>();
@@ -136,7 +136,7 @@ namespace Musify.Tests.ControllerUnitTests
             const int existingCategoryId = 2;
 
             // Act
-            var result = await _attributeDefinitionController.GetAttributeDefinitionsByCategoryId(existingCategoryId);
+            var result = await _attributeDefinitionsController.GetAttributeDefinitionsByCategoryId(existingCategoryId);
 
             // Assert
             var ok = result.Should().BeOfType<OkObjectResult>().Subject;
@@ -162,7 +162,7 @@ namespace Musify.Tests.ControllerUnitTests
 
             // Act
             var result =
-                await _attributeDefinitionController.GetAttributeDefinitionsByCategoryId(nonexistentCategoryId);
+                await _attributeDefinitionsController.GetAttributeDefinitionsByCategoryId(nonexistentCategoryId);
 
             // Assert
             var notFound = result.Should().BeOfType<NotFoundObjectResult>().Subject;
@@ -183,7 +183,7 @@ namespace Musify.Tests.ControllerUnitTests
             };
 
             // Act
-            var result = await _attributeDefinitionController.CreateAttributeDefinition(dto);
+            var result = await _attributeDefinitionsController.CreateAttributeDefinition(dto);
 
             // Assert
             var createdAt = result.Should().BeOfType<CreatedAtActionResult>().Subject;
@@ -212,7 +212,7 @@ namespace Musify.Tests.ControllerUnitTests
             };
 
             // Act
-            var result = await _attributeDefinitionController.CreateAttributeDefinition(dto);
+            var result = await _attributeDefinitionsController.CreateAttributeDefinition(dto);
 
             // Assert
             var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
@@ -236,7 +236,7 @@ namespace Musify.Tests.ControllerUnitTests
             };
 
             // Act
-            var result = await _attributeDefinitionController.UpdateAttributeDefinition(id, dto);
+            var result = await _attributeDefinitionsController.UpdateAttributeDefinition(id, dto);
 
             // Assert
             result.Should().BeOfType<NoContentResult>();
@@ -257,7 +257,7 @@ namespace Musify.Tests.ControllerUnitTests
             };
 
             // Act
-            var result = await _attributeDefinitionController.UpdateAttributeDefinition(id, dto);
+            var result = await _attributeDefinitionsController.UpdateAttributeDefinition(id, dto);
 
             // Assert
             var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
@@ -280,7 +280,7 @@ namespace Musify.Tests.ControllerUnitTests
             };
 
             // Act
-            var result = await _attributeDefinitionController.UpdateAttributeDefinition(nonexistentId, dto);
+            var result = await _attributeDefinitionsController.UpdateAttributeDefinition(nonexistentId, dto);
 
             // Assert
             var notFound = result.Should().BeOfType<NotFoundObjectResult>().Subject;
@@ -302,7 +302,7 @@ namespace Musify.Tests.ControllerUnitTests
             };
 
             // Act
-            var result = await _attributeDefinitionController.UpdateAttributeDefinition(id, dto);
+            var result = await _attributeDefinitionsController.UpdateAttributeDefinition(id, dto);
 
             // Assert
             var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
@@ -317,7 +317,7 @@ namespace Musify.Tests.ControllerUnitTests
             const int existingId = 1;
 
             // Act
-            var result = await _attributeDefinitionController.DeleteAttributeDefinition(existingId);
+            var result = await _attributeDefinitionsController.DeleteAttributeDefinition(existingId);
 
             // Assert
             result.Should().BeOfType<NoContentResult>();
@@ -330,7 +330,7 @@ namespace Musify.Tests.ControllerUnitTests
             const int nonexistentId = 999;
 
             // Act
-            var result = await _attributeDefinitionController.DeleteAttributeDefinition(nonexistentId);
+            var result = await _attributeDefinitionsController.DeleteAttributeDefinition(nonexistentId);
 
             // Assert
             var notFound = result.Should().BeOfType<NotFoundObjectResult>().Subject;

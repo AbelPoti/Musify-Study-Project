@@ -21,7 +21,7 @@ namespace Musify.Controllers
     /// </remarks>
     [Route("api/[controller]")]
     [ApiController]
-    public class InstrumentController : ControllerBase
+    public class InstrumentsController : ControllerBase
     {
         private MusifyDbContext _dbContext;
         
@@ -29,13 +29,13 @@ namespace Musify.Controllers
         private readonly InstrumentQueries _instrumentQueries;
 
         /// <summary>
-        ///     Initializes a new instance of the <see cref="InstrumentController"/> class.
+        ///     Initializes a new instance of the <see cref="InstrumentsController"/> class.
         /// </summary>
         /// <param name="dbContext">The database context used to interact with the Musify database.</param>
         /// <param name="instrumentQueries">
         ///     The query object for specific queries not provided by <paramref name="dbContext"/>
         /// </param>
-        public InstrumentController(MusifyDbContext dbContext, InstrumentQueries instrumentQueries)
+        public InstrumentsController(MusifyDbContext dbContext, InstrumentQueries instrumentQueries)
         {
             _dbContext = dbContext;
             _instrumentQueries = instrumentQueries;

@@ -10,10 +10,10 @@ using Musify.Dtos.CategoryDtos;
 namespace Musify.Tests.ControllerUnitTests
 {
     [TestFixture]
-    internal class CategoryControllerTests
+    internal class CategoriesControllerTests
     {
         private MusifyDbContext _dbContext;
-        private CategoryController _categoryController;
+        private CategoriesController _categoriesController;
 
         [SetUp]
         public void Setup()
@@ -27,7 +27,7 @@ namespace Musify.Tests.ControllerUnitTests
 
             SeedDatabase();
 
-            _categoryController = new CategoryController(_dbContext);
+            _categoriesController = new CategoriesController(_dbContext);
         }
 
         private void SeedDatabase()
@@ -57,7 +57,7 @@ namespace Musify.Tests.ControllerUnitTests
         {
             // Arrange done in Setup
             // Act
-            var result = await _categoryController.GetAllCategories();
+            var result = await _categoriesController.GetAllCategories();
 
             // Assert
             var ok = result.Should().BeOfType<OkObjectResult>().Subject;
@@ -91,7 +91,7 @@ namespace Musify.Tests.ControllerUnitTests
             const int existingCategoryId = 3; // Acoustic Drumkits
 
             // Act
-            var result = await _categoryController.GetCategoryById(existingCategoryId);
+            var result = await _categoriesController.GetCategoryById(existingCategoryId);
 
             // Assert
             var ok = result.Should().BeOfType<OkObjectResult>().Subject;
@@ -111,7 +111,7 @@ namespace Musify.Tests.ControllerUnitTests
             var nonExistingCategoryId = 999;
 
             // Act
-            var result = await _categoryController.GetCategoryById(nonExistingCategoryId);
+            var result = await _categoriesController.GetCategoryById(nonExistingCategoryId);
 
             // Assert
             result.Should().BeOfType<NotFoundResult>();
@@ -128,7 +128,7 @@ namespace Musify.Tests.ControllerUnitTests
             };
 
             // Act
-            var result = await _categoryController.CreateCategory(dto);
+            var result = await _categoriesController.CreateCategory(dto);
 
             // Assert
             var createdAt = result.Should().BeOfType<CreatedAtActionResult>().Subject;
@@ -154,7 +154,7 @@ namespace Musify.Tests.ControllerUnitTests
             };
 
             // Act
-            var result = await _categoryController.CreateCategory(dto);
+            var result = await _categoriesController.CreateCategory(dto);
 
             // Assert
             var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
@@ -178,7 +178,7 @@ namespace Musify.Tests.ControllerUnitTests
             };
 
             // Act
-            var result = await _categoryController.UpdateCategory(existingCategoryId, dto);
+            var result = await _categoriesController.UpdateCategory(existingCategoryId, dto);
 
             // Assert
             result.Should().BeOfType<NoContentResult>();
@@ -198,7 +198,7 @@ namespace Musify.Tests.ControllerUnitTests
             };
 
             // Act
-            var result = await _categoryController.UpdateCategory(existingCategoryId, dto);
+            var result = await _categoriesController.UpdateCategory(existingCategoryId, dto);
 
             // Assert
             result.Should().BeOfType<NoContentResult>();
@@ -218,7 +218,7 @@ namespace Musify.Tests.ControllerUnitTests
             };
 
             // Act
-            var result = await _categoryController.UpdateCategory(existingCategoryId, dto);
+            var result = await _categoriesController.UpdateCategory(existingCategoryId, dto);
 
             // Assert
             var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
@@ -242,7 +242,7 @@ namespace Musify.Tests.ControllerUnitTests
             };
 
             // Act
-            var result = await _categoryController.UpdateCategory(nonexistentCagoryId, dto);
+            var result = await _categoriesController.UpdateCategory(nonexistentCagoryId, dto);
 
             // Assert
             var notFound = result.Should().BeOfType<NotFoundObjectResult>().Subject;
@@ -265,7 +265,7 @@ namespace Musify.Tests.ControllerUnitTests
             };
 
             // Act
-            var result = await _categoryController.UpdateCategory(existingCategoryId, dto);
+            var result = await _categoriesController.UpdateCategory(existingCategoryId, dto);
 
             // Arrange
             var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
@@ -282,7 +282,7 @@ namespace Musify.Tests.ControllerUnitTests
             const int nonexistingCategoryId = 999;
 
             // Act
-            var result = await _categoryController.DeleteCategory(nonexistingCategoryId);
+            var result = await _categoriesController.DeleteCategory(nonexistingCategoryId);
 
             // Assert
             var notFound = result.Should().BeOfType<NotFoundObjectResult>().Subject;
@@ -299,7 +299,7 @@ namespace Musify.Tests.ControllerUnitTests
             const int existingCategoryWithChildrenId = 1; // Drums and Percussion has 2 children
 
             // Act
-            var result = await _categoryController.DeleteCategory(existingCategoryWithChildrenId);
+            var result = await _categoriesController.DeleteCategory(existingCategoryWithChildrenId);
 
             // Assert
             var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
@@ -321,7 +321,7 @@ namespace Musify.Tests.ControllerUnitTests
             int existingCategoryWithoutChildrenId = 5; // Brass Snare Drums has no children
 
             // Act
-            var result = await _categoryController.DeleteCategory(existingCategoryWithoutChildrenId);
+            var result = await _categoriesController.DeleteCategory(existingCategoryWithoutChildrenId);
 
             // Assert
             result.Should().BeOfType<NoContentResult>();

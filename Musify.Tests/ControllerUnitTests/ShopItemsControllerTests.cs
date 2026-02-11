@@ -10,10 +10,10 @@ using Musify.Models;
 namespace Musify.Tests.ControllerUnitTests
 {
     [TestFixture]
-    internal class ShopItemControllerTests
+    internal class ShopItemsControllerTests
     {
         private MusifyDbContext _dbContext;
-        private ShopItemController _shopItemController;
+        private ShopItemsController _shopItemsController;
 
 
         [SetUp]
@@ -28,7 +28,7 @@ namespace Musify.Tests.ControllerUnitTests
 
             SeedDatabase();
 
-            _shopItemController = new ShopItemController(_dbContext);
+            _shopItemsController = new ShopItemsController(_dbContext);
         }
 
         private void SeedDatabase()
@@ -125,7 +125,7 @@ namespace Musify.Tests.ControllerUnitTests
         {
             // Arrange done in Setup
             // Act
-            var result = await _shopItemController.GetAllShopItems();
+            var result = await _shopItemsController.GetAllShopItems();
 
             // Assert
             var ok = result.Should().BeOfType<OkObjectResult>().Subject;
@@ -156,7 +156,7 @@ namespace Musify.Tests.ControllerUnitTests
             const int shopItemId = 1;
 
             // Act
-            var result = await _shopItemController.GetShopItemById(shopItemId);
+            var result = await _shopItemsController.GetShopItemById(shopItemId);
 
             // Assert
             var ok = result.Should().BeOfType<OkObjectResult>().Subject;
@@ -173,7 +173,7 @@ namespace Musify.Tests.ControllerUnitTests
             const int nonexistentId = 999;
 
             // Act
-            var result = await _shopItemController.GetShopItemById(nonexistentId);
+            var result = await _shopItemsController.GetShopItemById(nonexistentId);
 
             // Assert
             var notFound = result.Should().BeOfType<NotFoundObjectResult>().Subject;
@@ -195,7 +195,7 @@ namespace Musify.Tests.ControllerUnitTests
             };
 
             // Act
-            var result = await _shopItemController.CreateShopItem(dto);
+            var result = await _shopItemsController.CreateShopItem(dto);
 
             // Assert
             var createdAt = result.Should().BeOfType<CreatedAtActionResult>().Subject;
@@ -225,7 +225,7 @@ namespace Musify.Tests.ControllerUnitTests
             };
 
             // Act
-            var result = await _shopItemController.CreateShopItem(dto);
+            var result = await _shopItemsController.CreateShopItem(dto);
 
             // Assert
             var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
@@ -249,7 +249,7 @@ namespace Musify.Tests.ControllerUnitTests
             };
 
             // Act
-            var result = await _shopItemController.UpdateShopItem(shopItemId, dto);
+            var result = await _shopItemsController.UpdateShopItem(shopItemId, dto);
 
             // Assert
             result.Should().BeOfType<NoContentResult>();
@@ -270,7 +270,7 @@ namespace Musify.Tests.ControllerUnitTests
             };
 
             // Act
-            var result = await _shopItemController.UpdateShopItem(shopItemId, dto);
+            var result = await _shopItemsController.UpdateShopItem(shopItemId, dto);
 
             // Assert
             var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
@@ -294,7 +294,7 @@ namespace Musify.Tests.ControllerUnitTests
             };
 
             // Act
-            var result = await _shopItemController.UpdateShopItem(shopItemId, dto);
+            var result = await _shopItemsController.UpdateShopItem(shopItemId, dto);
 
             // Assert
             var notFound = result.Should().BeOfType<NotFoundObjectResult>().Subject;
@@ -318,7 +318,7 @@ namespace Musify.Tests.ControllerUnitTests
             };
 
             // Act
-            var result = await _shopItemController.UpdateShopItem(shopItemId, dto);
+            var result = await _shopItemsController.UpdateShopItem(shopItemId, dto);
 
             // Assert
             var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
@@ -335,7 +335,7 @@ namespace Musify.Tests.ControllerUnitTests
             const decimal newPrice = 2000.0M;
 
             // Act
-            var result = await _shopItemController.PatchShopItemPrice(shopItemId, newPrice);
+            var result = await _shopItemsController.PatchShopItemPrice(shopItemId, newPrice);
 
             // Assert
             var ok = result.Should().BeOfType<OkObjectResult>().Subject;
@@ -353,7 +353,7 @@ namespace Musify.Tests.ControllerUnitTests
             const decimal newPrice = 2000.0M;
 
             // Act
-            var result = await _shopItemController.PatchShopItemPrice(shopItemId, newPrice);
+            var result = await _shopItemsController.PatchShopItemPrice(shopItemId, newPrice);
 
             // Assert
             var ok = result.Should().BeOfType<NotFoundObjectResult>().Subject;
@@ -371,7 +371,7 @@ namespace Musify.Tests.ControllerUnitTests
             const int shopItemId = 1;
 
             // Act
-            var result = await _shopItemController.PatchShopItemPrice(shopItemId, newPrice);
+            var result = await _shopItemsController.PatchShopItemPrice(shopItemId, newPrice);
 
             // Assert
             var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
@@ -388,7 +388,7 @@ namespace Musify.Tests.ControllerUnitTests
             const int newStock = 5;
 
             // Act
-            var result = await _shopItemController.PatchShopItemStock(shopItemId, newStock);
+            var result = await _shopItemsController.PatchShopItemStock(shopItemId, newStock);
 
             // Assert
             var ok = result.Should().BeOfType<OkObjectResult>().Subject;
@@ -406,7 +406,7 @@ namespace Musify.Tests.ControllerUnitTests
             const int newStock = 5;
 
             // Act
-            var result = await _shopItemController.PatchShopItemStock(shopItemId, newStock);
+            var result = await _shopItemsController.PatchShopItemStock(shopItemId, newStock);
 
             // Assert
             var notFound = result.Should().BeOfType<NotFoundObjectResult>().Subject;
@@ -424,7 +424,7 @@ namespace Musify.Tests.ControllerUnitTests
             const int shopItemId = 1;
 
             // Act
-            var result = await _shopItemController.PatchShopItemStock(shopItemId, newStock);
+            var result = await _shopItemsController.PatchShopItemStock(shopItemId, newStock);
 
             // Assert
             var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
@@ -444,7 +444,7 @@ namespace Musify.Tests.ControllerUnitTests
             int currentStock = shopItemPatched!.Stock;
 
             // Act
-            var result = await _shopItemController.IncrementShopItemStock(shopItemId, increment);
+            var result = await _shopItemsController.IncrementShopItemStock(shopItemId, increment);
 
             // Assert
             var ok = result.Should().BeOfType<OkObjectResult>().Subject;
@@ -462,7 +462,7 @@ namespace Musify.Tests.ControllerUnitTests
             const int increment = 5;
 
             // Act
-            var result = await _shopItemController.IncrementShopItemStock(shopItemId, increment);
+            var result = await _shopItemsController.IncrementShopItemStock(shopItemId, increment);
 
             // Assert
             var notFound = result.Should().BeOfType<NotFoundObjectResult>().Subject;
@@ -480,7 +480,7 @@ namespace Musify.Tests.ControllerUnitTests
             const int shopItemId = 1;
 
             // Act
-            var result = await _shopItemController.IncrementShopItemStock(shopItemId, increment);
+            var result = await _shopItemsController.IncrementShopItemStock(shopItemId, increment);
 
             // Assert
             var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
@@ -500,7 +500,7 @@ namespace Musify.Tests.ControllerUnitTests
             int currentStock = patchedShopItem!.Stock;
 
             // Act
-            var result = await _shopItemController.DecrementShopItemStock(shopItemId, decrement);
+            var result = await _shopItemsController.DecrementShopItemStock(shopItemId, decrement);
 
             // Assert
             var ok = result.Should().BeOfType<OkObjectResult>().Subject;
@@ -518,7 +518,7 @@ namespace Musify.Tests.ControllerUnitTests
             const int decrement = 4;
 
             // Act
-            var result = await _shopItemController.DecrementShopItemStock(shopItemId, decrement);
+            var result = await _shopItemsController.DecrementShopItemStock(shopItemId, decrement);
 
             // Assert
             var notFound = result.Should().BeOfType<NotFoundObjectResult>().Subject;
@@ -536,7 +536,7 @@ namespace Musify.Tests.ControllerUnitTests
             const int shopItemId = 1;
 
             // Act
-            var result = await _shopItemController.DecrementShopItemStock(shopItemId, decrement);
+            var result = await _shopItemsController.DecrementShopItemStock(shopItemId, decrement);
 
             // Assert
             var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
@@ -553,7 +553,7 @@ namespace Musify.Tests.ControllerUnitTests
             const int decrement = 6;
 
             // Act
-            var result = await _shopItemController.DecrementShopItemStock(shopItemId, decrement);
+            var result = await _shopItemsController.DecrementShopItemStock(shopItemId, decrement);
 
             // Assert
             var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
@@ -569,7 +569,7 @@ namespace Musify.Tests.ControllerUnitTests
             const int shopItemId = 1;
 
             // Act
-            var result = await _shopItemController.DeleteShopItem(shopItemId);
+            var result = await _shopItemsController.DeleteShopItem(shopItemId);
 
             // Assert
             result.Should().BeOfType<NoContentResult>();
@@ -582,7 +582,7 @@ namespace Musify.Tests.ControllerUnitTests
             const int shopItemId = 999; // Does not exist
 
             // Act
-            var result = await _shopItemController.DeleteShopItem(shopItemId);
+            var result = await _shopItemsController.DeleteShopItem(shopItemId);
 
             // Assert
             var notFound = result.Should().BeOfType<NotFoundObjectResult>().Subject;

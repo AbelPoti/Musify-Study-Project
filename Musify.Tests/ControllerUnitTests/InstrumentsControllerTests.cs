@@ -15,11 +15,11 @@ using Musify.Models;
 namespace Musify.Tests.ControllerUnitTests
 {
     [TestFixture]
-    internal class InstrumentControllerTests
+    internal class InstrumentsControllerTests
     {
         private MusifyDbContext _dbContext;
         private InstrumentQueries _instrumentQueries;
-        private InstrumentController _instrumentController;
+        private InstrumentsController _instrumentsController;
 
         [SetUp]
         public void Setup()
@@ -34,7 +34,7 @@ namespace Musify.Tests.ControllerUnitTests
 
             SeedDatabase();
 
-            _instrumentController = new InstrumentController(_dbContext, _instrumentQueries);
+            _instrumentsController = new InstrumentsController(_dbContext, _instrumentQueries);
         }
 
         private void SeedDatabase()
@@ -103,7 +103,7 @@ namespace Musify.Tests.ControllerUnitTests
             CancellationToken cancellationToken = CancellationToken.None;
             
             // Act
-            var result = await _instrumentController.GetAllInstruments(
+            var result = await _instrumentsController.GetAllInstruments(
                 pageRequest,
                 sortRequest,
                 instrumentFiterDto,
@@ -147,7 +147,7 @@ namespace Musify.Tests.ControllerUnitTests
             const int existingId = 2;
 
             // Act
-            var result = await _instrumentController.GetInstrumentById(existingId);
+            var result = await _instrumentsController.GetInstrumentById(existingId);
 
             // Assert
             var ok = result.Should().BeOfType<OkObjectResult>().Subject;
@@ -167,7 +167,7 @@ namespace Musify.Tests.ControllerUnitTests
             const int nonexistentId = 999;
 
             // Act
-            var result = await _instrumentController.GetInstrumentById(nonexistentId);
+            var result = await _instrumentsController.GetInstrumentById(nonexistentId);
 
             // Assert
             result.Should().BeOfType<NotFoundResult>();
@@ -187,7 +187,7 @@ namespace Musify.Tests.ControllerUnitTests
             };
 
             // Act
-            var result = await _instrumentController.CreateInstrument(dto);
+            var result = await _instrumentsController.CreateInstrument(dto);
 
             // Assert
             var createdAt = result.Should().BeOfType<CreatedAtActionResult>().Subject;
@@ -220,7 +220,7 @@ namespace Musify.Tests.ControllerUnitTests
             };
 
             // Act
-            var result = await _instrumentController.CreateInstrument(dto);
+            var result = await _instrumentsController.CreateInstrument(dto);
 
             // Assert
             var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
@@ -245,7 +245,7 @@ namespace Musify.Tests.ControllerUnitTests
             };
 
             // Act
-            var result = await _instrumentController.UpdateInstrument(existingId, dto);
+            var result = await _instrumentsController.UpdateInstrument(existingId, dto);
 
             // Assert
             result.Should().BeOfType<NoContentResult>();
@@ -267,7 +267,7 @@ namespace Musify.Tests.ControllerUnitTests
             };
 
             // Act
-            var result = await _instrumentController.UpdateInstrument(existingId, dto);
+            var result = await _instrumentsController.UpdateInstrument(existingId, dto);
 
             // Assert
             var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
@@ -292,7 +292,7 @@ namespace Musify.Tests.ControllerUnitTests
             };
 
             // Act
-            var result = await _instrumentController.UpdateInstrument(existingId, dto);
+            var result = await _instrumentsController.UpdateInstrument(existingId, dto);
 
             // Assert
             var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
@@ -317,7 +317,7 @@ namespace Musify.Tests.ControllerUnitTests
             };
 
             // Act
-            var result = await _instrumentController.UpdateInstrument(nonexistentId, dto);
+            var result = await _instrumentsController.UpdateInstrument(nonexistentId, dto);
 
             // Assert
             var badRequest = result.Should().BeOfType<NotFoundObjectResult>().Subject;
@@ -333,7 +333,7 @@ namespace Musify.Tests.ControllerUnitTests
             const int existingId = 1;
 
             // Act
-            var result = await _instrumentController.GetAttributesOfInstrument(existingId);
+            var result = await _instrumentsController.GetAttributesOfInstrument(existingId);
 
             // Assert
             var ok = result.Should().BeOfType<OkObjectResult>().Subject;
@@ -353,7 +353,7 @@ namespace Musify.Tests.ControllerUnitTests
             await SeedAttributeDefinitionsAndValuesForInstruments([existingId]);
 
             // Act
-            var result = await _instrumentController.GetAttributesOfInstrument(existingId);
+            var result = await _instrumentsController.GetAttributesOfInstrument(existingId);
 
             // Assert
             var ok = result.Should().BeOfType<OkObjectResult>().Subject;
@@ -383,7 +383,7 @@ namespace Musify.Tests.ControllerUnitTests
             const int nonexistentId = 999;
 
             // Act
-            var result = await _instrumentController.GetAttributesOfInstrument(nonexistentId);
+            var result = await _instrumentsController.GetAttributesOfInstrument(nonexistentId);
 
             // Assert
             result.Should().BeOfType<NotFoundResult>();
@@ -404,7 +404,7 @@ namespace Musify.Tests.ControllerUnitTests
             };
 
             // Act
-            var result = await _instrumentController.AddAttributeToInstrument(instrumentId, dto);
+            var result = await _instrumentsController.AddAttributeToInstrument(instrumentId, dto);
 
             // Assert
             var createdAt = result.Should().BeOfType<CreatedAtActionResult>().Subject;
@@ -435,7 +435,7 @@ namespace Musify.Tests.ControllerUnitTests
             };
 
             // Act
-            var result = await _instrumentController.AddAttributeToInstrument(instrumentId, dto);
+            var result = await _instrumentsController.AddAttributeToInstrument(instrumentId, dto);
 
             // Assert
             var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
@@ -458,7 +458,7 @@ namespace Musify.Tests.ControllerUnitTests
             };
 
             // Act
-            var result = await _instrumentController.AddAttributeToInstrument(nonexistentInstrumentId, dto);
+            var result = await _instrumentsController.AddAttributeToInstrument(nonexistentInstrumentId, dto);
 
             // Assert
             var notFound = result.Should().BeOfType<NotFoundObjectResult>().Subject;
@@ -483,7 +483,7 @@ namespace Musify.Tests.ControllerUnitTests
             };
 
             // Act
-            var result = await _instrumentController.AddAttributeToInstrument(instrumentId, dto);
+            var result = await _instrumentsController.AddAttributeToInstrument(instrumentId, dto);
 
             // Assert
             var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
@@ -510,7 +510,7 @@ namespace Musify.Tests.ControllerUnitTests
             };
 
             // Act
-            var result = await _instrumentController.UpdateAttributeOfInstrument(instrumentId, attributeValueId, dto);
+            var result = await _instrumentsController.UpdateAttributeOfInstrument(instrumentId, attributeValueId, dto);
 
             // Assert
             result.Should().BeOfType<NoContentResult>();
@@ -534,7 +534,7 @@ namespace Musify.Tests.ControllerUnitTests
             };
 
             // Act
-            var result = await _instrumentController.UpdateAttributeOfInstrument(instrumentId, attributeValueId, dto);
+            var result = await _instrumentsController.UpdateAttributeOfInstrument(instrumentId, attributeValueId, dto);
 
             // Assert
             var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
@@ -561,7 +561,7 @@ namespace Musify.Tests.ControllerUnitTests
             };
 
             // Act
-            var result = await _instrumentController.UpdateAttributeOfInstrument(instrumentId, attributeValueId, dto);
+            var result = await _instrumentsController.UpdateAttributeOfInstrument(instrumentId, attributeValueId, dto);
 
             // Assert
             var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
@@ -588,7 +588,7 @@ namespace Musify.Tests.ControllerUnitTests
             };
 
             // Act
-            var result = await _instrumentController.UpdateAttributeOfInstrument(instrumentId, attributeValueId, dto);
+            var result = await _instrumentsController.UpdateAttributeOfInstrument(instrumentId, attributeValueId, dto);
 
             // Assert
             var badRequest = result.Should().BeOfType<NotFoundObjectResult>().Subject;
@@ -615,7 +615,7 @@ namespace Musify.Tests.ControllerUnitTests
             };
 
             // Act
-            var result = await _instrumentController.UpdateAttributeOfInstrument(instrumentId, attributeValueId, dto);
+            var result = await _instrumentsController.UpdateAttributeOfInstrument(instrumentId, attributeValueId, dto);
 
             // Assert
             var badRequest = result.Should().BeOfType<NotFoundObjectResult>().Subject;
@@ -642,7 +642,7 @@ namespace Musify.Tests.ControllerUnitTests
             };
 
             // Act
-            var result = await _instrumentController.UpdateAttributeOfInstrument(instrumentId, attributeValueId, dto);
+            var result = await _instrumentsController.UpdateAttributeOfInstrument(instrumentId, attributeValueId, dto);
 
             // Assert
             var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
@@ -671,7 +671,7 @@ namespace Musify.Tests.ControllerUnitTests
             };
 
             // Act
-            var result = await _instrumentController.UpdateAttributeOfInstrument(instrumentId, attributeValueId, dto);
+            var result = await _instrumentsController.UpdateAttributeOfInstrument(instrumentId, attributeValueId, dto);
 
             // Assert
             var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
@@ -690,7 +690,7 @@ namespace Musify.Tests.ControllerUnitTests
             await SeedAttributeDefinitionsAndValuesForInstruments([instrumentId]);
 
             // Act
-            var result = await _instrumentController.DeleteAttributeOfInstrument(instrumentId, attributeValueId);
+            var result = await _instrumentsController.DeleteAttributeOfInstrument(instrumentId, attributeValueId);
 
             // Assert
             result.Should().BeOfType<NoContentResult>();
@@ -706,7 +706,7 @@ namespace Musify.Tests.ControllerUnitTests
             await SeedAttributeDefinitionsAndValuesForInstruments([instrumentId]);
 
             // Act
-            var result = await _instrumentController.DeleteAttributeOfInstrument(instrumentId, attributeValueId);
+            var result = await _instrumentsController.DeleteAttributeOfInstrument(instrumentId, attributeValueId);
 
             // Assert
             var notFound = result.Should().BeOfType<NotFoundObjectResult>().Subject;
@@ -725,7 +725,7 @@ namespace Musify.Tests.ControllerUnitTests
             await SeedAttributeDefinitionsAndValuesForInstruments([instrumentId]);
 
             // Act
-            var result = await _instrumentController.DeleteAttributeOfInstrument(instrumentId, attributeValueId);
+            var result = await _instrumentsController.DeleteAttributeOfInstrument(instrumentId, attributeValueId);
 
             // Assert
             var notFound = result.Should().BeOfType<NotFoundObjectResult>().Subject;
@@ -743,7 +743,7 @@ namespace Musify.Tests.ControllerUnitTests
             await SeedAttributeDefinitionsAndValuesForInstruments([instrumentId]);
 
             // Act
-            var result = await _instrumentController.DeleteInstrument(instrumentId);
+            var result = await _instrumentsController.DeleteInstrument(instrumentId);
 
             // Assert
             result.Should().BeOfType<NoContentResult>();
@@ -765,7 +765,7 @@ namespace Musify.Tests.ControllerUnitTests
             await SeedAttributeDefinitionsAndValuesForInstruments([1, 2, 3]);
 
             // Act
-            var result = await _instrumentController.DeleteAttributeOfInstrument(instrumentId, attributeValueId);
+            var result = await _instrumentsController.DeleteAttributeOfInstrument(instrumentId, attributeValueId);
 
             // Assert
             var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
