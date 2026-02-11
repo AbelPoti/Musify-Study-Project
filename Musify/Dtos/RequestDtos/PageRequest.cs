@@ -4,12 +4,10 @@ namespace Musify.Dtos.RequestDtos
 {
     public record PageRequest
     {
-        [Required]
         [Range(1, int.MaxValue)]
-        public int Page { get; init; } = 1;
+        public int Page { get; init; }
         
-        [Required]
-        [Range(10, int.MaxValue)]
-        public int PageSize { get; init; } = 10;
+        [Range(1, 20)]
+        public int PageSize { get; init; }
     }
 }

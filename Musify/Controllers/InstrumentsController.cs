@@ -51,9 +51,9 @@ namespace Musify.Controllers
         /// </returns>
         [HttpGet]
         public async Task<IActionResult> GetAllInstruments(
-            [FromQuery] PageRequest page,
-            [FromQuery] SortRequest? sort,
-            [FromQuery] InstrumentFiterDto? filter,
+            [FromQuery(Name = "")] PageRequest page,
+            [FromQuery(Name = "")] SortRequest? sort,
+            [FromQuery(Name = "")] InstrumentFiterDto? filter,
             CancellationToken cancellationToken)
         {
             var pagedInstruments = await _instrumentQueries.GetItemsAsync(page, sort, filter, cancellationToken);
