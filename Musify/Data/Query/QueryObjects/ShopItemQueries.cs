@@ -12,9 +12,11 @@ namespace Musify.Data.Query.QueryObjects
     {
         private readonly MusifyDbContext _dbContext;
         
-        private readonly ShopItemFiltering _shopItemFiltering;
+        private readonly IEntityFiltering<ShopItem, ShopItemFilterDto> _shopItemFiltering;
         
-        public ShopItemQueries(MusifyDbContext dbContext, ShopItemFiltering shopItemFiltering)
+        public ShopItemQueries(
+            MusifyDbContext dbContext,
+            IEntityFiltering<ShopItem, ShopItemFilterDto> shopItemFiltering)
         {
             _dbContext = dbContext;
             _shopItemFiltering = shopItemFiltering;

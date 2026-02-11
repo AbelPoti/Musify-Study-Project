@@ -12,9 +12,11 @@ namespace Musify.Data.Query.QueryObjects
     {
         private readonly MusifyDbContext _dbContext;
         
-        private readonly InstrumentFiltering _instrumentFiltering;
+        private readonly IEntityFiltering<Instrument, InstrumentFiterDto> _instrumentFiltering;
         
-        public InstrumentQueries(MusifyDbContext dbContext,  InstrumentFiltering instrumentFiltering)
+        public InstrumentQueries(
+            MusifyDbContext dbContext,
+            IEntityFiltering<Instrument, InstrumentFiterDto> instrumentFiltering)
         {
             _dbContext = dbContext;
             _instrumentFiltering = instrumentFiltering;
