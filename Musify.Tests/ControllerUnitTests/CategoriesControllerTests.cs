@@ -6,6 +6,7 @@ using Musify.Models;
 using Musify.Data.DatabaseContext;
 using Musify.Dtos;
 using Musify.Dtos.CategoryDtos;
+using Musify.Services;
 
 namespace Musify.Tests.ControllerUnitTests
 {
@@ -13,6 +14,9 @@ namespace Musify.Tests.ControllerUnitTests
     internal class CategoriesControllerTests
     {
         private MusifyDbContext _dbContext;
+        
+        private ICategoryTreeService _categoryTreeService;
+        
         private CategoriesController _categoriesController;
 
         [SetUp]
@@ -27,7 +31,8 @@ namespace Musify.Tests.ControllerUnitTests
 
             SeedDatabase();
 
-            _categoriesController = new CategoriesController(_dbContext);
+            _categoryTreeService = new CategoryTreeService(_dbContext);
+            _categoriesController = new CategoriesController(_dbContext,  _categoryTreeService);
         }
 
         private void SeedDatabase()

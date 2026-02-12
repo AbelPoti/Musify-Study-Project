@@ -5,6 +5,7 @@ using Musify.Data.DatabaseContext;
 using Musify.Dtos;
 using Musify.Dtos.CategoryDtos;
 using Musify.Models;
+using Musify.Services;
 
 namespace Musify.Controllers
 {
@@ -18,15 +19,19 @@ namespace Musify.Controllers
     [ApiController]
     public class CategoriesController : ControllerBase
     {
-        private MusifyDbContext _dbContext;
+        private readonly MusifyDbContext _dbContext;
+        
+        private readonly ICategoryTreeService _categoryTreeService;
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="CategoriesController"/> class.
         /// </summary>
         /// <param name="dbContext">The database context used to interact with the Musify database.</param>
-        public CategoriesController(MusifyDbContext dbContext)
+        /// <param name="categoryTreeService">The category tree service used to build and return category trees.</param>
+        public CategoriesController(MusifyDbContext dbContext, ICategoryTreeService categoryTreeService)
         {
             _dbContext = dbContext;
+            _categoryTreeService = categoryTreeService;
         }
 
         /// <summary>
@@ -77,6 +82,13 @@ namespace Musify.Controllers
                 Name = category.Name,
                 ParentId = category.ParentId
             });
+        }
+
+        [HttpGet("{id}/children")]
+        public async Task<IActionResult> GetChildrenCategoriesById(int id, CancellationToken cancellationToken)
+        {
+            var categories = await _categoryTreeService.GetDescendantCategoriesAsync(id, cancellationToken);
+            return Ok(categories);
         }
 
         /// <summary>

@@ -12,6 +12,24 @@ namespace Musify.Services
         {
             _dbContext = dbContext;
         }
+
+        public async Task<IEnumerable<Category>> GetDescendantCategoriesAsync(
+            int rootCategoryId,
+            CancellationToken cancellationToken)
+        {
+            var descendantIds = await GetDescendantIdsAsync(rootCategoryId, cancellationToken);
+            List<Category> descendantCategories = [];
+            foreach (int id in descendantIds)
+            {
+                Category? category = await _dbContext.Categories.FindAsync(id, cancellationToken);
+                if (category != null)
+                {
+                    descendantCategories.Add(category);
+                }
+            }
+            
+            return descendantCategories;
+        }
         
         /// <summary>
         ///     Get the descendant <see cref="Category"/> Ids of a category represented by
