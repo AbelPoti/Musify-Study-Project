@@ -12,12 +12,21 @@ namespace Musify.Services
         {
             _dbContext = dbContext;
         }
-
+        
+        /// <summary>
+        ///     Get the descendant <see cref="Category"/> entities of a category represented by
+        ///     <paramref name="rootCategoryId"/>, including the <see cref="Category"/> with
+        ///     <paramref name="rootCategoryId"/>.
+        /// </summary>
+        /// <param name="rootCategoryId">The root of the category tree to be retrieved.</param>
+        /// <param name="cancellationToken">The cancellation token for the operation.</param>
+        /// <returns>The flattened category tree.</returns>
         public async Task<IEnumerable<Category>> GetDescendantCategoriesAsync(
             int rootCategoryId,
             CancellationToken cancellationToken)
         {
             var descendantIds = await GetDescendantIdsAsync(rootCategoryId, cancellationToken);
+            
             List<Category> descendantCategories = [];
             foreach (int id in descendantIds)
             {
@@ -30,14 +39,35 @@ namespace Musify.Services
             
             return descendantCategories;
         }
-        
+
+        public async Task<IEnumerable<Category>> GetAncestorCategoriesAsync(int rootCategoryId, CancellationToken cancellationToken)
+        {
+            Category? category = await _dbContext.Categories.FindAsync(rootCategoryId, cancellationToken);
+            if (category == null)
+            {
+                return [];
+            }
+
+            List<Category> ancestors = [];
+
+            Category? current = category;
+            while (current != null)
+            {
+                ancestors.Add(current);
+                current = await _dbContext.Categories.FindAsync(current.ParentId, cancellationToken);
+            }
+            
+            ancestors.Reverse();
+            return ancestors;
+        }
+
         /// <summary>
         ///     Get the descendant <see cref="Category"/> Ids of a category represented by
         ///     <paramref name="rootCategoryId"/>, including <paramref name="rootCategoryId"/>.
         /// </summary>
         /// <param name="rootCategoryId">The root of the category tree to be retrieved.</param>
         /// <param name="cancellationToken">The cancellation token for the operation.</param>
-        /// <returns></returns>
+        /// <returns>The Ids from the flattened category tree."/></returns>
         public async Task<IReadOnlySet<int>> GetDescendantIdsAsync(
             int rootCategoryId,
             CancellationToken cancellationToken)
@@ -65,6 +95,14 @@ namespace Musify.Services
             }
 
             return result;
+        }
+        
+        public async Task<IEnumerable<Category>> GetTopLevelCategoriesAsync(CancellationToken cancellationToken)
+        {
+            List<Category> categories = await _dbContext.Categories.
+                    Where(c => c.ParentId == null)
+                    .ToListAsync(cancellationToken);
+            return categories;
         }
         
         private async Task<Dictionary<int, IEnumerable<int>>> GetLookupForAllCategoriesAsync(
