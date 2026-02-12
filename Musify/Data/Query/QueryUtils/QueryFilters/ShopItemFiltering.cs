@@ -5,7 +5,10 @@ namespace Musify.Data.Query.QueryUtils.QueryFilters
 {
     public class ShopItemFiltering : IEntityFiltering<ShopItem, ShopItemFilterDto>
     {
-        public IQueryable<ShopItem> Apply(IQueryable<ShopItem> query, ShopItemFilterDto filter)
+        public Task<IQueryable<ShopItem>> Apply(
+            IQueryable<ShopItem> query,
+            ShopItemFilterDto filter,
+            CancellationToken cancellationToken)
         {
             // Repeat instrument filtering logic for now
             if (filter.InstrumentFiter is not null)
@@ -40,7 +43,7 @@ namespace Musify.Data.Query.QueryUtils.QueryFilters
                 query = query.Where(sI => sI.Condition == filter.Condition);
             }
 
-            return query;
+            return Task.FromResult(query);
         }
     }
 }

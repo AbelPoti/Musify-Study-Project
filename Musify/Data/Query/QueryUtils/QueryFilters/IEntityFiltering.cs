@@ -2,6 +2,6 @@
 {
     public interface IEntityFiltering<TEntity, in TFilter>
     {
-        IQueryable<TEntity> Apply(IQueryable<TEntity> query, TFilter filter);
+        Task<IQueryable<TEntity>> Apply(IQueryable<TEntity> query, TFilter filter, CancellationToken cT);
     }
 }

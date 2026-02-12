@@ -56,6 +56,9 @@ builder.Services.AddSingleton<IDateTimeProvider, SystemDateTimeProvider>();
 // Register email service
 builder.Services.AddTransient<IEmailSender, EmailSender>();
 
+// Register query helper service
+builder.Services.AddScoped<ICategoryTreeService, CategoryTreeService>();
+
 // Register filtering classes
 builder.Services.AddScoped<IEntityFiltering<Instrument, InstrumentFiterDto>, InstrumentFiltering>();
 builder.Services.AddScoped<IEntityFiltering<ShopItem, ShopItemFilterDto>, ShopItemFiltering>();

@@ -50,7 +50,7 @@ namespace Musify.Data.Query.QueryObjects
             // Apply filtering
             if (instrumentFiterDto != null)
             {
-                query = _instrumentFiltering.Apply(query, instrumentFiterDto);
+                query = await _instrumentFiltering.Apply(query, instrumentFiterDto, cancellationToken);
             }
             
             int totalCount = await query.CountAsync(cancellationToken);

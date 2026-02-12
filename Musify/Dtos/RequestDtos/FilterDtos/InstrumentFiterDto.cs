@@ -10,6 +10,6 @@ namespace Musify.Dtos.RequestDtos.FilterDtos
         [MaxLength(128)]
         public string? Brand { get; init; }
         
-        // TODO Create filtering based on categories
+        public int? CategoryId { get; init; }
     }
 }

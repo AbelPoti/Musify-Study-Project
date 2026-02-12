@@ -11,6 +11,7 @@ using Musify.Dtos.InstrumentDtos;
 using Musify.Dtos.RequestDtos;
 using Musify.Dtos.RequestDtos.FilterDtos;
 using Musify.Models;
+using Musify.Services;
 
 namespace Musify.Tests.ControllerUnitTests
 {
@@ -19,6 +20,8 @@ namespace Musify.Tests.ControllerUnitTests
     {
         private MusifyDbContext _dbContext;
         private InstrumentQueries _instrumentQueries;
+        private ICategoryTreeService _categoryTreeService;
+        private IEntityFiltering<Instrument, InstrumentFiterDto> _instrumentfiltering;
         private InstrumentsController _instrumentsController;
 
         [SetUp]
@@ -30,7 +33,10 @@ namespace Musify.Tests.ControllerUnitTests
                 .Options;
 
             _dbContext = new MusifyDbContext(options);
-            _instrumentQueries = new InstrumentQueries(_dbContext, new InstrumentFiltering());
+            
+            _categoryTreeService = new CategoryTreeService(_dbContext);
+            _instrumentfiltering = new InstrumentFiltering(_categoryTreeService);
+            _instrumentQueries = new InstrumentQueries(_dbContext, _instrumentfiltering);
 
             SeedDatabase();
 

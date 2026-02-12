@@ -53,7 +53,7 @@ namespace Musify.Data.Query.QueryObjects
 
             if (filter != null)
             {
-                query = _shopItemFiltering.Apply(query, filter);
+                query = await _shopItemFiltering.Apply(query, filter, cancellationToken);
             }
             
             int totalCount = await query.CountAsync(cancellationToken);
