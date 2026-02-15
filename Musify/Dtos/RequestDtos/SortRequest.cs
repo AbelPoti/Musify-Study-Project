@@ -8,6 +8,6 @@ namespace Musify.Dtos.RequestDtos
         public string? SortBy { get; init; }
 
         [Range(0, 1)]
-        public bool Descending { get; init; } = false;
+        public bool Descending { get; init; }
     }
 }

@@ -1,6 +1,4 @@
-﻿using Musify.Models;
-
-namespace Musify.Dtos.RequestDtos.FilterDtos
+﻿namespace Musify.Dtos.RequestDtos.FilterDtos
 {
     public record ShopItemFilterDto
     {
