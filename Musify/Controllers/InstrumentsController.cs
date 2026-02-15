@@ -26,7 +26,7 @@ namespace Musify.Controllers
         private MusifyDbContext _dbContext;
         
         // Custom queries class for specific queries and page returning ones
-        private readonly IQueries<Instrument, InstrumentFiterDto> _instrumentQueries;
+        private readonly IQueries<Instrument, InstrumentFilterDto> _instrumentQueries;
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="InstrumentsController"/> class.
@@ -37,7 +37,7 @@ namespace Musify.Controllers
         /// </param>
         public InstrumentsController(
             MusifyDbContext dbContext,
-            IQueries<Instrument, InstrumentFiterDto> instrumentQueries)
+            IQueries<Instrument, InstrumentFilterDto> instrumentQueries)
         {
             _dbContext = dbContext;
             _instrumentQueries = instrumentQueries;
@@ -53,7 +53,7 @@ namespace Musify.Controllers
         public async Task<IActionResult> GetAllInstruments(
             [FromQuery(Name = "")] PageRequest page,
             [FromQuery(Name = "")] SortRequest? sort,
-            [FromQuery(Name = "")] InstrumentFiterDto? filter,
+            [FromQuery(Name = "")] InstrumentFilterDto? filter,
             CancellationToken cancellationToken)
         {
             var pagedInstruments = await _instrumentQueries.GetItemsAsync(page, sort, filter, cancellationToken);

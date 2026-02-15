@@ -4,7 +4,7 @@ using Musify.Services;
 
 namespace Musify.Data.Query.QueryUtils.QueryFilters
 {
-    public class InstrumentFiltering : IEntityFiltering<Instrument, InstrumentFiterDto>
+    public class InstrumentFiltering : IEntityFiltering<Instrument, InstrumentFilterDto>
     {
         private readonly ICategoryTreeService _categoryTreeService;
 
@@ -15,7 +15,7 @@ namespace Musify.Data.Query.QueryUtils.QueryFilters
         
         public async Task<IQueryable<Instrument>> Apply(
             IQueryable<Instrument> query,
-            InstrumentFiterDto filter,
+            InstrumentFilterDto filter,
             CancellationToken cancellationToken)
         {
             if (!string.IsNullOrWhiteSpace(filter.Name))

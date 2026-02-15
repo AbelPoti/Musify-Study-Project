@@ -60,11 +60,11 @@ builder.Services.AddTransient<IEmailSender, EmailSender>();
 builder.Services.AddScoped<ICategoryTreeService, CategoryTreeService>();
 
 // Register filtering classes
-builder.Services.AddScoped<IEntityFiltering<Instrument, InstrumentFiterDto>, InstrumentFiltering>();
+builder.Services.AddScoped<IEntityFiltering<Instrument, InstrumentFilterDto>, InstrumentFiltering>();
 builder.Services.AddScoped<IEntityFiltering<ShopItem, ShopItemFilterDto>, ShopItemFiltering>();
 
 // Register custom queries classes
-builder.Services.AddScoped<IQueries<Instrument, InstrumentFiterDto>, InstrumentQueries>();
+builder.Services.AddScoped<IQueries<Instrument, InstrumentFilterDto>, InstrumentQueries>();
 builder.Services.AddScoped<IQueries<ShopItem, ShopItemFilterDto>, ShopItemQueries>();
 
 builder.Services.AddControllers()

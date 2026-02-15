@@ -8,15 +8,15 @@ using Musify.Models;
 
 namespace Musify.Data.Query.QueryObjects
 {
-    public class InstrumentQueries : IQueries<Instrument, InstrumentFiterDto>
+    public class InstrumentQueries : IQueries<Instrument, InstrumentFilterDto>
     {
         private readonly MusifyDbContext _dbContext;
         
-        private readonly IEntityFiltering<Instrument, InstrumentFiterDto> _instrumentFiltering;
+        private readonly IEntityFiltering<Instrument, InstrumentFilterDto> _instrumentFiltering;
         
         public InstrumentQueries(
             MusifyDbContext dbContext,
-            IEntityFiltering<Instrument, InstrumentFiterDto> instrumentFiltering)
+            IEntityFiltering<Instrument, InstrumentFilterDto> instrumentFiltering)
         {
             _dbContext = dbContext;
             _instrumentFiltering = instrumentFiltering;
@@ -25,7 +25,7 @@ namespace Musify.Data.Query.QueryObjects
         public async Task<PagedResult<Instrument>> GetItemsAsync(
             PageRequest pageRequest,
             SortRequest? sortRequest,
-            InstrumentFiterDto? instrumentFiterDto,
+            InstrumentFilterDto? instrumentFiterDto,
             CancellationToken cancellationToken)
         {
             IQueryable<Instrument> query = _dbContext.Instruments.AsNoTracking();

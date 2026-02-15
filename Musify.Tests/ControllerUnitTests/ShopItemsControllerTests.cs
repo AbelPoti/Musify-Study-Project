@@ -134,7 +134,7 @@ namespace Musify.Tests.ControllerUnitTests
             SortRequest sortRequest = new SortRequest { Descending = false, SortBy = "price" };
             ShopItemFilterDto shopItemFilterDto = new ShopItemFilterDto
             {
-                InstrumentFiter = new InstrumentFiterDto
+                InstrumentFiter = new InstrumentFilterDto
                 {
                     CategoryId = 1 // Drums root category
                 },

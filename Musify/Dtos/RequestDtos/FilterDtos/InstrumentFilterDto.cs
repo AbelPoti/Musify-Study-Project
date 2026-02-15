@@ -2,7 +2,7 @@
 
 namespace Musify.Dtos.RequestDtos.FilterDtos
 {
-    public record InstrumentFiterDto
+    public record InstrumentFilterDto
     {
         [MaxLength(256)]
         public string? Name { get; init; }

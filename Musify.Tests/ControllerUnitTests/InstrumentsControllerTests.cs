@@ -22,7 +22,7 @@ namespace Musify.Tests.ControllerUnitTests
         private MusifyDbContext _dbContext;
         private InstrumentQueries _instrumentQueries;
         private ICategoryTreeService _categoryTreeService;
-        private IEntityFiltering<Instrument, InstrumentFiterDto> _instrumentfiltering;
+        private IEntityFiltering<Instrument, InstrumentFilterDto> _instrumentfiltering;
         private InstrumentsController _instrumentsController;
 
         [SetUp]
@@ -106,14 +106,14 @@ namespace Musify.Tests.ControllerUnitTests
             // Arrange
             PageRequest pageRequest = new PageRequest { Page = 1, PageSize = 2};
             SortRequest sortRequest = new SortRequest { Descending = true, SortBy = "brand" };
-            InstrumentFiterDto instrumentFiterDto = new InstrumentFiterDto { CategoryId = 1}; // Drums root category
+            InstrumentFilterDto instrumentFilterDto = new InstrumentFilterDto { CategoryId = 1}; // Drums root category
             CancellationToken cancellationToken = CancellationToken.None;
             
             // Act
             var result = await _instrumentsController.GetAllInstruments(
                 pageRequest,
                 sortRequest,
-                instrumentFiterDto,
+                instrumentFilterDto,
                 cancellationToken);
 
             // Assert
