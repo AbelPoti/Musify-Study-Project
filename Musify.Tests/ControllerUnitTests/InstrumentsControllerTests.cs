@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Musify.Controllers;
 using Musify.Data.DatabaseContext;
 using Musify.Data.Query.QueryObjects;
+using Musify.Data.Query.QueryUtils;
 using Musify.Data.Query.QueryUtils.QueryFilters;
 using Musify.Dtos;
 using Musify.Dtos.AttributeValueDtos;
@@ -103,9 +104,9 @@ namespace Musify.Tests.ControllerUnitTests
         public async Task GetAll_ShouldReturnOkWithList()
         {
             // Arrange
-            PageRequest pageRequest = new PageRequest();
-            SortRequest sortRequest = new SortRequest();
-            InstrumentFiterDto instrumentFiterDto = new InstrumentFiterDto();
+            PageRequest pageRequest = new PageRequest { Page = 1, PageSize = 2};
+            SortRequest sortRequest = new SortRequest { Descending = true, SortBy = "brand" };
+            InstrumentFiterDto instrumentFiterDto = new InstrumentFiterDto { CategoryId = 1}; // Drums root category
             CancellationToken cancellationToken = CancellationToken.None;
             
             // Act
@@ -117,33 +118,38 @@ namespace Musify.Tests.ControllerUnitTests
 
             // Assert
             var ok = result.Should().BeOfType<OkObjectResult>().Subject;
-            var payload = ok.Value.Should().BeAssignableTo<IEnumerable<InstrumentReadMinimalDto>>().Subject;
+            var payload = ok.Value.Should().BeAssignableTo<PagedResult<InstrumentReadMinimalDto>>().Subject;
 
-            var list = payload as List<InstrumentReadMinimalDto>;
+            payload.TotalCount.Should().Be(3);
+            payload.Page.Should().Be(1);
+            payload.PageSize.Should().Be(2);
+            
+            var list = payload.Items as List<InstrumentReadMinimalDto>;
 
             list.Should().NotBeNull();
-            list.Count.Should().Be(3);
+            list.Count.Should().Be(2);
 
             list.Select(i => i.Name).Should().Contain(
             [
-                "Dialtune 14\"x6.5\" Black Nickel Brass SD",
                 "Sonor 14\"x6.5\" Chrome over Brass Sn.",
                 "Yamaha Stage Custom Birch 5-Piece Drum Set"
             ]);
 
             list.Select(i => i.Brand).Should().Contain(
             [
-                "Dialtune", "Sonor", "Yamaha"
+                "Sonor", "Yamaha"
             ]);
 
             list.Select(i => i.CategoryId).Should().Contain([3, 3, 4]);
 
             list.Select(i => i.Description).Should().Contain(
             [
-                null,
                 "A cool snare drum with a less cool description",
                 "A great intermediate drum set"
             ]);
+            
+            // Check for sort desc
+            list[0].Brand.Should().Be("Yamaha");
         }
 
         [Test]

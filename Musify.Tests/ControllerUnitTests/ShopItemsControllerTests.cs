@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Musify.Controllers;
 using Musify.Data.DatabaseContext;
 using Musify.Data.Query.QueryObjects;
+using Musify.Data.Query.QueryUtils;
 using Musify.Data.Query.QueryUtils.QueryFilters;
 using Musify.Dtos;
 using Musify.Dtos.RequestDtos;
@@ -129,9 +130,20 @@ namespace Musify.Tests.ControllerUnitTests
         public async Task GetAll_ShouldReturnOkWithList()
         {
             // Arrange
-            PageRequest pageRequest = new PageRequest();
-            SortRequest sortRequest = new SortRequest();
-            ShopItemFilterDto shopItemFilterDto = new ShopItemFilterDto();
+            PageRequest pageRequest = new PageRequest { Page = 1, PageSize = 3};
+            SortRequest sortRequest = new SortRequest { Descending = false, SortBy = "price" };
+            ShopItemFilterDto shopItemFilterDto = new ShopItemFilterDto
+            {
+                InstrumentFiter = new InstrumentFiterDto
+                {
+                    CategoryId = 1 // Drums root category
+                },
+                PriceFilter = new PriceFilterDto
+                {
+                    MaxPrice = 2100.0M,
+                    MinPrice = 650.0M
+                }
+            };
             CancellationToken cancellationToken = CancellationToken.None;
             
             // Act
@@ -143,24 +155,29 @@ namespace Musify.Tests.ControllerUnitTests
 
             // Assert
             var ok = result.Should().BeOfType<OkObjectResult>().Subject;
-            var payload = ok.Value.Should().BeAssignableTo<IEnumerable<ShopItemReadMinimalDto>>().Subject;
+            var payload = ok.Value.Should().BeAssignableTo<PagedResult<ShopItemReadMinimalDto>>().Subject;
 
-            var list = payload as List<ShopItemReadMinimalDto>;
-
+            payload.TotalCount.Should().Be(2);
+            payload.Page.Should().Be(1);
+            payload.PageSize.Should().Be(3);
+            
+            var list = payload.Items as List<ShopItemReadMinimalDto>;
+            
             list.Should().NotBeNull();
-            list.Count.Should().Be(4);
+            list.Count.Should().Be(2);
 
-            list.Select(shI => shI.Id).Should().Contain([1, 2, 3, 4]);
-            list.Select(shI => shI.InstrumentId).Should().Contain([1, 1, 3, 2]);
-            list.Select(shI => shI.Price).Should().Contain([1000.0M, 850.0M, 2200.0M, 600.0M]);
-            list.Select(shI => shI.Stock).Should().Contain([5, 1, 3, 1]);
+            list.Select(shI => shI.Id).Should().Contain([1, 2]);
+            list.Select(shI => shI.InstrumentId).Should().Contain([1, 1]);
+            list.Select(shI => shI.Price).Should().Contain([1000.0M, 850.0M]);
+            list.Select(shI => shI.Stock).Should().Contain([5, 1]);
             list.Select(shI => shI.Condition).Should().Contain(
             [
                 ShopItemCondition.New,
                 ShopItemCondition.BStock,
-                ShopItemCondition.New,
-                ShopItemCondition.Used
             ]);
+            
+            // Check for sort asc
+            list[0].Id.Should().Be(2);
         }
 
         [Test]

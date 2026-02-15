@@ -119,7 +119,7 @@ namespace Musify.Tests.ControllerUnitTests
             var result = await _categoriesController.GetCategoryById(nonExistingCategoryId);
 
             // Assert
-            result.Should().BeOfType<NotFoundResult>();
+            result.Should().BeOfType<NotFoundObjectResult>();
         }
 
         [Test]
