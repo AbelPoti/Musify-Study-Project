@@ -5,6 +5,7 @@ using Musify.Data.DatabaseContext;
 using Musify.Dtos;
 using Musify.Dtos.CategoryDtos;
 using Musify.Models;
+using Musify.Services;
 
 namespace Musify.Controllers
 {
@@ -16,17 +17,21 @@ namespace Musify.Controllers
     /// </remarks>
     [Route("api/[controller]")]
     [ApiController]
-    public class CategoryController : ControllerBase
+    public class CategoriesController : ControllerBase
     {
-        private MusifyDbContext _dbContext;
+        private readonly MusifyDbContext _dbContext;
+        
+        private readonly ICategoryTreeService _categoryTreeService;
 
         /// <summary>
-        ///     Initializes a new instance of the <see cref="CategoryController"/> class.
+        ///     Initializes a new instance of the <see cref="CategoriesController"/> class.
         /// </summary>
         /// <param name="dbContext">The database context used to interact with the Musify database.</param>
-        public CategoryController(MusifyDbContext dbContext)
+        /// <param name="categoryTreeService">The category tree service used to build and return category trees.</param>
+        public CategoriesController(MusifyDbContext dbContext, ICategoryTreeService categoryTreeService)
         {
             _dbContext = dbContext;
+            _categoryTreeService = categoryTreeService;
         }
 
         /// <summary>
@@ -52,7 +57,19 @@ namespace Musify.Controllers
         }
 
         /// <summary>
-        ///     Retrieves a category by its unique identifier.
+        ///     Retrieves top level <see cref="Category"/> entities.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token for the operation.</param>
+        /// <returns>The list of top level categories.</returns>
+        [HttpGet("TopLevel")]
+        public async Task<IActionResult> GetTopLevelCategories(CancellationToken cancellationToken)
+        {
+            var categories = await _categoryTreeService.GetTopLevelCategoriesAsync(cancellationToken);
+            return Ok(categories);
+        }
+
+        /// <summary>
+        ///     Retrieves a <see cref="Category"/> by its unique identifier.
         /// </summary>
         /// <remarks>
         ///     Retrieves the <see cref="Category"/> corresponding to the provided <paramref name="id"/>.
@@ -69,7 +86,7 @@ namespace Musify.Controllers
             var category = await _dbContext.Categories.FindAsync(id);
             if (category == null)
             {
-                return NotFound();
+                return NotFound(new SimpleMessageDto { Message = $"No category with Id {id} was found." });
             }
             return Ok(new CategoryReadDto
             {
@@ -77,6 +94,44 @@ namespace Musify.Controllers
                 Name = category.Name,
                 ParentId = category.ParentId
             });
+        }
+
+        /// <summary>
+        ///     Retrieves the <see cref="Category"/> tree with the category identified by
+        ///     <paramref name="id"/> as the root.
+        /// </summary>
+        /// <param name="id">The unique identifier of the root category.</param>
+        /// <param name="cancellationToken">The cancellation token for this operation.</param>
+        /// <returns>The flattened Category tree as a list.</returns>
+        [HttpGet("{id}/children")]
+        public async Task<IActionResult> GetChildrenCategoriesById(int id, CancellationToken cancellationToken)
+        {
+            var categories = await _categoryTreeService.GetDescendantCategoriesAsync(id, cancellationToken);
+            // Since the method above always returns the current category if it exists as the first element
+            if (!categories.Any())
+            {
+                return NotFound(new SimpleMessageDto { Message = $"No category with Id {id} was found." });
+            }
+            return Ok(categories);
+        }
+
+        /// <summary>
+        ///     Retrieves the <see cref="Category"/> tree with the Category identified by
+        ///     <paramref name="id"/> as a leaf category.
+        /// </summary>
+        /// <param name="id">The unique identifier of the leaf category.</param>
+        /// <param name="cancellationToken">The cancellation token for this operation.</param>
+        /// <returns>The flattened Category tree as a list.</returns>
+        [HttpGet("{id}/parents")]
+        public async Task<IActionResult> GetParentCategoriesById(int id, CancellationToken cancellationToken)
+        {
+            var categories = await _categoryTreeService.GetAncestorCategoriesAsync(id, cancellationToken);
+            // Since the method above always returns the current category if it exists as the last element
+            if (!categories.Any())
+            {
+                return NotFound(new SimpleMessageDto { Message = $"No category with Id {id} was found." });
+            }
+            return Ok(categories);
         }
 
         /// <summary>

@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Musify.Data.DatabaseContext;
+using Musify.Data.Query.QueryObjects;
 using Musify.Dtos;
+using Musify.Dtos.RequestDtos;
+using Musify.Dtos.RequestDtos.FilterDtos;
 using Musify.Dtos.ShopItemDtos;
 using Musify.Models;
 
@@ -10,33 +12,41 @@ namespace Musify.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ShopItemController : ControllerBase
+    public class ShopItemsController : ControllerBase
     {
         private MusifyDbContext _dbContext;
+        
+        // Custom queries class for performing specific queries
+        private readonly IQueries<ShopItem, ShopItemFilterDto> _shopItemQueries;
 
-        public ShopItemController(MusifyDbContext dbContext)
+        public ShopItemsController(
+            MusifyDbContext dbContext,
+            IQueries<ShopItem, ShopItemFilterDto> shopItemQueries)
         {
             _dbContext = dbContext;
+            _shopItemQueries = shopItemQueries;
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAllShopItems()
+        public async Task<IActionResult> GetAllShopItems(
+            [FromQuery(Name = "")] PageRequest page,
+            [FromQuery(Name = "")] SortRequest? sort,
+            [FromQuery(Name = "")] ShopItemFilterDto? filter,
+            CancellationToken cancellationToken)
         {
-            var shopItems = await _dbContext.ShopItems.ToListAsync();
+            var pagedShopItems = await _shopItemQueries.GetItemsAsync(page, sort, filter, cancellationToken);
 
-            List<ShopItemReadMinimalDto> shopItemDtos =
-                shopItems.Select(sI =>
-                    new ShopItemReadMinimalDto
-                    {
-                        Id = sI.Id,
-                        InstrumentId = sI.InstrumentId,
-                        Price = sI.Price,
-                        Stock = sI.Stock,
-                        Condition = sI.Condition
-                    }
-                ).ToList();
+            // Map the results to DTOs
+            var dtoResults = pagedShopItems.Map(shopItem => new ShopItemReadMinimalDto
+            {
+                Id = shopItem.Id,
+                InstrumentId = shopItem.InstrumentId,
+                Price = shopItem.Price,
+                Stock = shopItem.Stock,
+                Condition = shopItem.Condition
+            });
 
-            return Ok(shopItemDtos);
+            return Ok(dtoResults);
         }
 
         [HttpGet("{id}")]

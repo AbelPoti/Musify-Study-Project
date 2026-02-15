@@ -3,19 +3,24 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Musify.Controllers;
 using Musify.Data.DatabaseContext;
+using Musify.Data.Query.QueryObjects;
+using Musify.Data.Query.QueryUtils;
+using Musify.Data.Query.QueryUtils.QueryFilters;
 using Musify.Dtos;
+using Musify.Dtos.RequestDtos;
+using Musify.Dtos.RequestDtos.FilterDtos;
 using Musify.Dtos.ShopItemDtos;
 using Musify.Models;
 
 namespace Musify.Tests.ControllerUnitTests
 {
     [TestFixture]
-    internal class ShopItemControllerTests
+    internal class ShopItemsControllerTests
     {
         private MusifyDbContext _dbContext;
-        private ShopItemController _shopItemController;
-
-
+        private ShopItemQueries _shopItemQueries;
+        private ShopItemsController _shopItemsController;
+        
         [SetUp]
         public void Setup()
         {
@@ -25,10 +30,11 @@ namespace Musify.Tests.ControllerUnitTests
                 .Options;
 
             _dbContext = new MusifyDbContext(options);
+            _shopItemQueries = new ShopItemQueries(_dbContext, new ShopItemFiltering());
 
             SeedDatabase();
 
-            _shopItemController = new ShopItemController(_dbContext);
+            _shopItemsController = new ShopItemsController(_dbContext, _shopItemQueries);
         }
 
         private void SeedDatabase()
@@ -83,7 +89,7 @@ namespace Musify.Tests.ControllerUnitTests
                 {
                     Id = 1,
                     InstrumentId = 1,
-                    Instrument = _dbContext.Instruments.Find(1),
+                    Instrument = _dbContext.Instruments.Find(1)!,
                     Price = 1000.0M,
                     Stock = 5,
                     Condition = ShopItemCondition.New
@@ -92,7 +98,7 @@ namespace Musify.Tests.ControllerUnitTests
                 {
                     Id = 2,
                     InstrumentId = 1,
-                    Instrument = _dbContext.Instruments.Find(1),
+                    Instrument = _dbContext.Instruments.Find(1)!,
                     Price = 850.0M,
                     Stock = 1,
                     Condition = ShopItemCondition.BStock
@@ -101,7 +107,7 @@ namespace Musify.Tests.ControllerUnitTests
                 {
                     Id = 3,
                     InstrumentId = 3,
-                    Instrument = _dbContext.Instruments.Find(3),
+                    Instrument = _dbContext.Instruments.Find(3)!,
                     Price = 2200.0M,
                     Stock = 3,
                     Condition = ShopItemCondition.New
@@ -110,7 +116,7 @@ namespace Musify.Tests.ControllerUnitTests
                 {
                     Id = 4,
                     InstrumentId = 2,
-                    Instrument = _dbContext.Instruments.Find(2),
+                    Instrument = _dbContext.Instruments.Find(2)!,
                     Price = 600.0M,
                     Stock = 1,
                     Condition = ShopItemCondition.Used
@@ -123,30 +129,55 @@ namespace Musify.Tests.ControllerUnitTests
         [Test]
         public async Task GetAll_ShouldReturnOkWithList()
         {
-            // Arrange done in Setup
+            // Arrange
+            PageRequest pageRequest = new PageRequest { Page = 1, PageSize = 3};
+            SortRequest sortRequest = new SortRequest { Descending = false, SortBy = "price" };
+            ShopItemFilterDto shopItemFilterDto = new ShopItemFilterDto
+            {
+                InstrumentFiter = new InstrumentFilterDto
+                {
+                    CategoryId = 1 // Drums root category
+                },
+                PriceFilter = new PriceFilterDto
+                {
+                    MaxPrice = 2100.0M,
+                    MinPrice = 650.0M
+                }
+            };
+            CancellationToken cancellationToken = CancellationToken.None;
+            
             // Act
-            var result = await _shopItemController.GetAllShopItems();
+            var result = await _shopItemsController.GetAllShopItems(
+                pageRequest,
+                sortRequest,
+                shopItemFilterDto,
+                cancellationToken);
 
             // Assert
             var ok = result.Should().BeOfType<OkObjectResult>().Subject;
-            var payload = ok.Value.Should().BeAssignableTo<IEnumerable<ShopItemReadMinimalDto>>().Subject;
+            var payload = ok.Value.Should().BeAssignableTo<PagedResult<ShopItemReadMinimalDto>>().Subject;
 
-            var list = payload as List<ShopItemReadMinimalDto>;
-
+            payload.TotalCount.Should().Be(2);
+            payload.Page.Should().Be(1);
+            payload.PageSize.Should().Be(3);
+            
+            var list = payload.Items as List<ShopItemReadMinimalDto>;
+            
             list.Should().NotBeNull();
-            list.Count.Should().Be(4);
+            list.Count.Should().Be(2);
 
-            list.Select(shI => shI.Id).Should().Contain([1, 2, 3, 4]);
-            list.Select(shI => shI.InstrumentId).Should().Contain([1, 1, 3, 2]);
-            list.Select(shI => shI.Price).Should().Contain([1000.0M, 850.0M, 2200.0M, 600.0M]);
-            list.Select(shI => shI.Stock).Should().Contain([5, 1, 3, 1]);
+            list.Select(shI => shI.Id).Should().Contain([1, 2]);
+            list.Select(shI => shI.InstrumentId).Should().Contain([1, 1]);
+            list.Select(shI => shI.Price).Should().Contain([1000.0M, 850.0M]);
+            list.Select(shI => shI.Stock).Should().Contain([5, 1]);
             list.Select(shI => shI.Condition).Should().Contain(
             [
                 ShopItemCondition.New,
                 ShopItemCondition.BStock,
-                ShopItemCondition.New,
-                ShopItemCondition.Used
             ]);
+            
+            // Check for sort asc
+            list[0].Id.Should().Be(2);
         }
 
         [Test]
@@ -156,7 +187,7 @@ namespace Musify.Tests.ControllerUnitTests
             const int shopItemId = 1;
 
             // Act
-            var result = await _shopItemController.GetShopItemById(shopItemId);
+            var result = await _shopItemsController.GetShopItemById(shopItemId);
 
             // Assert
             var ok = result.Should().BeOfType<OkObjectResult>().Subject;
@@ -173,7 +204,7 @@ namespace Musify.Tests.ControllerUnitTests
             const int nonexistentId = 999;
 
             // Act
-            var result = await _shopItemController.GetShopItemById(nonexistentId);
+            var result = await _shopItemsController.GetShopItemById(nonexistentId);
 
             // Assert
             var notFound = result.Should().BeOfType<NotFoundObjectResult>().Subject;
@@ -195,7 +226,7 @@ namespace Musify.Tests.ControllerUnitTests
             };
 
             // Act
-            var result = await _shopItemController.CreateShopItem(dto);
+            var result = await _shopItemsController.CreateShopItem(dto);
 
             // Assert
             var createdAt = result.Should().BeOfType<CreatedAtActionResult>().Subject;
@@ -225,7 +256,7 @@ namespace Musify.Tests.ControllerUnitTests
             };
 
             // Act
-            var result = await _shopItemController.CreateShopItem(dto);
+            var result = await _shopItemsController.CreateShopItem(dto);
 
             // Assert
             var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
@@ -249,7 +280,7 @@ namespace Musify.Tests.ControllerUnitTests
             };
 
             // Act
-            var result = await _shopItemController.UpdateShopItem(shopItemId, dto);
+            var result = await _shopItemsController.UpdateShopItem(shopItemId, dto);
 
             // Assert
             result.Should().BeOfType<NoContentResult>();
@@ -270,7 +301,7 @@ namespace Musify.Tests.ControllerUnitTests
             };
 
             // Act
-            var result = await _shopItemController.UpdateShopItem(shopItemId, dto);
+            var result = await _shopItemsController.UpdateShopItem(shopItemId, dto);
 
             // Assert
             var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
@@ -294,7 +325,7 @@ namespace Musify.Tests.ControllerUnitTests
             };
 
             // Act
-            var result = await _shopItemController.UpdateShopItem(shopItemId, dto);
+            var result = await _shopItemsController.UpdateShopItem(shopItemId, dto);
 
             // Assert
             var notFound = result.Should().BeOfType<NotFoundObjectResult>().Subject;
@@ -318,7 +349,7 @@ namespace Musify.Tests.ControllerUnitTests
             };
 
             // Act
-            var result = await _shopItemController.UpdateShopItem(shopItemId, dto);
+            var result = await _shopItemsController.UpdateShopItem(shopItemId, dto);
 
             // Assert
             var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
@@ -335,7 +366,7 @@ namespace Musify.Tests.ControllerUnitTests
             const decimal newPrice = 2000.0M;
 
             // Act
-            var result = await _shopItemController.PatchShopItemPrice(shopItemId, newPrice);
+            var result = await _shopItemsController.PatchShopItemPrice(shopItemId, newPrice);
 
             // Assert
             var ok = result.Should().BeOfType<OkObjectResult>().Subject;
@@ -353,7 +384,7 @@ namespace Musify.Tests.ControllerUnitTests
             const decimal newPrice = 2000.0M;
 
             // Act
-            var result = await _shopItemController.PatchShopItemPrice(shopItemId, newPrice);
+            var result = await _shopItemsController.PatchShopItemPrice(shopItemId, newPrice);
 
             // Assert
             var ok = result.Should().BeOfType<NotFoundObjectResult>().Subject;
@@ -371,7 +402,7 @@ namespace Musify.Tests.ControllerUnitTests
             const int shopItemId = 1;
 
             // Act
-            var result = await _shopItemController.PatchShopItemPrice(shopItemId, newPrice);
+            var result = await _shopItemsController.PatchShopItemPrice(shopItemId, newPrice);
 
             // Assert
             var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
@@ -388,7 +419,7 @@ namespace Musify.Tests.ControllerUnitTests
             const int newStock = 5;
 
             // Act
-            var result = await _shopItemController.PatchShopItemStock(shopItemId, newStock);
+            var result = await _shopItemsController.PatchShopItemStock(shopItemId, newStock);
 
             // Assert
             var ok = result.Should().BeOfType<OkObjectResult>().Subject;
@@ -406,7 +437,7 @@ namespace Musify.Tests.ControllerUnitTests
             const int newStock = 5;
 
             // Act
-            var result = await _shopItemController.PatchShopItemStock(shopItemId, newStock);
+            var result = await _shopItemsController.PatchShopItemStock(shopItemId, newStock);
 
             // Assert
             var notFound = result.Should().BeOfType<NotFoundObjectResult>().Subject;
@@ -424,7 +455,7 @@ namespace Musify.Tests.ControllerUnitTests
             const int shopItemId = 1;
 
             // Act
-            var result = await _shopItemController.PatchShopItemStock(shopItemId, newStock);
+            var result = await _shopItemsController.PatchShopItemStock(shopItemId, newStock);
 
             // Assert
             var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
@@ -444,7 +475,7 @@ namespace Musify.Tests.ControllerUnitTests
             int currentStock = shopItemPatched!.Stock;
 
             // Act
-            var result = await _shopItemController.IncrementShopItemStock(shopItemId, increment);
+            var result = await _shopItemsController.IncrementShopItemStock(shopItemId, increment);
 
             // Assert
             var ok = result.Should().BeOfType<OkObjectResult>().Subject;
@@ -462,7 +493,7 @@ namespace Musify.Tests.ControllerUnitTests
             const int increment = 5;
 
             // Act
-            var result = await _shopItemController.IncrementShopItemStock(shopItemId, increment);
+            var result = await _shopItemsController.IncrementShopItemStock(shopItemId, increment);
 
             // Assert
             var notFound = result.Should().BeOfType<NotFoundObjectResult>().Subject;
@@ -480,7 +511,7 @@ namespace Musify.Tests.ControllerUnitTests
             const int shopItemId = 1;
 
             // Act
-            var result = await _shopItemController.IncrementShopItemStock(shopItemId, increment);
+            var result = await _shopItemsController.IncrementShopItemStock(shopItemId, increment);
 
             // Assert
             var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
@@ -500,7 +531,7 @@ namespace Musify.Tests.ControllerUnitTests
             int currentStock = patchedShopItem!.Stock;
 
             // Act
-            var result = await _shopItemController.DecrementShopItemStock(shopItemId, decrement);
+            var result = await _shopItemsController.DecrementShopItemStock(shopItemId, decrement);
 
             // Assert
             var ok = result.Should().BeOfType<OkObjectResult>().Subject;
@@ -518,7 +549,7 @@ namespace Musify.Tests.ControllerUnitTests
             const int decrement = 4;
 
             // Act
-            var result = await _shopItemController.DecrementShopItemStock(shopItemId, decrement);
+            var result = await _shopItemsController.DecrementShopItemStock(shopItemId, decrement);
 
             // Assert
             var notFound = result.Should().BeOfType<NotFoundObjectResult>().Subject;
@@ -536,7 +567,7 @@ namespace Musify.Tests.ControllerUnitTests
             const int shopItemId = 1;
 
             // Act
-            var result = await _shopItemController.DecrementShopItemStock(shopItemId, decrement);
+            var result = await _shopItemsController.DecrementShopItemStock(shopItemId, decrement);
 
             // Assert
             var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
@@ -553,7 +584,7 @@ namespace Musify.Tests.ControllerUnitTests
             const int decrement = 6;
 
             // Act
-            var result = await _shopItemController.DecrementShopItemStock(shopItemId, decrement);
+            var result = await _shopItemsController.DecrementShopItemStock(shopItemId, decrement);
 
             // Assert
             var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
@@ -569,7 +600,7 @@ namespace Musify.Tests.ControllerUnitTests
             const int shopItemId = 1;
 
             // Act
-            var result = await _shopItemController.DeleteShopItem(shopItemId);
+            var result = await _shopItemsController.DeleteShopItem(shopItemId);
 
             // Assert
             result.Should().BeOfType<NoContentResult>();
@@ -582,7 +613,7 @@ namespace Musify.Tests.ControllerUnitTests
             const int shopItemId = 999; // Does not exist
 
             // Act
-            var result = await _shopItemController.DeleteShopItem(shopItemId);
+            var result = await _shopItemsController.DeleteShopItem(shopItemId);
 
             // Assert
             var notFound = result.Should().BeOfType<NotFoundObjectResult>().Subject;

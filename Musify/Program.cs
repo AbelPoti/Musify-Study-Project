@@ -5,6 +5,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Musify.Data.DatabaseContext;
+using Musify.Data.Query.QueryObjects;
+using Musify.Data.Query.QueryUtils.QueryFilters;
+using Musify.Dtos.RequestDtos.FilterDtos;
 using Musify.Models;
 using Musify.Services;
 using System.Text;
@@ -24,6 +27,7 @@ builder.WebHost.ConfigureKestrel(options =>
 
 // Add services to the container.
 
+// Add DB Context
 builder.Services.AddDbContext<MusifyDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("Development"))
 );
@@ -52,6 +56,17 @@ builder.Services.AddSingleton<IDateTimeProvider, SystemDateTimeProvider>();
 // Register email service
 builder.Services.AddTransient<IEmailSender, EmailSender>();
 
+// Register query helper service
+builder.Services.AddScoped<ICategoryTreeService, CategoryTreeService>();
+
+// Register filtering classes
+builder.Services.AddScoped<IEntityFiltering<Instrument, InstrumentFilterDto>, InstrumentFiltering>();
+builder.Services.AddScoped<IEntityFiltering<ShopItem, ShopItemFilterDto>, ShopItemFiltering>();
+
+// Register custom queries classes
+builder.Services.AddScoped<IQueries<Instrument, InstrumentFilterDto>, InstrumentQueries>();
+builder.Services.AddScoped<IQueries<ShopItem, ShopItemFilterDto>, ShopItemQueries>();
+
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -59,6 +74,7 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });
 
+// Configure model validation error responses
 builder.Services.Configure<ApiBehaviorOptions>(options =>
 {
     options.InvalidModelStateResponseFactory = context =>

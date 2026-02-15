@@ -2,10 +2,13 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Musify.Data.DatabaseContext;
+using Musify.Data.Query.QueryObjects;
 using Musify.Dtos;
 using Musify.Dtos.AttributeDefinitionDtos;
 using Musify.Dtos.AttributeValueDtos;
 using Musify.Dtos.InstrumentDtos;
+using Musify.Dtos.RequestDtos;
+using Musify.Dtos.RequestDtos.FilterDtos;
 using Musify.Models;
 
 namespace Musify.Controllers
@@ -18,17 +21,26 @@ namespace Musify.Controllers
     /// </remarks>
     [Route("api/[controller]")]
     [ApiController]
-    public class InstrumentController : ControllerBase
+    public class InstrumentsController : ControllerBase
     {
         private MusifyDbContext _dbContext;
+        
+        // Custom queries class for specific queries and page returning ones
+        private readonly IQueries<Instrument, InstrumentFilterDto> _instrumentQueries;
 
         /// <summary>
-        ///     Initializes a new instance of the <see cref="InstrumentController"/> class.
+        ///     Initializes a new instance of the <see cref="InstrumentsController"/> class.
         /// </summary>
         /// <param name="dbContext">The database context used to interact with the Musify database.</param>
-        public InstrumentController(MusifyDbContext dbContext)
+        /// <param name="instrumentQueries">
+        ///     The query object for specific queries not provided by <paramref name="dbContext"/>
+        /// </param>
+        public InstrumentsController(
+            MusifyDbContext dbContext,
+            IQueries<Instrument, InstrumentFilterDto> instrumentQueries)
         {
             _dbContext = dbContext;
+            _instrumentQueries = instrumentQueries;
         }
 
         /// <summary>
@@ -38,12 +50,16 @@ namespace Musify.Controllers
         ///     An <see cref="OkObjectResult"/> response containing the list of categories.
         /// </returns>
         [HttpGet]
-        public async Task<IActionResult> GetAllInstruments()
+        public async Task<IActionResult> GetAllInstruments(
+            [FromQuery(Name = "")] PageRequest page,
+            [FromQuery(Name = "")] SortRequest? sort,
+            [FromQuery(Name = "")] InstrumentFilterDto? filter,
+            CancellationToken cancellationToken)
         {
-            var instruments = await _dbContext.Instruments.ToListAsync();
-
-            List<InstrumentReadMinimalDto> instrumentDtos = [];
-            instrumentDtos.AddRange(instruments.Select(instrument => new InstrumentReadMinimalDto
+            var pagedInstruments = await _instrumentQueries.GetItemsAsync(page, sort, filter, cancellationToken);
+            
+            // Map the results to DTOs
+            var dtoResult = pagedInstruments.Map(instrument => new InstrumentReadMinimalDto
             {
                 Id = instrument.Id,
                 Name = instrument.Name,
@@ -51,9 +67,9 @@ namespace Musify.Controllers
                 CategoryId = instrument.CategoryId,
                 Description = instrument.Description,
                 Attributes = []
-            }));
+            });
 
-            return Ok(instrumentDtos);
+            return Ok(dtoResult);
         }
 
         /// <summary>

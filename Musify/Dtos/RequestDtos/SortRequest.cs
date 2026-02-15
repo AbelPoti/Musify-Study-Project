@@ -1,0 +1,13 @@
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Musify.Dtos.RequestDtos
+{
+    public record SortRequest
+    {
+        [MaxLength(50)]
+        public string? SortBy { get; init; }
+
+        [Range(0, 1)]
+        public bool Descending { get; init; }
+    }
+}
